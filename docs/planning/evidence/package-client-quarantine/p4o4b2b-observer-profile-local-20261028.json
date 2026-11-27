@@ -1,0 +1,147 @@
+{
+  "scope": "P4-O4-B2b fixed observer profile/topology and default budget only; no actual acquired ZIP transaction",
+  "status": "LOCAL_QUALIFIED_PROFILE_AND_LATCHES",
+  "baseline_commit": "4ab40c2",
+  "profile": "github-pipx-runtime",
+  "source_identity": [
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "2ea9837f7aa7b16ad741b684935ce214185196bf527377c327bfe747800d532a"
+    },
+    {
+      "path": "internal/sandbox/pipx_observer.go",
+      "sha256": "86f8faf53d9f38b6aecf01ef63c74a661938628b8614aea70a5b52e8bc4b91fc"
+    },
+    {
+      "path": "internal/sandbox/pipx_observer_test.go",
+      "sha256": "de4f7af93929c486a86efa7ee28cbe03c9db4b1ea362c3ce1d563181f8f5b43a"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "05b0181220a99510867cd716dc4fb28f79a81a8ad1ff67ae3958a08f18c2113e"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "a21b249bd94436fdbb05bbe54ddedf57e504b46e381c75566ff97992d940c90a"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.698
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 204.61
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 25.051
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.247
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 11.57
+    }
+  ],
+  "observer_build": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p4o4b2b-observer"
+    ],
+    "exit_code": 0,
+    "seconds": 274.583,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "05b0181220a99510867cd716dc4fb28f79a81a8ad1ff67ae3958a08f18c2113e"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "a21b249bd94436fdbb05bbe54ddedf57e504b46e381c75566ff97992d940c90a"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "log_sha256": "ba3768190763815ed76bf3c084ce680b1db90652cd86c55e696eeea6f15c3712",
+    "observer": {
+      "bytes": 3159328,
+      "sha256": "a35d7329996490c5144ede8c347b797036a5b91b2d365fd669b0f0d8f63aec24"
+    }
+  },
+  "observer_latches": {
+    "total": 124,
+    "all_pass": true,
+    "new_cases": [
+      "Pipx fixed ZIP runtime and read boundary",
+      "Pipx ARTIFACT-only Python admission"
+    ]
+  },
+  "preserved": [
+    "wheel IsPythonProfile/classification unchanged",
+    "exact acquired DATA path; RW preparation and RO anchor/observation",
+    "no pip binary/site-packages/pip.conf or wheel site inheritance",
+    "ARTIFACT-only Python direct admission; CONTROL launch and ELF handoff rejected",
+    "same default shared trace limits and existing role/executable identity checks"
+  ],
+  "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/p4o4b2b-raw-inventory.json",
+  "missing": [
+    "B2c existing transaction integration/accounting/cleanup and actual gVisor ZIP execution",
+    "required release composite and full release/native pipx/CLI qualification",
+    "common observer final supported profile matrix"
+  ]
+}

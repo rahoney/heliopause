@@ -1,0 +1,146 @@
+{
+  "scope": "CI420 fixed pytest runtime supply/selected owner and common checker changes with existing hosted consumers; ZIP external observation remains pending",
+  "status": "QUALIFIED_NAMED_HOSTED",
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40515351597",
+  "run_id": 40515351597,
+  "source_commit": "1e5d21e102bd3f6b6e1b680603f0569e2e0b390e",
+  "checkout_commit": "729b2e1e7b64af42722332199219b7f201219222",
+  "whole_tree": "391df742715d998b76961e43c80df2b28adc5777",
+  "tracked_files": 2772,
+  "all_job_checkouts_match": true,
+  "run_started_at": "2026-10-27T13:48:39Z",
+  "required_completed_at": "2026-10-27T15:02:23Z",
+  "workflow_elapsed_seconds": 4424,
+  "linux_elapsed_seconds": 4387,
+  "jobs": [
+    {
+      "name": "Security",
+      "id": 122227768168,
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 122227768495,
+      "conclusion": "success"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 122227768508,
+      "conclusion": "success"
+    },
+    {
+      "name": "Docs",
+      "id": 122227768546,
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "id": 122227768630,
+      "conclusion": "success"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 122227768814,
+      "conclusion": "success"
+    },
+    {
+      "name": "Quick",
+      "id": 122227768915,
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 122227768932,
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 122227769043,
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "id": 122268839786,
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "top_level_pass": 79,
+    "skips": 0,
+    "helper_wait_zero_count": 11,
+    "final_cleanup": "2026-10-27T15:01:46.9237769Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=536212",
+    "selected_actual_lines": [
+      "2026-10-27T15:01:18.3341343Z --- PASS: TestLinuxPyTorchFullIntegration (248.37s)"
+    ]
+  },
+  "raw_logs": [
+    {
+      "job": "Security",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768168.log",
+      "bytes": 21965,
+      "sha256": "c70726298fac6cca8d4e09a837b56a122faaef8ac137232036f8c801a445aee7"
+    },
+    {
+      "job": "gVisor Linux Integration",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768495.log",
+      "bytes": 698524,
+      "sha256": "28417de0ee86c0fa2472c9828f339b4be74594595622b7102b14f27a2b7bc399"
+    },
+    {
+      "job": "Minimum Go",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768508.log",
+      "bytes": 21501,
+      "sha256": "abeb18cf4c6b08fb5923dcd033056bddc8137c5eb04c5fcbd39583b417fff897"
+    },
+    {
+      "job": "Docs",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768546.log",
+      "bytes": 20518,
+      "sha256": "a50293ab2f8a24618ed2d80cae0d989c9e63f2214024cb1f4dcbdb983211ede8"
+    },
+    {
+      "job": "macOS",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768630.log",
+      "bytes": 26978,
+      "sha256": "9fff4113b92f696cdae3b90670135838177faa666e6177b5adb36ba36fa41d97"
+    },
+    {
+      "job": "Representative Wheel Corpus",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768814.log",
+      "bytes": 35359,
+      "sha256": "b75ecfe08896510c2b8a033de54e9a5d27be8374f80b59aeaa1864ebb25fac1f"
+    },
+    {
+      "job": "Quick",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768915.log",
+      "bytes": 23847,
+      "sha256": "88617ed9284fc4c37bb6e752a8a43c9d96afecfa5c4ad9fe1f06c9545203ccd7"
+    },
+    {
+      "job": "gVisor Observer Helper",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227768932.log",
+      "bytes": 270815,
+      "sha256": "69746ca9b30c43176795ddd5a4c5cd0ff2b3e6b93cf95d963e0f81f6d21ed27a"
+    },
+    {
+      "job": "Vulnerability",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122227769043.log",
+      "bytes": 21698,
+      "sha256": "40aba65fcd7927727bce5983e0fa69c69de1ab2579121290fcef87b233634336"
+    },
+    {
+      "job": "Required",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci420-122268839786.log",
+      "bytes": 22295,
+      "sha256": "25a3c9741911f38e9586153b663e5b05fb003ae0136921776bebb2455d63b3d6"
+    }
+  ],
+  "decoded_log_bytes": 1163500,
+  "all_logs_readback_equal": true,
+  "missing": [
+    "B2 acquired ZIP external gVisor observation/required release composite",
+    "native pipx operations/public CLI and complete release set",
+    "whole P4 and final profile matrix"
+  ],
+  "ci415_cause": "OPEN; later passing runs do not establish historical causality"
+}

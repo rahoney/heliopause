@@ -25,6 +25,12 @@ func main() {
 }
 
 func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	if handled, err := bootstrap.TryProtectedHealth(ctx, args); handled {
+		if err != nil {
+			return exitFailure
+		}
+		return exitSuccess
+	}
 	if err := bootstrap.Run(ctx, args, stdout, stderr); err != nil {
 		var exitError interface{ ExitCode() int }
 		if errors.As(err, &exitError) {

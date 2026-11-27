@@ -31,10 +31,6 @@ const (
 	canonicalRunscPodInitConfigArg = "--pod-init-config=/etc/heliopause/pod-init.json"
 )
 
-var (
-	minimumDockerEngine = runtimeidentity.DockerMinimumEngine
-)
-
 // Config is trusted installation configuration, not user request data. Paths
 // are absolute and the Docker endpoint must use a local Unix socket.
 type Config struct {
@@ -53,11 +49,14 @@ type identity struct {
 // Executor executes only registered trusted tools with a fresh minimal
 // environment. It never searches PATH or consumes Docker context variables.
 type Executor struct {
-	tools         map[string]identity
-	runscManifest identity
-	endpoint      string
-	endpointID    os.FileInfo
-	clientHome    string
+	tools                map[string]identity
+	runscManifest        identity
+	endpoint             string
+	endpointID           os.FileInfo
+	clientHome           string
+	recovery             *d3LeaseClient
+	releaseRecovery      func() error
+	recoveryObserverDone <-chan struct{}
 }
 
 // RequiresDirectExecAdmission marks this production Host executor as the only
@@ -173,7 +172,7 @@ func newExecutor(ctx context.Context, config Config, includeFirewall bool) (*Exe
 
 func (e *Executor) validateDaemon(ctx context.Context) error {
 	version, err := e.output(ctx, "docker", "version", "--format", "{{.Server.Version}}")
-	if err != nil || !atLeastVersion(strings.TrimSpace(string(version)), minimumDockerEngine) {
+	if err != nil || !runtimeidentity.DockerEngineSupported(strings.TrimSpace(string(version))) {
 		return errors.New("local Docker daemon version is unavailable or unsupported")
 	}
 	registration, err := e.output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
@@ -220,7 +219,11 @@ func (e *Executor) Close() error {
 	}
 	path := e.clientHome
 	e.clientHome = ""
-	return os.RemoveAll(path)
+	var releaseErr error
+	if e.releaseRecovery != nil {
+		releaseErr = e.releaseRecovery()
+	}
+	return errors.Join(releaseErr, os.RemoveAll(path))
 }
 
 // LookPath returns only a registered absolute identity and revalidates it.
@@ -262,6 +265,16 @@ func (e *Executor) RunOutput(ctx context.Context, output io.Writer, name string,
 		return err
 	}
 	command.Stdout = output
+	return command.Run()
+}
+
+// StartContainerInputOutput carries only the guest init responder control channel.
+func (e *Executor) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	command, err := e.command(ctx, "docker", "start", "--attach", "--interactive", "--", id)
+	if err != nil {
+		return err
+	}
+	command.Stdin, command.Stdout = input, output
 	return command.Run()
 }
 
@@ -312,17 +325,67 @@ func (b *boundedCommandOutput) Write(data []byte) (int, error) {
 // Run executes one Docker Promotion command. The project argument is already
 // validated by Promotion and is not inherited as process working directory.
 func (e *Executor) Run(ctx context.Context, _ string, arguments []string) error {
+	if e.recovery != nil && len(arguments) > 0 && arguments[0] == "run" {
+		if err := e.runProtectedPromotion(ctx, arguments); err != nil {
+			return errors.New("trusted Docker command failed")
+		}
+		return nil
+	}
 	command, err := e.command(ctx, "docker", arguments...)
 	if err != nil {
 		return err
 	}
-	if _, err := command.CombinedOutput(); err != nil {
+	if err := command.Run(); err != nil {
 		return errors.New("trusted Docker command failed")
 	}
 	return nil
 }
 
-func (e *Executor) command(ctx context.Context, name string, arguments ...string) (*exec.Cmd, error) {
+type guardedCommand struct {
+	*exec.Cmd
+	finish       func(error) error
+	observerDone <-chan struct{}
+}
+
+func (c *guardedCommand) checkObserver() error {
+	select {
+	case <-c.observerDone:
+		return errors.New("protected observer process stopped before launch")
+	default:
+		return nil
+	}
+}
+
+func (c *guardedCommand) Start() error {
+	if err := c.checkObserver(); err != nil {
+		return err
+	}
+	return c.Cmd.Start()
+}
+
+func (c *guardedCommand) Run() error {
+	if err := c.checkObserver(); err != nil {
+		return err
+	}
+	err := c.Cmd.Run()
+	if c.finish != nil {
+		return c.finish(err)
+	}
+	return err
+}
+
+func (c *guardedCommand) Output() ([]byte, error) {
+	if err := c.checkObserver(); err != nil {
+		return nil, err
+	}
+	body, err := c.Cmd.Output()
+	if c.finish != nil {
+		err = c.finish(err)
+	}
+	return body, err
+}
+
+func (e *Executor) command(ctx context.Context, name string, arguments ...string) (*guardedCommand, error) {
 	if ctx == nil {
 		return nil, errors.New("trusted command context is required")
 	}
@@ -330,7 +393,12 @@ func (e *Executor) command(ctx context.Context, name string, arguments ...string
 	if err != nil {
 		return nil, err
 	}
+	var finish func(error) error
+	var observerDone <-chan struct{}
 	if name == "docker" {
+		if len(arguments) > 0 && (arguments[0] == "start" || arguments[0] == "exec") {
+			observerDone = e.recoveryObserverDone
+		}
 		currentEndpoint, endpointErr := verifyLocalSocket(e.endpoint)
 		if endpointErr != nil || currentEndpoint != e.endpoint {
 			return nil, errors.New("local Docker endpoint changed after validation")
@@ -339,12 +407,16 @@ func (e *Executor) command(ctx context.Context, name string, arguments ...string
 		if statErr != nil || !os.SameFile(e.endpointID, currentInfo) {
 			return nil, errors.New("local Docker endpoint identity changed after validation")
 		}
+		arguments, finish, err = e.protectDocker(ctx, arguments)
+		if err != nil {
+			return nil, err
+		}
 		arguments = dockerArguments(e.endpoint, e.clientHome, arguments)
 	}
 	command := exec.CommandContext(ctx, tool.path, arguments...)
 	command.Env = minimalEnvironment(e.clientHome)
 	command.Stdin = nil
-	return command, nil
+	return &guardedCommand{Cmd: command, finish: finish, observerDone: observerDone}, nil
 }
 
 func dockerArguments(endpoint, clientHome string, arguments []string) []string {
@@ -666,15 +738,4 @@ func firstExisting(paths ...string) string {
 		}
 	}
 	return ""
-}
-
-func atLeastVersion(actual, minimum string) bool {
-	var a, b, c, x, y, z int
-	if _, err := fmt.Sscanf(actual, "%d.%d.%d", &a, &b, &c); err != nil {
-		return false
-	}
-	if _, err := fmt.Sscanf(minimum, "%d.%d.%d", &x, &y, &z); err != nil {
-		return false
-	}
-	return a > x || a == x && (b > y || b == y && c >= z)
 }

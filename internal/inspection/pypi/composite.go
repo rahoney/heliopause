@@ -3,9 +3,11 @@ package pypi
 import (
 	"context"
 	"errors"
+	"path/filepath"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // graphStaticState is private PyPI preparation state. It never crosses the
@@ -57,11 +59,15 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 		return domain.InspectionReport{}, err
 	}
 	if hasBlockingFinding(static) {
-		return static, nil
+		skipped, err := skippedDynamicReport(ctx)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, skipped})
 	}
 	dynamic, err := i.dynamic.InspectWheel(ctx, artifact, wheel)
 	if err != nil {
-		return domain.InspectionReport{}, err
+		return static, err
 	}
 	return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
 }
@@ -70,13 +76,22 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 // phases for one already acquired exact dependency graph. Application owns the
 // Inspection Runs, Evidence recording, and Policy decisions.
 func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.LockedDependencyGraph, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
+	return i.inspectDependencySet(ctx, graph.Nodes(), acquired, false, func(ctx context.Context, states map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error) {
+		prerequisites, err := i.preparePrerequisites(ctx, graph, states, acquired)
+		return graph.Edges(), prerequisites, err
+	})
+}
+
+// Static-all readiness and per-target dynamic observation are shared by the
+// existing requested graph and complete primary-free project consumers.
+func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []domain.LockedDependency, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact, wholeEnvironment bool, prepare func(context.Context, map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error)) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
 	if i == nil || i.static == nil {
 		return nil, errors.New("PyPI static inspector is unavailable")
 	}
-	nodes := graph.Nodes()
 	if len(nodes) == 0 || len(acquired) != len(nodes) {
 		return nil, errors.New("PyPI graph inspection requires every acquired dependency")
 	}
+	ctx = artifactpypi.WithWheelInspectionScope(ctx)
 	states := make(map[domain.DependencyNodeID]graphStaticState, len(nodes))
 	reports := make(map[domain.DependencyNodeID]domain.InspectionReport, len(nodes))
 	staticReady := true
@@ -98,23 +113,47 @@ func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.Lock
 	// A blocked or incomplete static result must not be made executable as a
 	// dependency of another node's dynamic import fixture.
 	if !staticReady {
+		for _, dependency := range nodes {
+			if acquired[dependency.Node()].Identity().Variant() == "sdist" {
+				continue
+			}
+			skipped, err := skippedDynamicReport(ctx)
+			if err != nil {
+				return nil, err
+			}
+			report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{reports[dependency.Node()], skipped})
+			if err != nil {
+				return nil, err
+			}
+			reports[dependency.Node()] = report
+		}
 		return reports, nil
 	}
 	if i.dynamic == nil {
-		return nil, errors.New("PyPI dynamic inspector is unavailable")
+		return reports, errors.New("PyPI dynamic inspector is unavailable")
 	}
-	prerequisites, err := i.preparePrerequisites(ctx, graph, states, acquired)
+	edges, prerequisites, err := prepare(ctx, states)
 	if err != nil {
-		return nil, err
+		return reports, err
 	}
 	for _, dependency := range nodes {
 		artifact := acquired[dependency.Node()]
-		closure, err := graphClosure(graph, dependency.Node(), acquired)
-		if err != nil {
-			return nil, err
+		var closure []domain.AcquiredArtifact
+		if wholeEnvironment {
+			// An explicit supplemental root can change optional imports even
+			// without a metadata edge. Observe the same complete environment.
+			for _, selected := range nodes {
+				closure = append(closure, acquired[selected.Node()])
+			}
+		} else {
+			var err error
+			closure, err = graphClosureNodes(nodes, edges, dependency.Node(), acquired)
+			if err != nil {
+				return reports, err
+			}
 		}
-		if err := validateRuntimeClosure(ctx, closure, graph, states); err != nil {
-			return nil, err
+		if err := validateRuntimeClosureNodes(ctx, closure, nodes, states); err != nil {
+			return reports, err
 		}
 		var dynamic domain.InspectionReport
 		if input, present := prerequisites[dependency.Node()]; present {
@@ -123,13 +162,34 @@ func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.Lock
 			dynamic, err = i.dynamic.InspectWheelWithClosure(ctx, artifact, states[dependency.Node()].wheel, closure)
 		}
 		if err != nil {
-			return nil, err
+			return reports, err
 		}
 		report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{reports[dependency.Node()], dynamic})
 		if err != nil {
-			return nil, err
+			return reports, err
 		}
 		reports[dependency.Node()] = report
+	}
+	if lifetime, ok := ports.StorageFromContext(ctx).(ports.InspectionStorage); ok {
+		for target, input := range prerequisites {
+			directory, _, _, err := i.static.artifactLocation(input)
+			if err != nil {
+				return reports, err
+			}
+			run, err := domain.ParseRunID(filepath.Base(directory))
+			if err != nil {
+				return reports, err
+			}
+			complete := true
+			for _, execution := range reports[target].Executions() {
+				if execution.Required() && execution.Status() != domain.ExecutionCompleted {
+					complete = false
+				}
+			}
+			if err := lifetime.NoteInspection(ctx, run, complete); err != nil {
+				return reports, err
+			}
+		}
 	}
 	return reports, nil
 }
@@ -159,9 +219,9 @@ func matchesLockedDependency(dependency domain.LockedDependency, artifact domain
 	return ok && declared == dependency.Artifact().DeclaredIntegrity()
 }
 
-func graphClosure(graph domain.LockedDependencyGraph, target domain.DependencyNodeID, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) ([]domain.AcquiredArtifact, error) {
+func graphClosureNodes(nodes []domain.LockedDependency, edges []domain.DependencyEdge, target domain.DependencyNodeID, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) ([]domain.AcquiredArtifact, error) {
 	adjacent := make(map[domain.DependencyNodeID][]domain.DependencyNodeID)
-	for _, edge := range graph.Edges() {
+	for _, edge := range edges {
 		adjacent[edge.From()] = append(adjacent[edge.From()], edge.To())
 	}
 	seen := map[domain.DependencyNodeID]bool{}
@@ -179,7 +239,7 @@ func graphClosure(graph domain.LockedDependencyGraph, target domain.DependencyNo
 		queue = append(queue, adjacent[current]...)
 	}
 	closure := make([]domain.AcquiredArtifact, 0, len(seen))
-	for _, dependency := range graph.Nodes() {
+	for _, dependency := range nodes {
 		if !seen[dependency.Node()] {
 			continue
 		}
@@ -195,7 +255,7 @@ func graphClosure(graph domain.LockedDependencyGraph, target domain.DependencyNo
 	return closure, nil
 }
 
-func validateRuntimeClosure(ctx context.Context, closure []domain.AcquiredArtifact, graph domain.LockedDependencyGraph, states map[domain.DependencyNodeID]graphStaticState) error {
+func validateRuntimeClosureNodes(ctx context.Context, closure []domain.AcquiredArtifact, nodes []domain.LockedDependency, states map[domain.DependencyNodeID]graphStaticState) error {
 	policy := artifactpypi.ResourcePolicyFromContext(ctx)
 	if policy.MaxGraphCompressed() <= 0 || policy.MaxGraphUncompressed() <= 0 || policy.RuntimeTmpfs() <= 0 {
 		return errors.New("PyPI dependency closure resource policy is invalid")
@@ -214,7 +274,7 @@ func validateRuntimeClosure(ctx context.Context, closure []domain.AcquiredArtifa
 	for _, artifact := range closure {
 		closureSet[artifact.Identity()] = true
 	}
-	for _, dependency := range graph.Nodes() {
+	for _, dependency := range nodes {
 		state := states[dependency.Node()]
 		if !closureSet[dependency.Artifact().Identity()] || !state.dynamic {
 			continue
@@ -233,3 +293,15 @@ func validateRuntimeClosure(ctx context.Context, closure []domain.AcquiredArtifa
 }
 
 func hasBlockingFinding(report domain.InspectionReport) bool { return len(report.Findings()) != 0 }
+
+func (i *CompositeInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil || i.dynamic == nil {
+		return nil, errors.New("pypi check declaration is unavailable")
+	}
+	result, err := i.static.ExpectedChecks(ctx, artifact, kind)
+	if err != nil || artifact.Identity().Variant() == "sdist" {
+		return result, err
+	}
+	dynamic, err := i.dynamic.ExpectedChecks(ctx, artifact, kind)
+	return append(result, dynamic...), err
+}

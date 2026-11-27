@@ -28,8 +28,7 @@ func TestContainerCreationUsesExplicitNonAuthorityEnvironment(t *testing.T) {
 	sets := [][]string{
 		createArguments(session),
 		pythonDynamicCreateArguments(session, artifactpypi.PublicPyPIProfile().ResourcePolicy()),
-		githubELFCreateArguments(session),
-		pypiCreateArguments("haa-resolver-test", []string{"--add-host", "pypi.org:127.0.0.1"}),
+		pypiCreateArguments("haa-resolver-test", []string{"--add-host", "pypi.org:127.0.0.1"}, pythonImageReference),
 	}
 	for _, arguments := range sets {
 		assertExplicitNonAuthorityEnvironment(t, arguments)
@@ -49,7 +48,6 @@ func TestCredentialPathCorpusIsTestOnlyAndNeverCreatesHostMount(t *testing.T) {
 	arguments := []string{
 		strings.Join(createArguments(session), " "),
 		strings.Join(pythonDynamicCreateArguments(session, artifactpypi.PublicPyPIProfile().ResourcePolicy()), " "),
-		strings.Join(githubELFCreateArguments(session), " "),
 	}
 	for _, path := range strings.Fields(string(body)) {
 		if !strings.HasPrefix(path, "/") {

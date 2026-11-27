@@ -29,6 +29,7 @@ type ManifestContext struct {
 	InstallContext  domain.InstallContext
 	ResolverRuntime string
 	LockfileDigest  domain.ContentDigest
+	ProjectControls []domain.ProjectControlFile
 }
 
 // Generator adapts deterministic record generation to the Application-owned
@@ -42,7 +43,7 @@ func (Generator) Build(ctx context.Context, operationID domain.OperationID, inst
 	if err := ctx.Err(); err != nil {
 		return domain.VerifiedBundle{}, err
 	}
-	return BuildVerifiedBundle(ManifestContext{OperationID: operationID, InstallContext: installContext, ResolverRuntime: resolution.RuntimeIdentity(), LockfileDigest: resolution.LockfileDigest()}, set)
+	return BuildVerifiedBundle(ManifestContext{OperationID: operationID, InstallContext: installContext, ResolverRuntime: resolution.RuntimeIdentity(), LockfileDigest: resolution.LockfileDigest(), ProjectControls: resolution.ProjectControls()}, set)
 }
 
 // BuildVerifiedBundle emits compact deterministic UTF-8 JSON for both the HAA
@@ -69,6 +70,18 @@ func BuildVerifiedBundle(context ManifestContext, set domain.VerifiedSet) (domai
 		Edges:       edges,
 		Derivations: derivations,
 	}
+	if len(context.ProjectControls) > 32 {
+		return domain.VerifiedBundle{}, errors.New("selection controls exceed bounds")
+	}
+	seenControls := map[string]bool{}
+	for _, control := range context.ProjectControls {
+		if control.Name() == "" || control.Digest().String() == "" || !control.Present() || seenControls[control.Name()] {
+			return domain.VerifiedBundle{}, errors.New("selection control is invalid")
+		}
+		seenControls[control.Name()] = true
+		payload.ProjectControls = append(payload.ProjectControls, manifestControl{Name: control.Name(), SHA256: control.Digest().String(), Content: control.Body()})
+	}
+	sort.Slice(payload.ProjectControls, func(i, j int) bool { return payload.ProjectControls[i].Name < payload.ProjectControls[j].Name })
 	unsigned, err := canonicalManifestPayload(payload)
 	if err != nil {
 		return domain.VerifiedBundle{}, errors.New("serialize canonical Manifest payload")
@@ -90,6 +103,10 @@ func BuildVerifiedBundle(context ManifestContext, set domain.VerifiedSet) (domai
 }
 
 func canonicalManifestPayload(payload manifestPayload) ([]byte, error) {
+	return canonicalManifestObject(payload)
+}
+
+func canonicalManifestObject(payload any) ([]byte, error) {
 	document, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
@@ -113,15 +130,22 @@ type manifestDocument struct {
 }
 
 type manifestPayload struct {
-	Schema      string               `json:"schema"`
-	OperationID string               `json:"operation_id"`
-	Target      manifestTarget       `json:"target"`
-	Resolver    manifestResolver     `json:"resolver"`
-	Primary     string               `json:"primary"`
-	Policy      manifestPolicy       `json:"policy"`
-	Entries     []manifestEntry      `json:"entries"`
-	Edges       []manifestEdge       `json:"edges"`
-	Derivations []manifestDerivation `json:"derivations,omitempty"`
+	Schema          string               `json:"schema"`
+	OperationID     string               `json:"operation_id"`
+	Target          manifestTarget       `json:"target"`
+	Resolver        manifestResolver     `json:"resolver"`
+	Primary         string               `json:"primary"`
+	Policy          manifestPolicy       `json:"policy"`
+	Entries         []manifestEntry      `json:"entries"`
+	Edges           []manifestEdge       `json:"edges"`
+	Derivations     []manifestDerivation `json:"derivations,omitempty"`
+	ProjectControls []manifestControl    `json:"project_controls,omitempty"`
+}
+
+type manifestControl struct {
+	Name    string `json:"name"`
+	SHA256  string `json:"sha256"`
+	Content []byte `json:"content"`
 }
 
 type manifestTarget struct {
@@ -181,25 +205,11 @@ func manifestEntries(set domain.VerifiedSet) ([]manifestEntry, []manifestEdge, [
 		if !ok || inspection.Artifact().Identity() != dependency.Artifact().Identity() {
 			return nil, nil, nil, errors.New("manifest entry does not match verified set")
 		}
-		declared, ok := inspection.Artifact().DeclaredIntegrity()
-		if !ok {
-			return nil, nil, nil, errors.New("manifest entry lacks declared integrity")
+		entry, err := manifestEntryFor(dependency, inspection)
+		if err != nil {
+			return nil, nil, nil, err
 		}
-		evidence := make([]string, 0, len(inspection.Evidence()))
-		for _, reference := range inspection.Evidence() {
-			evidence = append(evidence, reference.Handle())
-		}
-		sort.Strings(evidence)
-		entryDecision := inspection.PolicyDecision()
-		entryReasons := entryDecision.Reasons()
-		sort.Strings(entryReasons)
-		identity := inspection.Artifact().Identity()
-		entries = append(entries, manifestEntry{
-			Node: dependency.Node().String(), RecordPath: dependency.RecordPath(), Role: string(dependency.Role()),
-			Source: identity.Source().String(), Name: identity.Name(), Version: identity.Version(), Variant: identity.Variant(),
-			SHA256: inspection.Artifact().Digest().String(), DeclaredIntegrity: declared, RunID: inspection.RunID().String(), Evidence: evidence,
-			Policy: manifestPolicy{Decision: string(entryDecision.Decision()), ID: entryDecision.PolicyID(), Version: entryDecision.Version(), Reasons: entryReasons},
-		})
+		entries = append(entries, entry)
 	}
 	edges := make([]manifestEdge, 0, len(set.Inspected().Graph().Edges()))
 	for _, edge := range set.Inspected().Graph().Edges() {
@@ -257,13 +267,17 @@ type cycloneDXDependency struct {
 }
 
 func buildSBOM(manifestID domain.ContentDigest, set domain.VerifiedSet) ([]byte, error) {
+	return buildSelectionSBOM(manifestID, set.Inspected().Graph().Nodes(), set.Inspected().Inspections(), set.Inspected().Graph().Edges(), false)
+}
+
+func buildSelectionSBOM(manifestID domain.ContentDigest, nodes []domain.LockedDependency, inspected []domain.DependencyInspection, edges []domain.DependencyEdge, dependencyFree bool) ([]byte, error) {
 	inspections := make(map[domain.DependencyNodeID]domain.DependencyInspection)
-	for _, inspection := range set.Inspected().Inspections() {
+	for _, inspection := range inspected {
 		inspections[inspection.Node()] = inspection
 	}
 	components := make([]cycloneDXComponent, 0, len(inspections))
 	dependencies := make(map[string][]string, len(inspections))
-	for _, dependency := range set.Inspected().Graph().Nodes() {
+	for _, dependency := range nodes {
 		inspection, ok := inspections[dependency.Node()]
 		if !ok {
 			return nil, errors.New("SBOM component does not match verified set")
@@ -285,7 +299,7 @@ func buildSBOM(manifestID domain.ContentDigest, set domain.VerifiedSet) ([]byte,
 		})
 		dependencies[dependency.Node().String()] = nil
 	}
-	for _, edge := range set.Inspected().Graph().Edges() {
+	for _, edge := range edges {
 		from := edge.From().String()
 		dependencies[from] = append(dependencies[from], edge.To().String())
 	}
@@ -303,7 +317,7 @@ func buildSBOM(manifestID domain.ContentDigest, set domain.VerifiedSet) ([]byte,
 		Metadata:   cycloneDXMetadata{Lifecycles: []cycloneDXLifecycle{{Phase: "pre-build"}}, Properties: []cycloneDXProperty{{Name: "heliopause:manifest-id", Value: manifestID.String()}}},
 		Components: components, Dependencies: relations,
 	}
-	if len(bom.Components) == 0 || len(bom.Components) != len(bom.Dependencies) {
+	if (len(bom.Components) == 0) != dependencyFree || len(bom.Components) != len(bom.Dependencies) {
 		return nil, errors.New("CycloneDX SBOM graph is incomplete")
 	}
 	document, err := json.Marshal(bom)
@@ -311,4 +325,26 @@ func buildSBOM(manifestID domain.ContentDigest, set domain.VerifiedSet) ([]byte,
 		return nil, errors.New("serialize CycloneDX 1.7 SBOM")
 	}
 	return document, nil
+}
+
+func manifestEntryFor(dependency domain.LockedDependency, inspection domain.DependencyInspection) (manifestEntry, error) {
+	declared, ok := inspection.Artifact().DeclaredIntegrity()
+	if !ok {
+		return manifestEntry{}, errors.New("manifest entry lacks declared integrity")
+	}
+	evidence := make([]string, 0, len(inspection.Evidence()))
+	for _, reference := range inspection.Evidence() {
+		evidence = append(evidence, reference.Handle())
+	}
+	sort.Strings(evidence)
+	entryDecision := inspection.PolicyDecision()
+	entryReasons := entryDecision.Reasons()
+	sort.Strings(entryReasons)
+	identity := inspection.Artifact().Identity()
+	return manifestEntry{
+		Node: dependency.Node().String(), RecordPath: dependency.RecordPath(), Role: string(dependency.Role()),
+		Source: identity.Source().String(), Name: identity.Name(), Version: identity.Version(), Variant: identity.Variant(),
+		SHA256: inspection.Artifact().Digest().String(), DeclaredIntegrity: declared, RunID: inspection.RunID().String(), Evidence: evidence,
+		Policy: manifestPolicy{Decision: string(entryDecision.Decision()), ID: entryDecision.PolicyID(), Version: entryDecision.Version(), Reasons: entryReasons},
+	}, nil
 }

@@ -45,20 +45,33 @@ func (b DerivationBinding) ConfigDigest() ContentDigest { return b.configDigest 
 // DerivedDependency is a controller-produced Artifact which is linked to a
 // previously locked source node. It is not a replacement for that source.
 type DerivedDependency struct {
-	source   DependencyNodeID
-	node     LockedDependency
-	artifact AcquiredArtifact
-	binding  DerivationBinding
-	check    CheckExecution
-	evidence Evidence
+	source      DependencyNodeID
+	node        LockedDependency
+	artifact    AcquiredArtifact
+	binding     DerivationBinding
+	check       CheckExecution
+	evidence    Evidence
+	requirement CheckRequirement
 }
 
-func NewDerivedDependency(source DependencyNodeID, node LockedDependency, artifact AcquiredArtifact, binding DerivationBinding, check CheckExecution, evidence Evidence) (DerivedDependency, error) {
+func NewDerivedDependency(source DependencyNodeID, node LockedDependency, artifact AcquiredArtifact, binding DerivationBinding, check CheckExecution, evidence Evidence, requirements ...CheckRequirement) (DerivedDependency, error) {
 	if source.value == "" || node.node.value == "" || node.artifact.identity.variant != "derived-wheel" || artifact.identity != node.artifact.identity || artifact.declaredIntegrity != node.artifact.declaredIntegrity || binding.sourceDigest.value == "" || !check.required || check.kind != CheckInspection || check.capability != CapabilitySupported || check.status != ExecutionCompleted || evidence.checkID != check.id || evidence.identity != artifact.identity || evidence.digest != artifact.digest {
 		return DerivedDependency{}, errors.New("derived dependency binding is invalid")
 	}
-	return DerivedDependency{source: source, node: node, artifact: artifact, binding: binding, check: check, evidence: evidence}, nil
+	var requirement CheckRequirement
+	if len(requirements) > 1 {
+		return DerivedDependency{}, errors.New("derived check has multiple declarations")
+	}
+	if len(requirements) == 1 {
+		requirement = requirements[0]
+		if requirement.id != check.id || requirement.kind != check.kind || requirement.required != check.required || requirement.profile != check.profile || requirement.profile.value == "" {
+			return DerivedDependency{}, errors.New("derived check differs from its pre-build declaration")
+		}
+	}
+	return DerivedDependency{source: source, node: node, artifact: artifact, binding: binding, check: check, evidence: evidence, requirement: requirement}, nil
 }
+func (d DerivedDependency) Requirement() CheckRequirement { return d.requirement }
+
 func (d DerivedDependency) Source() DependencyNodeID   { return d.source }
 func (d DerivedDependency) Node() LockedDependency     { return d.node }
 func (d DerivedDependency) Artifact() AcquiredArtifact { return d.artifact }

@@ -8,7 +8,7 @@
   "properties": {
     "schema_version": { "const": "helox.operation-result/v1" },
     "operation_id": { "type": "string", "pattern": "^op_[a-z2-7]{26}$" },
-    "operation": { "enum": ["INSPECT", "INSTALL"] },
+    "operation": { "enum": ["INSPECT", "INSTALL", "UPDATE"] },
     "operation_status": { "enum": ["COMPLETED", "FAILED", "NOT_PERFORMED"] },
     "run": {
       "type": "object",

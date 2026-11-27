@@ -1,0 +1,85 @@
+{
+  "scope": "same CI422 production source local diagnostic DATA; original CI report not captured so exact hosted version/operand remains inferred",
+  "status": "LOCAL_CAUSE_CONFIRMED; whole hosted qualification remains FAILED/OPEN",
+  "source": "12034457a69eabed0429d05d96dbf79bbef3409a",
+  "production_source_files": 1281,
+  "test_only_overlay": "bounded report capture before unchanged parser; no argv/limit/source guard change",
+  "actual_seconds": 12.244,
+  "product_exit": 1,
+  "captured_report": {
+    "path": "/tmp/haa-ci422-pytorch-report-actual-v1/user-tmp/reports/report-3525568662.json",
+    "sha256": "7cd27ed208b763ba24b216f2f918277b98aa45944a5b18bed64c8517a1bfa00c",
+    "bytes": 37300,
+    "pip_version": "26.2.1",
+    "environment": {
+      "implementation_name": "cpython",
+      "implementation_version": "3.14.7",
+      "os_name": "posix",
+      "platform_machine": "x86_64",
+      "platform_release": "4.19.0-gvisor",
+      "platform_system": "Linux",
+      "platform_version": "#1 SMP Sun Jan 10 15:06:54 PST 2016",
+      "python_full_version": "3.14.7",
+      "platform_python_implementation": "CPython",
+      "python_version": "3.14",
+      "sys_platform": "linux"
+    },
+    "candidates": [
+      {
+        "is_direct": false,
+        "requested": true,
+        "name": "torch",
+        "version": "2.15.0+cpu",
+        "hashes": null,
+        "legacy_hash": null,
+        "first_guard": {
+          "is_direct": false,
+          "unrequested_missing_name": false,
+          "sha256_missing_or_invalid": true,
+          "optional_legacy_hash_inconsistent": false
+        }
+      }
+    ]
+  },
+  "official_simple": {
+    "scope": "public primary-source metadata DATA only; not qualification/selection/byte verification",
+    "url": "https://download.pytorch.org/whl/cpu/torch/",
+    "observed_at": "2026-10-28T13:31:29.019959+00:00",
+    "headers": {
+      "content-type": "text/html",
+      "etag": "\"3b130d52682fa76fc325e12f4683d929\"",
+      "last-modified": "Wed, 28 Oct 2026 13:13:40 GMT"
+    },
+    "bytes": 428507,
+    "sha256": "e259fd86e441a08a88a4edf591ab1815445455cc1cd85d0fd9ee9c8150eb94b4",
+    "selected_links": [
+      {
+        "href": "https://download-r2.pytorch.org/whl/cpu/torch-2.15.0%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl",
+        "data-dist-info-metadata": "sha256=8bbf94c86c3be6cf586385861d476b78cb66d19b67fef49ece4f7d68ca428cc3",
+        "data-core-metadata": "sha256=8bbf94c86c3be6cf586385861d476b78cb66d19b67fef49ece4f7d68ca428cc3",
+        "data-upload-time": "2026-10-28T12:38:47Z"
+      }
+    ],
+    "raw": "github-logs/package-client-quarantine-20261021/ci422-pytorch-cpu-torch-simple-original.html"
+  },
+  "confirmed_local_cause": "pip26.2.1 selected torch2.15.0+cpu with empty archive_info; official matching Simple link omits wheel hash fragment; first parser SHA256 guard refuses it",
+  "hash_role_boundary": "data-dist-info-metadata/data-core-metadata SHA256 identifies sidecar metadata, never wheel bytes; cannot substitute",
+  "ci_relation": "same code and same error as hosted CI422, but hosted report was not retained; do not assert identical candidate bytes/version",
+  "invariants": {
+    "source_unchanged": true,
+    "cpp_source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "host_before_after_identical": true,
+    "no_helpers_after": true,
+    "helper_wait_zero": true,
+    "helper_confirmed_stopped": true,
+    "input_unchanged": true
+  },
+  "missing": [
+    "review previously qualified exact inputs and existing CI fixture binding",
+    "preserve fail-closed missing wheel hash; do not substitute metadata hash",
+    "new current hosted/final profiles/signed and P5/P6/P7 acceptance"
+  ],
+  "no_product_change_or_rerun": true,
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/ci422-pytorch-report-actual-v1--"
+}

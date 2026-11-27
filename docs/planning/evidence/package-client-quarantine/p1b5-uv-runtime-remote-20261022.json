@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "source_commit": "e25fd979e3baedf25fc79ad07d2de35ab3cf4cae",
+  "source_tree": "caa76a5bc577d69576254adf349954f6bd2e7816",
+  "run_id": 39622548139,
+  "run_number": 368,
+  "event": "pull_request",
+  "status": "completed",
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "id": 119299521501,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119299521759,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119299521787,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119299521899,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119299521955,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119299522014,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 119299522024,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119299522039,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119299522053,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119320858521,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "scope": "UV startup remote pass; Linux regression pass; macOS default-test deadline unresolved; not production UV resolver or CLI qualification",
+  "raw_linux": "docs/github-logs/package-client-quarantine-20261021/ci368-linux.log",
+  "raw_macos": "docs/github-logs/package-client-quarantine-20261021/ci368-macos-failed.log",
+  "checkout": {
+    "sha": "c9dfbbe5de3abfaf5e35dd1fbc15b51d1765953b",
+    "tree": "caa76a5bc577d69576254adf349954f6bd2e7816"
+  },
+  "native_uv": {
+    "seconds": 3.25,
+    "version": "0.13.4",
+    "trace_events": 29,
+    "trace_bytes": 3306,
+    "session_complete": true,
+    "limitation": ""
+  },
+  "linux": {
+    "top_level_tests": 46,
+    "existing_tests": 45,
+    "cpu_full_seconds": 259.85,
+    "helper_wait_statuses": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "final_original_status": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "client_restore": 0,
+    "restore_result": "NOT_REQUIRED"
+  },
+  "macos": {
+    "production_build": "PASS",
+    "build_seconds": 60.71,
+    "default_test": "FAIL",
+    "outer_deadline_seconds": 360,
+    "cause": "context deadline exceeded",
+    "exact_active_test": "NOT_OBSERVED"
+  }
+}

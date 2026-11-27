@@ -11,6 +11,7 @@ import (
 type volumeInspectRunner struct {
 	volume []byte
 	mounts []byte
+	listed string
 }
 
 func TestClosureVolumeNameAcceptsOrdinarySessionCharacters(t *testing.T) {
@@ -25,6 +26,9 @@ func (r volumeInspectRunner) Output(_ context.Context, _ string, arguments ...st
 	}
 	if len(arguments) > 0 && arguments[0] == "inspect" {
 		return r.mounts, nil
+	}
+	if len(arguments) > 0 && arguments[0] == "ps" {
+		return []byte(r.listed), nil
 	}
 	return nil, errors.New("unexpected Docker command")
 }
@@ -69,6 +73,12 @@ func testClosureVolumeRejectsSubstitutedMount(t *testing.T, goBuild bool) {
 	}
 	if err := volume.verifyContainerMount(context.Background(), volumeInspectRunner{volume: volumeJSON, mounts: encode(good)}, container, true); err != nil {
 		t.Fatal(err)
+	}
+	// Docker's Mounts.Source still names the volume root for a subpath.
+	// Only the configured VolumeOptions can reject this substitution.
+	substituted := []byte(strings.Replace(string(encode(good)), `"NoCopy":true`, `"NoCopy":true,"Subpath":"unexpected-unit"`, 1))
+	if err := volume.verifyContainerMount(context.Background(), volumeInspectRunner{volume: volumeJSON, mounts: substituted}, container, true); err == nil {
+		t.Fatal("unrequested volume subpath accepted behind unchanged Mounts.Source")
 	}
 	bad := good
 	bad.Mounts = []dockerMountInspection{{Type: "bind", Source: volume.mountpoint, Destination: destination, RW: false}}
@@ -129,5 +139,183 @@ func TestPythonClosureTopologyIsPhaseBoundAndRejectsUnknownProfiles(t *testing.T
 	}
 	if _, ok := pythonClosureExpectedTopology("pypi-wheel", "unknown"); ok {
 		t.Fatal("unknown phase accepted")
+	}
+}
+
+func TestEnvironmentWorkspaceSubpathIdentity(t *testing.T) {
+	volume := closureVolume{name: "haa-closure-unit", transaction: "tx", manifestID: strings.Repeat("f", 64), createdAt: "2026-11-03T00:00:00Z", mountpoint: "/var/lib/docker/volumes/haa-closure-unit/_data", capacity: 1024, projectBuildDestination: environmentWorkspaceRoot}
+	subpath := "unit-" + strings.Repeat("a", 64)
+	argument, err := volume.mountArgument(false, subpath)
+	if err != nil || !strings.Contains(argument, ",volume-subpath="+subpath) {
+		t.Fatal("valid private unit subpath rejected", argument, err)
+	}
+	for _, invalid := range []string{"../unit-a", "unit-" + strings.Repeat("A", 64), subpath + "/child", "unit-a"} {
+		if _, err := volume.mountArgument(false, invalid); err == nil {
+			t.Fatal("uncontrolled workspace subpath accepted", invalid)
+		}
+	}
+	if _, err := volume.mountArgument(true, subpath); err == nil {
+		t.Fatal("whole-volume reader narrowed to a unit")
+	}
+	if _, err := volume.mountArgument(false, subpath, subpath); err == nil {
+		t.Fatal("ambiguous subpath accepted")
+	}
+	other := volume
+	other.projectBuildDestination = ""
+	if _, err := other.mountArgument(false, subpath); err == nil {
+		t.Fatal("immutable closure gained a subpath")
+	}
+	volumeBody, _ := json.Marshal(dockerVolumeInspection{Name: volume.name, Driver: "local", Scope: "local", Mountpoint: volume.mountpoint, CreatedAt: volume.createdAt, Options: map[string]string{"type": "tmpfs", "device": "tmpfs", "o": volume.tmpfsOptions()}, Labels: map[string]string{closureVolumeLabel: volume.transaction, closureManifestLabel: volume.manifestID}})
+	id := strings.Repeat("b", 64)
+	configured := dockerHostMountInspection{Type: "volume", Source: volume.name, Target: environmentWorkspaceRoot}
+	configured.VolumeOptions.NoCopy = true
+	configured.VolumeOptions.Subpath = subpath
+	body, _ := json.Marshal(dockerContainerMountInspection{ID: id, Mounts: []dockerMountInspection{{Type: "volume", Name: volume.name, Source: volume.mountpoint, Destination: environmentWorkspaceRoot, Driver: "local", RW: true}}, HostMounts: []dockerHostMountInspection{configured}})
+	runner := volumeInspectRunner{volume: volumeBody, mounts: body, listed: id + "\n"}
+	if err := volume.verifyContainerMount(context.Background(), runner, id, false, subpath); err != nil {
+		t.Fatal(err)
+	}
+	for _, expected := range []string{"", "unit-" + strings.Repeat("c", 64)} {
+		if err := volume.verifyContainerMount(context.Background(), runner, id, false, expected); err == nil {
+			t.Fatal("missing or foreign unit subpath accepted")
+		}
+	}
+	authorized := map[string]bool{id: false}
+	if err := volume.verifyAttachments(context.Background(), runner, authorized, map[string]string{id: subpath}); err != nil {
+		t.Fatal(err)
+	}
+	if err := volume.verifyAttachments(context.Background(), runner, authorized); err == nil {
+		t.Fatal("attachment bypassed private subpath authority")
+	}
+	if err := volume.verifyAttachments(context.Background(), runner, authorized, map[string]string{strings.Repeat("d", 64): subpath}); err == nil {
+		t.Fatal("unowned subpath attachment accepted")
+	}
+}
+
+func TestPythonEnvironmentTopologyKeepsCodeAndUnitWorkspaceSeparate(t *testing.T) {
+	for _, phase := range []pythonClosurePhase{pythonClosureEnvironmentPreparation, pythonClosureEnvironmentAnchor, pythonClosureEnvironmentObservation} {
+		mounts, ok := pythonClosureExpectedTopology("pypi-wheel", phase)
+		if !ok {
+			t.Fatal("current environment phase rejected", phase)
+		}
+		site, tmp, seeds := 0, 0, 0
+		for _, mount := range mounts {
+			switch mount.Mountpoint {
+			case pythonSitePath:
+				site++
+				if mount.FSType != "9p" || mount.ReadOnly != (phase != pythonClosureEnvironmentPreparation) {
+					t.Fatal("code closure authority changed")
+				}
+			case environmentWorkspaceRoot:
+				tmp++
+				if phase != pythonClosureEnvironmentPreparation && (mount.FSType != "9p" || !mount.NoExec || !mount.NoSUID || mount.ReadOnly != (phase == pythonClosureEnvironmentAnchor)) {
+					t.Fatal("unit workspace restrictions changed")
+				}
+			default:
+				if strings.HasPrefix(mount.Mountpoint, pythonEnvironmentPreparationPrefix) {
+					seeds++
+					if phase != pythonClosureEnvironmentPreparation || mount.Parent != environmentWorkspaceRoot || mount.FSType != "9p" || mount.ReadOnly {
+						t.Fatal("uncontrolled fixture preparation mount")
+					}
+				}
+			}
+		}
+		expectedSite, expectedSeeds := 1, 0
+		if phase == pythonClosureEnvironmentAnchor {
+			expectedSite = 0
+		}
+		if phase == pythonClosureEnvironmentPreparation {
+			expectedSeeds = 2
+		}
+		if site != expectedSite || tmp != 1 || seeds != expectedSeeds {
+			t.Fatalf("extra or missing environment topology: %s site=%d tmp=%d seeds=%d", phase, site, tmp, seeds)
+		}
+	}
+}
+
+type pythonAnchorInspectRunner struct {
+	volumeInspectRunner
+	mountQueries  int
+	volumeQueries int
+	stopped       bool
+}
+
+func (r *pythonAnchorInspectRunner) Output(ctx context.Context, command string, args ...string) ([]byte, error) {
+	if len(args) == 4 && args[0] == "inspect" && args[1] == "--format" {
+		if args[2] == `{{.Id}}|{{.State.Running}}|{{.State.Pid}}` {
+			if r.stopped {
+				return []byte(args[3] + "|false|0"), nil
+			}
+			return []byte(args[3] + "|true|42"), nil
+		}
+		if args[2] == containerMountInspectTemplate {
+			r.mountQueries++
+		}
+	}
+	if len(args) > 1 && args[0] == "volume" && args[1] == "inspect" {
+		r.volumeQueries++
+	}
+	return r.volumeInspectRunner.Output(ctx, command, args...)
+}
+
+func TestPythonAnchorAttachmentInspectedOnce(t *testing.T) {
+	ctx := context.Background()
+	volume := closureVolume{
+		name: "haa-closure-abc", transaction: "tx", manifestID: strings.Repeat("f", 64),
+		createdAt: "2026-09-29T00:00:00Z", mountpoint: "/var/lib/docker/volumes/haa-closure-abc/_data", capacity: 1024,
+	}
+	anchor := strings.Repeat("a", 64)
+	volumeBody, err := json.Marshal(dockerVolumeInspection{
+		Name: volume.name, Driver: "local", Scope: "local", Mountpoint: volume.mountpoint, CreatedAt: volume.createdAt,
+		Options: map[string]string{"type": "tmpfs", "device": "tmpfs", "o": volume.tmpfsOptions()},
+		Labels:  map[string]string{closureVolumeLabel: volume.transaction, closureManifestLabel: volume.manifestID},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mounts := dockerContainerMountInspection{
+		ID: anchor,
+		Mounts: []dockerMountInspection{{
+			Type: "volume", Name: volume.name, Source: volume.mountpoint, Destination: pythonSitePath, Driver: "local",
+		}},
+		HostMounts: []dockerHostMountInspection{{
+			Type: "volume", Source: volume.name, Target: pythonSitePath, ReadOnly: true,
+		}},
+	}
+	mounts.HostMounts[0].VolumeOptions.NoCopy = true
+	mountBody, err := json.Marshal(mounts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := &pythonAnchorInspectRunner{volumeInspectRunner: volumeInspectRunner{volume: volumeBody, mounts: mountBody, listed: anchor + "\n"}}
+	transaction := pythonTransactionExecutor{backend: &PythonDynamicBackend{runner: runner}, volume: volume, anchor: anchor}
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err != nil {
+		t.Fatal(err)
+	}
+	if runner.mountQueries != 1 || runner.volumeQueries != 2 {
+		t.Fatalf("anchor mount queries = %d, volume queries = %d, want 1 and 2", runner.mountQueries, runner.volumeQueries)
+	}
+
+	runner.stopped = true
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err == nil {
+		t.Fatal("stopped anchor accepted")
+	}
+	runner.stopped = false
+	runner.listed = ""
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err == nil {
+		t.Fatal("missing anchor accepted")
+	}
+	runner.listed = anchor + "\n"
+	mounts.Mounts[0].RW = true
+	mounts.HostMounts[0].ReadOnly = false
+	runner.mounts, err = json.Marshal(mounts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err == nil {
+		t.Fatal("writable anchor accepted")
+	}
+	if err := transaction.verifyAnchorAndVolume(ctx, map[string]bool{anchor: false}); err == nil {
+		t.Fatal("additional attachment changed the anchor's required mode")
 	}
 }

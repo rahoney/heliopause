@@ -1,0 +1,131 @@
+{
+  "scope": "M13-004/P4-O4-C3c2 closed pipx native program/argv/environment and ordinary1000 runc offline diagnostic; no gVisor/installed current/Policy/publication qualification",
+  "baseline": {
+    "source": "a7e7dd8e599d3784ba143dff43ac9197b1ea9b26",
+    "tree": "dc49dbbafe6778f769f8238464a0318ee1f97f8d",
+    "files": 2823
+  },
+  "implemented": "YES (closed program/argv/fixed offline environment)",
+  "wired": "YES (native diagnostic/receipt/layout/original replay); NO (production native factory/profile/CLI)",
+  "qualified": "YES (named local runc scope)",
+  "acceptance_closed": "NO (whole native pipx/CLI)",
+  "source": [
+    {
+      "path": "internal/sandbox/pipx_native_command.go",
+      "sha256": "f6d022f69af845668a91e466e80be593c864866d2170273eb15adb1689871884"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_test.go",
+      "sha256": "2653fa87190a6b6760b2b3c3dc5f8bd76f88fd0ac2f1044e692caa337dbd3595"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+      "sha256": "5bca28db4add5f073c7261444ffb2acf180b31b77ce33d070147adbaf3ae7362"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.668,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 33.889,
+      "log_sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "step": "sandbox-race",
+      "exit_code": 0,
+      "seconds": 0.431,
+      "log_sha256": "0b4fc43a710215cee703ca1b266bc67f2e2d3ff69a6e7803642339f393dd6d2e"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 0.976,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 6.593,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.25,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 9.663,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "race_reuse": {
+    "first_full_sandbox_race_seconds": 27.155,
+    "first_checks": "p4o4c3c2-v1-checks.json",
+    "final_sandbox_race_cached": true,
+    "production_and_default_test_SHA_identical_v1_to_v4": true,
+    "tagged_fixture_changes_covered_by_tag_vet_build_and_actual": true
+  },
+  "actual": {
+    "seconds": 9.8,
+    "test": "TestPipxActualOfflineNativeProgram",
+    "exact_top_level_pass": true,
+    "no_skip": true,
+    "caller_uid": 1000,
+    "network": "none",
+    "runtime": "runc",
+    "binary_sha256": "a1c18e241fdfaca2d4874c866b09a4b57c454969059fcfd84bbbf6e6a2b17999",
+    "PID1_and_every_native_exec": "canonical bootstrap/helper demotion; UID1000 empty groups zero caps NNP",
+    "operations": [
+      "version",
+      "native install userpath==1.9.2",
+      "native no-op upgrade userpath"
+    ],
+    "native_receipt": "strict pipx0.12 UV backend; exact main version/source interpreter and separate exposed link",
+    "original_graph_nodes": 2,
+    "exposed_commands": 1,
+    "actual_original_input_and_replay": "native METADATA/WHEEL accepted by C3b; exact original archive/source graph and C3a projection also checked",
+    "config_control": "private malformed guest uv.toml rejected by actual UV venv without UV_NO_CONFIG; same file present for successful fixed-environment pipx venv/upgrade",
+    "Host5_Docker_input42_ZIP_source_binary_identical": true,
+    "owned_resources_removed": true,
+    "proof": "p4o4c3c2-actual-v4-result.json",
+    "input_provenance": "actual frozen official userpath/click archives and exact metadata; lock is a synthetic parser-binding fixture, not native live resolution"
+  },
+  "first_failures": [
+    {
+      "actual": "p4o4c3c2-actual-v1-result.json",
+      "seconds": 5.642,
+      "stage": "UV supply readback; pipx not reached",
+      "cause": "explicit Config.User=1000 rewrites root tar ownership",
+      "direct_cause_proof": "six DATA-only Docker stdin ownership cases in copy-owner-probe and -v2",
+      "correction": "preserve empty Config.User and canonical PID1/exec demotion; product transport guard unchanged",
+      "verified": "same product program/argv SHA; v2 actual9.753 and v4 actual9.800 PASS"
+    },
+    {
+      "actual": "p4o4c3c2-actual-v3-result.json",
+      "seconds": 5.594,
+      "stage": "fixture Docker cp to runtime /tmp; config parser not reached",
+      "cause": "exact daemon cause UNKNOWN; RunInput discarded stderr",
+      "correction": "fixed demoted stdlib-only guest data preparation and existing RunBounded process-local parser diagnostic",
+      "verified": "v4 actual9.800 PASS; no-config predicate retained"
+    }
+  ],
+  "C2_guard6_unchanged": true,
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "installed current supply and sealed readonly wheelhouse/native session",
+    "gVisor external observer profile and Artifact child/query admission",
+    "real native frozen selection and changed-version/retired-command cases",
+    "current whole-set Policy/guarded publication/bootstrap/CLI",
+    "new hosted UID1001/signed-native/final profiles"
+  ],
+  "remote_push": "e859487 payload AWAITING_USER_APPROVAL; no new CI or timer started"
+}

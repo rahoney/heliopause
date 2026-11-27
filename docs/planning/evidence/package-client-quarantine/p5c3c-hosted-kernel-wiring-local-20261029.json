@@ -1,0 +1,184 @@
+{
+  "scope": "Existing Linux CI job kernel image/terminal actual parent wiring plus canonical fixed-block/Bash guard; unchanged product/CPP; grouped readonly production local qualification",
+  "source_base": "47464b40c59e25d791e0e6c9ca19a1fc9fff1f00",
+  "source_inputs": 1324,
+  "source_census_sha256": "5827476db6c794571326a3f2485ad0db240c11770bf23db4b99597b9eae6c73b",
+  "configuration": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "c6e36986bafd973cce840acd92b9cd1545170810f2854de0419aa0c9cb92f1f3"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "9fb446f7b6d679c60fc22a2acbd6961e3660dd23a0e95559585a512b7bce4cd1"
+    },
+    {
+      "path": "scripts/check/kernel_terminal_workflow.go",
+      "sha256": "9983dd34785114dc8bd3c99bfa53afb990b591861577a308172451b005a0434c"
+    },
+    {
+      "path": "scripts/check/kernel_terminal_workflow_test.go",
+      "sha256": "9ecff2ec2c6c339d45ce4126f12888fe700370c99ab24bd15c952b0769b371e2"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (existing job step/checker/guards)",
+    "WIRED": "YES (same existing protected tagged sandbox binary/helper lifecycle)",
+    "QUALIFIED": "YES (local canonical7/checker Race/structural negatives/Bash7cases plus current readonly fresh2); NO (new hosted)",
+    "ACCEPTANCE_CLOSED": "NO (new hosted/kernel+readonly grouped candidate/final P5)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.434
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 2.291
+    },
+    {
+      "step": "kernel-guard",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./scripts/check",
+        "-run",
+        "^TestKernelTerminalQualification"
+      ],
+      "exit_code": 0,
+      "seconds": 1.65
+    },
+    {
+      "step": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 47.748
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 283.313
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.277
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 17.394
+    }
+  ],
+  "actual_build": {
+    "step": "tagged-bootstrap-build",
+    "command": [
+      "go",
+      "test",
+      "-c",
+      "-tags=realcorpus",
+      "-o",
+      "/tmp/haa-p5-c3c-hosted-bootstrap.test",
+      "./internal/bootstrap"
+    ],
+    "exit_code": 0,
+    "seconds": 4.224
+  },
+  "actual_binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c3c-hosted-bootstrap.test",
+      "size": 50966051,
+      "sha256": "3575dbab399a7008b1168b585bcdf824cc62c767eec1c77f0358870bba186b5e"
+    }
+  ],
+  "grouped_readonly_actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 56.226,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "b5b524a6fa995d72f34f2eceb85bd8edc9579662a115c7fad560bc9570da8ed8",
+    "sources": [
+      {
+        "path": "/tmp/haa-p5-c3c-hosted-actual-v2/protected-client",
+        "sha256": "3575dbab399a7008b1168b585bcdf824cc62c767eec1c77f0358870bba186b5e"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c-hosted-actual-v2/observer",
+        "sha256": "0c09f44f5dc0a65848838cd2bbac2a9c238562fb283844edd8bcb1d628290327"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c-hosted-20261029-source/internal/bootstrap/node_execution_prepare.go",
+        "sha256": "b9b393af973bea4d7effe03c6d3aa97a8a397e0e07cfd93e7ace938eaa99aa5e"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c-hosted-20261029-source/internal/bootstrap/node_execution_prepare_integration_test.go",
+        "sha256": "ae2e7cccd9d55e6d0df77705e134bdb50891e8f6cfbe9fc7976067e006cb513d"
+      }
+    ],
+    "scope": "CURRENT production Node preparation/offline whole-set materialization and clean readonly input views; exact TypeScript5.9.3/SRI/fresh2; no Artifact user program or Host install",
+    "passed_named_tests": [
+      "TestLinuxNodeExecutionPreparationIntegration"
+    ],
+    "production_guard_unchanged": true,
+    "fixture_version": "typescript@5.9.3",
+    "user_program_run": false,
+    "owned_node_workspaces_absent": true,
+    "materialization_passes": 2,
+    "readonly_input_passes": 2,
+    "named_pass": true
+  },
+  "existing_target_terminal_actual": "p5c3c2b-target-image-local-20261029.json; cmd/internal/CPP/8root source byte-identical; actual9.827s/three consumers12.296s; not rerun or relabelled as new source code changes",
+  "guard_scope": "one unconditional existing Linux job step; canonical install/helper/noSKIP/exact parent1/cases8 and preserved primary failure; 9 full-workflow negative mutations + 7 actual Bash inert fixtures",
+  "invariants": "no new job/Required change/runtime supply pin/CPU-wall-output budgets/role/FS-network predicate/Artifact user-run/Core/CLI",
+  "operator_preflight": "v1 copied old CPP path while selected new receipt; SHA guard stopped before helper/namespace/test. Raw preserved; v2 corrected only producer path, actual current source succeeds. Not a product failure.",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021/p5-c3c-hosted-*",
+  "next": "meaningful grouped milestone branch push; new run/head/20min actual timer; same M13-004 dedicated Artifact Node admission/profile/user-run and result lifecycle remain missing"
+}

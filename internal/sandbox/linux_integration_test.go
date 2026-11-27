@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -27,13 +28,6 @@ import (
 	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
-
-func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
-	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
-		t.Skip("requires pinned Linux gVisor runtime")
-	}
-	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3"}`)
-}
 
 func TestIntegrationRunnerUsesDirectExecAdmissionWrapper(t *testing.T) {
 	runner := integrationRunner{t: t}
@@ -48,74 +42,6 @@ func TestIntegrationRunnerUsesDirectExecAdmissionWrapper(t *testing.T) {
 	}
 }
 
-func TestLinuxGVisorArtifactEnvironmentIsolationIntegration(t *testing.T) {
-	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
-		t.Skip("requires pinned Linux gVisor runtime")
-	}
-	for key, value := range map[string]string{
-		"GITHUB_TOKEN":          "fake-github-token",
-		"NPM_TOKEN":             "fake-npm-token",
-		"PYPI_TOKEN":            "fake-pypi-token",
-		"AWS_SECRET_ACCESS_KEY": "fake-aws-secret",
-		"OPENAI_API_KEY":        "fake-openai-key",
-		"CI_SECRET":             "fake-ci-secret",
-		"ARBITRARY_TOKEN":       "fake-arbitrary-token",
-		"SSH_AUTH_SOCK":         "/tmp/fake-ssh-agent.sock",
-	} {
-		t.Setenv(key, value)
-	}
-	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test -z \"$GITHUB_TOKEN\" && test -z \"$NPM_TOKEN\" && test -z \"$PYPI_TOKEN\" && test -z \"$AWS_SECRET_ACCESS_KEY\" && test -z \"$OPENAI_API_KEY\" && test -z \"$CI_SECRET\" && test -z \"$ARBITRARY_TOKEN\" && test -z \"$SSH_AUTH_SOCK\""}}`)
-}
-
-func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) {
-	t.Helper()
-	root := t.TempDir()
-	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "tarball.tgz")
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	file, err := os.Create(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gzipWriter := gzip.NewWriter(file)
-	writer := tar.NewWriter(gzipWriter)
-	if err := writer.WriteHeader(&tar.Header{Name: "package/package.json", Size: int64(len(body)), Mode: 0o600}); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := writer.Write([]byte(body)); err != nil {
-		t.Fatal(err)
-	}
-	if err := writer.Close(); err != nil {
-		t.Fatal(err)
-	}
-	if err := gzipWriter.Close(); err != nil {
-		t.Fatal(err)
-	}
-	if err := file.Close(); err != nil {
-		t.Fatal(err)
-	}
-	supervisor := integrationObserverSupervisor(t)
-	defer supervisor.Close()
-	runner := integrationRunner{t: t}
-	introducer, err := NewDockerArtifactIntroducer(root, runner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	backend, err := NewBackend(runner, introducer, supervisor.Observer(), integrationCapabilityProbe(runner))
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err := backend.Execute(context.Background(), integrationRequest(t))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.Status() != domain.SandboxCompleted {
-		code, _ := result.LimitationCode()
-		t.Fatalf("Sandbox result = %q/%q observer_reason=%s", result.Status(), code, integrationObserverFaultReason(supervisor))
-	}
-}
-
 func integrationObserverFaultReason(supervisor *ObserverSupervisor) string {
 	if supervisor == nil || supervisor.observer == nil {
 		return ""
@@ -127,51 +53,6 @@ func integrationObserverFaultReason(supervisor *ObserverSupervisor) string {
 		return ""
 	}
 	return fault.TraceFaultReason()
-}
-
-func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
-	if os.Getenv("HELOX_GITHUB_RELEASE_INTEGRATION") != "1" {
-		t.Skip("requires pinned Linux gVisor runtime for GitHub Release ELF")
-	}
-	root := t.TempDir()
-	runID, _ := domain.NewRunID()
-	directory := filepath.Join(root, runID.String())
-	if err := os.MkdirAll(directory, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	content, err := os.ReadFile("/bin/true")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(directory, "asset"), content, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	sum := sha256.Sum256(content)
-	digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-	source, _ := domain.NewSourceID("github-release")
-	identity, _ := domain.NewResolvedArtifactIdentity(source, "owner-repo", "v1", "tool")
-	artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:"+runID.String()+":github-release", uint64(len(content)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	request, err := domain.NewSandboxRequest(artifact)
-	if err != nil {
-		t.Fatal(err)
-	}
-	supervisor := integrationObserverSupervisor(t)
-	defer supervisor.Close()
-	runner := integrationRunner{t: t}
-	backend, err := NewGitHubELFBackend(runner, root, supervisor.Observer(), integrationCapabilityProbe(runner))
-	if err != nil {
-		t.Fatal(err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	defer cancel()
-	result, err := backend.Execute(ctx, request)
-	if err != nil || result.Status() != domain.SandboxCompleted {
-		code, _ := result.LimitationCode()
-		t.Fatalf("GitHub ELF dynamic result = %q/%q observer_reason=%s, %v", result.Status(), code, integrationObserverFaultReason(supervisor), err)
-	}
 }
 
 func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
@@ -251,7 +132,9 @@ func TestLinuxPyTorchResolverIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reference, err := artifactpypi.ParseReferenceForSource("torch", profile.Source())
+	// Keep this positive resolver probe on the same qualified input as the full
+	// CPU integration. Bare latest may name a newly published unhashable wheel.
+	reference, err := artifactpypi.ParseReferenceForSource("torch@"+runtimeidentity.PyTorchCPUVersion, profile.Source())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -492,14 +375,58 @@ func linuxBuildBackendWheel(t *testing.T) []byte {
 	return output.Bytes()
 }
 
+// The authenticated native fixtures share the production executor and lease.
+// The test's own raw Docker probes remain available before execution and for
+// fixtures that intentionally inspect Docker state without launching a guest.
+var integrationExecutors sync.Map
+
+func integrationSystemExecutor(t *testing.T, ctx context.Context) (*hosttool.Executor, error) {
+	t.Helper()
+	if existing, ok := integrationExecutors.Load(t); ok {
+		return existing.(*hosttool.Executor), nil
+	}
+	executor, err := hosttool.NewSystem(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := executor.ProtectExecution(ctx); err != nil {
+		return nil, errors.Join(err, executor.Close())
+	}
+	integrationExecutors.Store(t, executor)
+	t.Cleanup(func() {
+		integrationExecutors.Delete(t)
+		if err := executor.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	return executor, nil
+}
+
 func integrationObserverSupervisor(t *testing.T) *ObserverSupervisor {
 	t.Helper()
+	ctx := context.Background()
+	executor, err := integrationSystemExecutor(t, ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
 	launcher, err := hosttool.NewObserverLauncher("/usr/libexec/heliopause/haa_gvisor_observer")
 	if err != nil {
 		t.Fatalf("load pinned observer helper: %v", err)
 	}
-	supervisor, err := NewObserverSupervisor(context.Background(), func(ctx context.Context, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
-		return launcher.StartObserver(ctx, remoteEndpoint, outputEndpoint)
+	if err := executor.PrepareRecoveryObserver(ctx); err != nil {
+		t.Fatal(err)
+	}
+	supervisor, err := NewObserverSupervisor(ctx, func(ctx context.Context, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
+		observer, err := launcher.StartObserver(ctx, remoteEndpoint, outputEndpoint)
+		if err != nil {
+			return nil, err
+		}
+		if err := executor.RecordRecoveryObserver(ctx, observer); err != nil {
+			stop, cancel := context.WithTimeout(context.Background(), supervisorStopTimeout)
+			defer cancel()
+			return nil, errors.Join(err, observer.Stop(stop))
+		}
+		return observer, nil
 	})
 	if err != nil {
 		t.Fatalf("start observer supervisor: %v", err)
@@ -514,6 +441,36 @@ type integrationRunner struct {
 // RequiresDirectExecAdmission marks this controlled integration executor as
 // the production-equivalent trusted Host command boundary.
 func (integrationRunner) RequiresDirectExecAdmission() {}
+
+// DockerRecoveryLabel exposes the label assigned by the same executor that
+// creates Docker resources for this integration fixture.
+func (r integrationRunner) DockerRecoveryLabel() (string, string) {
+	executor, _ := integrationExecutors.Load(r.t)
+	if owner, ok := executor.(dockerRecoveryLabeler); ok {
+		return owner.DockerRecoveryLabel()
+	}
+	return "", ""
+}
+
+func integrationResponderSupply(ctx context.Context, runner CommandRunner, installation string) (*responderSupply, error) {
+	if fixture := os.Getenv("HELOX_RESPONDER_SOURCE_INSTALLATION"); fixture != "" {
+		installation = fixture
+	}
+	return prepareResponderSupply(ctx, runner, installation)
+}
+
+func (r integrationRunner) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok {
+		return e.(*hosttool.Executor).StartContainerInputOutput(ctx, input, output, id)
+	}
+	executor, err := hosttool.NewSystem(ctx)
+	if err != nil {
+		return err
+	}
+	defer executor.Close()
+	return executor.StartContainerInputOutput(ctx, input, output, id)
+}
 
 func integrationCapabilityProbe(executor Executor) CapabilityProbe {
 	return func(ctx context.Context) (Capability, error) {
@@ -544,6 +501,9 @@ func integrationBinary(binary string) string {
 
 func (r integrationRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).Output(ctx, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output, err := command.Output()
 	if err != nil {
@@ -567,6 +527,9 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 
 func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary string, arguments ...string) error {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunInput(ctx, input, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdin = input
 	output, err := command.CombinedOutput()
@@ -578,6 +541,9 @@ func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary
 
 func (r integrationRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunDiscard(ctx, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stdout = output
@@ -591,6 +557,9 @@ func (r integrationRunner) RunDiscard(ctx context.Context, binary string, argume
 
 func (r integrationRunner) RunBounded(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunBounded(ctx, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stdout = output
@@ -601,6 +570,9 @@ func (r integrationRunner) RunBounded(ctx context.Context, binary string, argume
 
 func (r integrationRunner) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunOutput(ctx, output, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdout = output
 	stderr := &boundedIntegrationOutput{remaining: 16 << 10}
@@ -628,20 +600,4 @@ func (b *boundedIntegrationOutput) Write(data []byte) (int, error) {
 		b.remaining -= len(accepted)
 	}
 	return count, nil
-}
-
-func integrationRequest(t *testing.T) domain.SandboxRequest {
-	t.Helper()
-	source, _ := domain.NewSourceID("npm")
-	identity, _ := domain.NewResolvedArtifactIdentity(source, "tiny", "1.2.3", "tarball")
-	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
-	artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:tarball", 1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	request, err := domain.NewSandboxRequest(artifact)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return request
 }

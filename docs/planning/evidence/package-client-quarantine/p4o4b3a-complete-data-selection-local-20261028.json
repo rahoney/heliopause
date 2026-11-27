@@ -1,0 +1,257 @@
+{
+  "schema": "haa-local-qualification/v1",
+  "work_item": "M13-004",
+  "substep": "P4-O4-B3a",
+  "baseline_commit": "e859487404ccd907cc7a5472e5ec8b6a417a1840",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES(graph/wire/protected selection/copy/installed read/cleanup)",
+    "QUALIFIED": "YES(named file/selection/wire mechanics)",
+    "ACCEPTANCE_CLOSED": "YES(named scope only)",
+    "MISSING": [
+      "producer complete15-asset build/package/metadata/attest/publish binding",
+      "actual complete selected ZIP graph/current Evidence/Policy",
+      "new DATA root bootstrap/wire/recovery actual qualification",
+      "native pipx tools/CLI",
+      "hosted common checkpoint awaiting push approval",
+      "final full CPU/three CUDA support matrix"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/releaseinstall/manifest.go",
+      "sha256": "3ddccb0285bf74b20d13291563d2aa09a7e4382ab2438b42a7588b25ba2a5d7a"
+    },
+    {
+      "path": "internal/releaseinstall/metadata.go",
+      "sha256": "14be687afe90578a2efe67f362556e140c8baadd4223fbe7b9f02d1c2b09a290"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_unix.go",
+      "sha256": "59629886242ca499527841f73a6f9da5d12bef5bb30ae739ce64310d21a99444"
+    },
+    {
+      "path": "internal/releaseactivation/wire_linux.go",
+      "sha256": "ed1da22e8f3e79a4744cad035b4e36c443db72881a13744f338764f9c0b03855"
+    },
+    {
+      "path": "internal/releasebootstrap/preparation_linux.go",
+      "sha256": "aada124cefa0a675a6d6161cef5de434cad77e9e98a580d5da2454ac29c88682"
+    },
+    {
+      "path": "internal/promotion/native_release_linux.go",
+      "sha256": "73c8dcefc1e28728beba3462f54ab2cfe570cabd2f88233053e9e21a84a71353"
+    },
+    {
+      "path": "internal/releaseactivation/installed_linux.go",
+      "sha256": "ef7d3853d0dc44c878b7b6d82cfca99ee964c1f2db8145b2fa737279e11f623d"
+    },
+    {
+      "path": "internal/releaseactivation/bootstrap_files_linux.go",
+      "sha256": "4555eeb2ef24ea7ce211c8e623f4a688f1c1267bee51dca39c50b65412797327"
+    },
+    {
+      "path": "internal/releaseinstall/installer.go",
+      "sha256": "af64f2155d247f391deaf8a9a02ee5fe6f1f9075a6beaa2ff366c30c17d5d4bd"
+    },
+    {
+      "path": "internal/inspection/githubrelease/release_set.go",
+      "sha256": "ef9953b253c12fd4ef5c0356455daa74d2193f8fc33d467bdf061dde65306305"
+    },
+    {
+      "path": "internal/releaseactivation/stage_linux.go",
+      "sha256": "f93b7908bc7430af39d738e28a2bb1ecce44d9e8fbd1e697b50398c76d4a413c"
+    },
+    {
+      "path": "internal/releaseinstall/pipx_data_test.go",
+      "sha256": "f3f577bef3addbd634d9821ccdd49ce77d56389b8eda28fa15c5521661161f18"
+    },
+    {
+      "path": "internal/releaseinstall/pipx_data_namespace_linux_test.go",
+      "sha256": "9f5cc1d9122c54d6633a8f23621539064f37ed4391cc6676da6b5ade549e645f"
+    },
+    {
+      "path": "internal/releaseactivation/pipx_wire_linux_test.go",
+      "sha256": "4e97b27c648cce4df8aedadbea9cd4f2f7f0fe62c18e197358e87596e4d97612"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_pipx_data_unix_test.go",
+      "sha256": "02f2368a37708a2936f4ad870c50b508c652250ba48a3287cdec3988001fca61"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_release_route_test.go",
+      "sha256": "f18c34962354965b1cbab219cb3458f3d770401727709158c8f22c50b142c219"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.717
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^(TestPipx|TestHeliopausePipx)",
+        "./internal/releaseinstall",
+        "./internal/releaseactivation",
+        "./internal/artifact/githubrelease",
+        "./internal/inspection/githubrelease"
+      ],
+      "exit_code": 0,
+      "seconds": 7.298
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 42.684
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/releaseactivation",
+        "./internal/artifact/githubrelease",
+        "./internal/inspection/githubrelease"
+      ],
+      "exit_code": 0,
+      "seconds": 14.63
+    },
+    {
+      "step": "compile",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-o",
+        "/tmp/haa-p4o4b3a-v2-releaseinstall.test",
+        "./internal/releaseinstall"
+      ],
+      "exit_code": 0,
+      "seconds": 0.331
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.262
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 9.334
+    }
+  ],
+  "affected6_owner_full_race": {
+    "step": "race",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/releaseinstall",
+      "./internal/releaseactivation",
+      "./internal/releasebootstrap",
+      "./internal/artifact/githubrelease",
+      "./internal/inspection/githubrelease",
+      "./internal/promotion"
+    ],
+    "exit_code": 0,
+    "seconds": 171.897
+  },
+  "initial_quick": {
+    "step": "quick",
+    "command": [
+      "go",
+      "run",
+      "./scripts/check",
+      "quick"
+    ],
+    "exit_code": 0,
+    "seconds": 187.064
+  },
+  "actual": {
+    "exit": 0,
+    "seconds": 0.221,
+    "command": [
+      "unshare",
+      "--mount",
+      "--net",
+      "--fork",
+      "/tmp/haa-p4o4b3a-releaseinstall.test",
+      "-test.v",
+      "-test.failfast",
+      "-test.timeout=3m",
+      "-test.run=^TestPipxSystemDataInDisposableNamespace$"
+    ],
+    "named_pass": true,
+    "no_skip": true,
+    "host_unchanged": true,
+    "input_unchanged": true,
+    "source": [
+      {
+        "path": "/tmp/haa-p4o4b3a-releaseinstall.test",
+        "sha256": "aae4985ad9a790827749aab207fd375db2191edd53ee2a7903db4cf7bb23a440"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseinstall/pipx_data_namespace_linux_test.go",
+        "sha256": "9f5cc1d9122c54d6633a8f23621539064f37ed4391cc6676da6b5ade549e645f"
+      }
+    ],
+    "scope": "unsigned copy-only fixture in separate mount/network namespaces; ZIP/NOTICE actual selected bytes root single-link0444; no artifact execution/authenticity/full release qualification"
+  },
+  "named_contracts": [
+    "native6 preserved; legacy10payload/11subjects and new12payload/13subjects",
+    "fixed linux-amd64 pipx-runtime DATA role/ZIP+NOTICE pair; same bounds; no executable classification",
+    "system installed root single-link0444; root private bootstrap0600; existing user metadata0600 preserved",
+    "legacy structural asset sets8/9/11/13 kept; fixed new15-asset set admitted structurally",
+    "same complete selector consumed by graph/promotion/bootstrap/wire/installed read/cleanup",
+    "missing ZIP runner is required incomplete with zero Evidence and no native fallback",
+    "12-payload wire exact bytes/order and DATA tamper refusal; unsigned fixture fails real authenticity",
+    "13-subject graph preserves original HAA identity/digest; graph ZIP is explicit copy-only fixture, not execution clearance",
+    "actual selected ZIP/NOTICE copy preserves bytes; no artifact execution/authenticity/full release qualification"
+  ],
+  "external_checkpoint": {
+    "source": "e859487",
+    "destination": "github.com/rahoney/heliopause:milestone/m13-release-build-packages",
+    "state": "AWAITING_USER_APPROVAL_AFTER_AUTO_REVIEW_REJECTION",
+    "new_ci_started": false,
+    "interval_minutes_when_started": 20
+  },
+  "evidence_inventory": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3a-final-evidence-inventory.json",
+    "files": 43,
+    "sha256": "16e3c60cbb719d0f2f2f042645172e829226297281b9e95d5a1f51567310a609"
+  }
+}

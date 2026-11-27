@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "run_id": 39789573029,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39789573029/attempts/1",
+  "source_commit": "0a16a07ed6464b44be5533b47b6b91bdf247d2e4",
+  "checkout": "d54279240bbb9b7a5500a868a550a7fb6c3ab102",
+  "tree": "218a94463a6d9f64885e44ef0b7805d0de7c8205",
+  "source_and_checkout_tree_equal": true,
+  "scope": "C3d actual native UV original/proof/adopt/replay PASS; whole-source Required/macOS qualification remains open",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "LINUX NATIVE ONLY; macOS and Required pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "attempt1": {
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "id": 119861675093,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119861675412,
+        "name": "gVisor Linux Integration",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119861675500,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119861675745,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119861675798,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 119861675853,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119861675947,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119861675972,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119861675990,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119883526735,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ],
+    "linux_top_level_passes": 51,
+    "uv_cli_seconds": 185.82,
+    "uv_cli_managed_five_steps": "all COMPLETED/ALLOW/promotion COMPLETED",
+    "native_original": "actual locked UV0.13.4/Python3.14.7, authenticated staged idna3.10 old wheel, files17; artifact execution0 during fixture generation",
+    "native_negative": "unrecorded cache refused before new-set inspection; target and Evidence unchanged",
+    "native_adopt": "UPDATE idna3.10 to3.11 COMPLETED/ALLOW/promotion COMPLETED, Manifest controls5 including independent authentic old-wheel ownership proof",
+    "managed_replay": "UPDATE idna3.11 COMPLETED/ALLOW/promotion COMPLETED, controls4; required checks/Evidence complete, original cfg and user data preserved, old3.10 METADATA absent",
+    "cpu_full_seconds": 297.75,
+    "helpers_reaped": 5,
+    "helper_wait": 0,
+    "cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+    "macos": {
+      "source": "0a16a07ed6464b44be5533b47b6b91bdf247d2e4",
+      "run": 39789573029,
+      "job": 119861675798,
+      "stage": "production build",
+      "deadline_seconds": 120,
+      "default_test": "NOT_REACHED",
+      "terminal": {
+        "available": true,
+        "exited": false,
+        "success": false,
+        "exit_code": -1,
+        "user_ms": 177131,
+        "system_ms": 86179
+      },
+      "predecessor_native_ci381": "PASS: production build from13:06:42.6880020Z to13:07:56.1097180Z; default tests reached/completed",
+      "production_go_delta_from_predecessor": "diff --git a/internal/promotion/pypi_native_ownership.go b/internal/promotion/pypi_native_ownership.go\nindex 252d793..ec962fd 100644\n--- a/internal/promotion/pypi_native_ownership.go\n+++ b/internal/promotion/pypi_native_ownership.go\n@@ -226,8 +226,8 @@ func proveNativePythonWheelFootprint(client pypiNativeClient, project *pypiNativ\n \tif client == nativeUVClient {\n \t\tfor name, body := range map[string]string{\"INSTALLER\": \"uv\", \"REQUESTED\": \"\"} {\n \t\t\tclaim, ok := project.files[\"site/\"+project.directory+\"/\"+name]\n-\t\t\t// UV only emits REQUESTED for directly requested distributions.\n-\t\t\t// It is optional for dependencies and is never ownership authority.\n+\t\t\t// REQUESTED is never ownership or root-selection authority. Its\n+\t\t\t// absence does not bypass the same authentic old-wheel proof below.\n \t\t\tif !ok && name == \"REQUESTED\" {\n \t\t\t\tcontinue\n \t\t\t}\n",
+      "scope": "production executable statements unchanged; fixture test and documentation edits are not evidence of a compiler-timeout cause",
+      "cause": "UNKNOWN: compiler/cache/runner/late termination not independently determined",
+      "plan": "Keep active Linux/native proof run. If no new source defect requires correction, perform at most one independent runner reproduction of failed macOS/Required for same source after run completion, keeping existing timeout and coverage; preserve first failure and do not claim a source fix. If repeated failure, collect bounded build-progress diagnostic before further rerun."
+    },
+    "vulnerability": "PASS; actual Go1.26.10"
+  },
+  "attempt2": {
+    "run": 39789573029,
+    "source": "0a16a07ed6464b44be5533b47b6b91bdf247d2e4",
+    "attempt": 2,
+    "status": "completed",
+    "conclusion": "startup_failure",
+    "jobs": 0,
+    "check_runs": 0,
+    "annotation": "GitHub public summary reports unexpected internal error, automatic notification and retry advice; no native build/test ran",
+    "source_page": "https://github.com/rahoney/heliopause/actions/runs/39789573029/attempts/2",
+    "next": "Request original failed macOS job119861675798 specifically; this is the first independent native runner reproduction if a job is actually allocated. Preserve attempt1 macOS timeout and attempt2 startup failure."
+  },
+  "rerun_availability": "After startup_failure with zero current jobs, original macOS job retry rejected because only current-attempt jobs can be retried. No new native runner reproduction began. Preserve first failure; fresh meaningful evidence delivery will trigger source CI with unchanged product code/budgets.",
+  "MISSING": [
+    "actual current-source macOS production build/default tests within existing bounds and Required success",
+    "complete/multi-root/explicit-empty sync and whole P1 dependency closure qualification"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-linux.log",
+      "bytes": 639681,
+      "sha256": "d580412a57e5236018ac3cfaf225ab9d2592eeec428fd9553ffedc76982e41f8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-macos.log",
+      "bytes": 21766,
+      "sha256": "f65a6a24c6f05b7b2c97fa5315bc218b9e195e57cfee320ee936b252e1aecaa1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-vulnerability.log",
+      "bytes": 21645,
+      "sha256": "e2b332341c0cba8b243dfd2acde1ad21648a82f9097b75f756afba8cb9e540e0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-docs.log",
+      "bytes": 20470,
+      "sha256": "e72a2f6508ebe66e804427f5177053026e50f10e3e5e707cdb24d1703944e81a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-attempt1-final-jobs.json",
+      "bytes": 12397,
+      "sha256": "a574e9b4915b6dc6a86dd0ef035431f154c8f11431b8acb2adfc5421989ce99b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-attempt1-required.log",
+      "bytes": 22394,
+      "sha256": "ef0cd3c3351bf85660915c12cb698d257a8096e4acfd2d57a6904d1ec52735be"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-macos-first-fault.json",
+      "bytes": 2057,
+      "sha256": "4b07e9264fcd0227e83dc7666de2f43f799c222d0ab0084786ce3ed332dc1d41"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-attempt2-startup-failure.json",
+      "bytes": 649,
+      "sha256": "8d83f2e20aaca07b442e65047d4779e005ed76be24f3f8acf2813153d355ca45"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-startup-suite.json",
+      "bytes": 7890,
+      "sha256": "a47873c79359820571a5830ffdee91145af2d48f116f01eea481bd37338ab00b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci382-startup-page.txt",
+      "bytes": 3683,
+      "sha256": "f2ee3c4f1c47973fc86430d8942d191c48fc20c6b1b64af2f019bc0d22c9aef0"
+    }
+  ],
+  "workflow_url": "https://github.com/rahoney/heliopause/actions/runs/39789573029",
+  "cuda_full": "NOT_RUN; no replacement of profile-specific qualification"
+}

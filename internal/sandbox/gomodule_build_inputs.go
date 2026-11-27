@@ -36,9 +36,10 @@ type goBuildInputFile struct {
 }
 
 type goBuildInputMember struct {
-	kind   byte
-	size   int64
-	sha256 string
+	executable int64
+	kind       byte
+	size       int64
+	sha256     string
 }
 
 // goBuildInputManifest describes consumed data only. Retained project approval,
@@ -60,11 +61,12 @@ func goBuildSingleLink(info os.FileInfo) bool {
 }
 
 type projectBuildInputLimits struct {
-	variant                string
-	files                  int
-	maxPath                int
-	payload, file, control int64
-	controls               [2]string
+	preserveSourceExecutable bool
+	variant                  string
+	files                    int
+	maxPath                  int
+	payload, file, control   int64
+	controls                 [2]string
 }
 
 func goBuildInputLimits(prefix string) projectBuildInputLimits {
@@ -89,6 +91,7 @@ func openProjectBuildInput(intake string, artifact domain.AcquiredArtifact, pref
 	}
 	declared, ok := artifact.DeclaredIntegrity()
 	if !filepath.IsAbs(intake) || filepath.Clean(intake) != intake || intake == "/" || variant == "" || limits.files <= 0 || limits.payload <= 0 || limits.file <= 0 || limits.control <= 0 || (prefix != "project" && prefix != "cache") ||
+		limits.preserveSourceExecutable && variant != "npm-source" ||
 		artifact.Identity().Source().String() != "project-local" || artifact.Identity().Variant() != variant ||
 		artifact.Digest().String() == "" || !ok || declared != "sha256:"+artifact.Digest().String() ||
 		artifact.SizeBytes() == 0 || artifact.SizeBytes() > uint64(limit) || len(parts) != 3 || parts[0] != "intake" || parts[2] != variant {
@@ -222,7 +225,10 @@ func (i *goBuildInputFile) scan(ctx context.Context, manifest *goBuildInputManif
 			directories[name] = true
 		} else if header.Typeflag == tar.TypeReg {
 			files++
-			if header.Mode != 0o400 || header.Size < 0 || header.Size > i.limits.file || files > fileLimit || header.Size > payloadLimit-payload {
+			if i.limits.preserveSourceExecutable {
+				member.executable = header.Mode & 0o111
+			}
+			if (!i.limits.preserveSourceExecutable && header.Mode != 0o400 || i.limits.preserveSourceExecutable && header.Mode&^int64(0o111) != 0o400) || header.Size < 0 || header.Size > i.limits.file || files > fileLimit || header.Size > payloadLimit-payload {
 				return errGoBuildInput
 			}
 		} else {
@@ -230,10 +236,10 @@ func (i *goBuildInputFile) scan(ctx context.Context, manifest *goBuildInputManif
 		}
 		if writer != nil {
 			expected, ok := manifest.members[destination]
-			if !ok || expected.kind != member.kind || expected.size != member.size {
+			if !ok || expected.kind != member.kind || expected.size != member.size || expected.executable != member.executable {
 				return errGoBuildInput
 			}
-			mode := int64(0o400)
+			mode := int64(0o400) | member.executable
 			if member.kind == tar.TypeDir {
 				mode = 0o500
 			}

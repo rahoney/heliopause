@@ -1,0 +1,217 @@
+{
+  "status": "R3_LOCAL_FUNCTIONAL_SCOPES_VERIFIED_GLOBAL_K_AND_R8_OPEN",
+  "recorded_at": "2026-11-18T03:05:21.741061+00:00",
+  "entry_commit": "607d79f522f38d55dc005eba1a63eb800f9383f1",
+  "entry_tree": "d7f94049851ae24525af99d9117cff91e836440a",
+  "tested_tree": "a95c084fc77b8c5c45e99c44b3540ec11b170dfd",
+  "prior_tested_tree": "cff4ab234fdf6985f5fbcf35ebb387e55f70ee53",
+  "exact_latest_delta4": [
+    "internal/bootstrap/bun_cli_integration_test.go",
+    "internal/bootstrap/pnpm_cli_integration_test.go",
+    "scripts/check/bun_runtime_workflow.go",
+    "scripts/ci-bun-runtime.sh"
+  ],
+  "other3372_source_files_hash_modes_unchanged": true,
+  "stage_added_declarations": 189,
+  "stage_removed_declarations": 19,
+  "latest_fix_added_or_removed_declarations": 0,
+  "mandatory_full": {
+    "status": "PASS",
+    "seconds": 812.737,
+    "source_tree": "a95c084fc77b8c5c45e99c44b3540ec11b170dfd",
+    "result": "/tmp/haa-r3-context-fix-wosbxnc8/post-native-full-result.json",
+    "declaration_check": "/tmp/haa-r3-context-fix-wosbxnc8/final-declaration-scope-check.json"
+  },
+  "canonical_workflow_seconds": 32.34,
+  "existing_binding_parent_tests": 4,
+  "existing_binding_subtests": 31,
+  "existing_binding_PASS_total": 35,
+  "existing_binding_FAIL": 0,
+  "existing_binding_SKIP": 0,
+  "new_realcorpus_bootstrap_binary": {
+    "sha256": "d508d48a7181a3323e7d6ae32ea4843f036384f2407fc0f7eb30d9f82bd3f987",
+    "SDK": "1.27.4",
+    "build_seconds": 90.373
+  },
+  "product_CLI_helper_sandbox_binary_reused": true,
+  "current_full_parents": {
+    "TestPNPMProjectCLIIntegration": {
+      "status": "PASS",
+      "seconds": 277.583,
+      "raw_result": "/tmp/haa-r3-context-fix-wosbxnc8/native/result.json",
+      "raw_stdout_sha256": "dc44d0abc361936c1619129de0865e6796bbc1bf3be28f143d2c844df63dca79",
+      "cases": [
+        "single",
+        "peer",
+        "empty"
+      ],
+      "markers": {
+        "pnpm_actual_cli fixture=": 3,
+        "actual_frozen_lockfile=PASS client=pnpm": 2,
+        "pnpm_actual_cli_fresh_operations=9 implicit_control_enrollment=REFUSED unproven_native_adoption=REFUSED": 1
+      },
+      "canonical_seconds": 300
+    },
+    "TestBunProjectCLIIntegration": {
+      "status": "PASS",
+      "seconds": 304.698,
+      "raw_result": "/tmp/haa-r3-context-fix-wosbxnc8/native-bun/result.json",
+      "raw_stdout_sha256": "5c004e9183181d56a46fa826ab1c6269f49fb4c054ca0745b8068e5787c1f20e",
+      "cases": [
+        "single",
+        "peer",
+        "empty"
+      ],
+      "markers": {
+        "bun_actual_cli fixture=": 3,
+        "actual_frozen_lockfile=PASS client=bun": 2,
+        "bun_actual_cli_fresh_operations=9 implicit_control_enrollment=REFUSED unproven_native_adoption=REFUSED": 1
+      },
+      "canonical_seconds": 360
+    }
+  },
+  "reused_native_full_parent_count": 23,
+  "reused_native_parents": [
+    {
+      "name": "TestNPMEnvironmentEvidenceIntegration",
+      "seconds": 11.898,
+      "original_result": "/tmp/haa-r3-native-9h89e9dz/result.json"
+    },
+    {
+      "name": "TestPythonEnvironmentEvidenceIntegration",
+      "seconds": 54.356,
+      "original_result": "/tmp/haa-r3-native-9h89e9dz/result.json"
+    },
+    {
+      "name": "TestLinuxNPMInspectCLIIntegration",
+      "seconds": 12.554,
+      "original_result": "/tmp/haa-r3-native-9h89e9dz/result.json"
+    },
+    {
+      "name": "TestNPMPublicProjectCLIIntegration",
+      "seconds": 45.424,
+      "original_result": "/tmp/haa-r3-native-9h89e9dz/result.json"
+    },
+    {
+      "name": "TestNPMPublicProjectRootCLIIntegration",
+      "seconds": 109.55,
+      "original_result": "/tmp/haa-r3-native-9h89e9dz/result.json"
+    },
+    {
+      "name": "TestLinuxUVInstallCLIIntegration",
+      "seconds": 287.429,
+      "original_result": "/tmp/haa-r3-native-9h89e9dz/result.json"
+    },
+    {
+      "name": "TestLinuxUVProjectNativeAdoptionCLIIntegration",
+      "seconds": 141.598,
+      "original_result": "/tmp/haa-r3-native-9h89e9dz/result.json"
+    },
+    {
+      "name": "TestLinuxUVToolInstallCLIIntegration",
+      "seconds": 92.742,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestLinuxPipxToolInstallCLIIntegration",
+      "seconds": 117.294,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestCargoPublicFetchCLIIntegration",
+      "seconds": 41.954,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestLinuxTerraformInitIntegration",
+      "seconds": 151.334,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestLinuxTerraformInitNegativeIntegration",
+      "seconds": 7.807,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestLinuxGoPublicBuildCLIIntegration",
+      "seconds": 129.896,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestLinuxGoBuildSecurityCLIIntegration",
+      "seconds": 64.928,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestLinuxCargoLibraryBuildCLIIntegration",
+      "seconds": 35.173,
+      "original_result": "/tmp/haa-r3-native-resume-74gvd46f/result.json"
+    },
+    {
+      "name": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+      "seconds": 39.523,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    },
+    {
+      "name": "TestLinuxCargoEnvironmentTriggeredNetworkCLIIntegration",
+      "seconds": 20.077,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    },
+    {
+      "name": "TestLinuxCargoSecondEnvironmentFailureCLIIntegration",
+      "seconds": 18.166,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    },
+    {
+      "name": "TestLinuxGVisorFreshEnvironmentIntegration",
+      "seconds": 8.133,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    },
+    {
+      "name": "TestLinuxGVisorTransientFilesystemIntegration",
+      "seconds": 7.803,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    },
+    {
+      "name": "TestLinuxPythonFreshEnvironmentIntegration",
+      "seconds": 13.196,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    },
+    {
+      "name": "TestLinuxPythonTransientFilesystemIntegration",
+      "seconds": 10.4,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    },
+    {
+      "name": "TestLinuxGitHubReleaseELFDynamicIntegration",
+      "seconds": 5.32,
+      "original_result": "/tmp/haa-r3-native-diagnostic-jrllpylk/result.json"
+    }
+  ],
+  "all_native_full_parent_count": 25,
+  "normal_requests_per_new_parent": 9,
+  "original_all3_cases_and_all_assertions_retained": true,
+  "reused_production_scopes": {
+    "packaging25_normal_and_observer_incomplete_refusal_and_SIGINT_cancel": 3,
+    "Go6_module_tidy": "PASS; not largeGo and notbuild",
+    "retained_cancel_intake": "RETAINED; later operator collection is not productC01 completion"
+  },
+  "prior_runtime_cpp_kernel_evidence": "R3 build791.911s/kernel7+8sub/CPP134+2 and same6member pin identity preserved in existing receipts; not rerun for test-only fixes",
+  "prior_race": "same unaffected owner code:671parents+1467sub=2138PASS;59opt-in NOT_RUN",
+  "security_and_vulnerability": "prior scoped PASS evidence at earlier recorded time only; no new current DB query implied",
+  "operator_interruption": {
+    "PNPM_product_status": "PASS",
+    "controller_status": "STOPPED_FIRST_ERROR_BROKEN_PIPE_AFTER_PASS",
+    "Bun_initial": "NOT_RUN",
+    "correction": "existing controller stdout/stderr redirected to files; only Bun resumed, no PNPM repetition",
+    "cause": "/tmp/haa-r3-context-fix-wosbxnc8/daemon-interruption/cause-and-next-scope.json"
+  },
+  "host_independent": "/tmp/haa-r3-context-fix-wosbxnc8/native-final-independent/result.json",
+  "unresolved": {
+    "global_CPU_CUDA3_largeGo_hosted_R8": "OPEN; grouped impact/final validation retained",
+    "D3_U1": "REVISE; not applied, independent review in sibling document",
+    "D1_before_R5": "policy still separate",
+    "R4_whole_acceptance": "OPEN"
+  },
+  "next": "authorized independent F6/144/148 source selection/preparation, U1 excluded; D3 gate remains for U1/new recovery contract"
+}

@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "baseline": "6fc062954e4b3e3255b061440cc46fa9be5c922d",
+  "scope": "C3e2a frozen UV complete source/intent codec and native selection intent match; native producer/reader remains unwired",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES within artifact adapter; native producer NO",
+  "QUALIFIED": "LOCAL ONLY; same-source remote CI not yet run",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "same-source remote qualification"
+  ],
+  "P1_remaining": [
+    "C3e2 native complete selection/lifecycle/empty transport and independent archive reader",
+    "C3e3 guarded source/old ownership/complete staging/promotion/CLI",
+    "actual dependency closure and whole P1 qualification"
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/uv_sync_input.go",
+      "bytes": 6135,
+      "sha256": "8e6f3586d7746e9ce03824c7e0a983df2197a80cf99e4038d2c92b82912b8201"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_sync_input_test.go",
+      "bytes": 8064,
+      "sha256": "ca8d59656f77412dc742aac7a2d6c8ba6fef2e43595ae4073dc6dc5cf8a806a5"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock_test.go",
+      "bytes": 9676,
+      "sha256": "5993e8adfb0f3a51c6dd2a24925c4c249b36aef9fe26bab36d76d31d71ec0bd9"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.311,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-format.json",
+        "bytes": 110,
+        "sha256": "502f18cfbfa0c2e7a2b852a4a8a786e03f84a141cd0277047f17ea26eddd0e98"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 126.258,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-quick.json",
+        "bytes": 111,
+        "sha256": "8a9e417702c3d6856358dfd97552a6c4b1dbbf6990140b89f9a4d17712a06c0c"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-quick.log",
+        "bytes": 1354,
+        "sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.719,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-security.json",
+        "bytes": 112,
+        "sha256": "1660437d13a1bacc4cb3b877193d4853bc6905c3b3b9838a040879402b1f4c18"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.228,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-docs.json",
+        "bytes": 108,
+        "sha256": "31fc14bfced69113d7ee368d729fe7c38c11590c9433b4ad76d0e175a5eb9deb"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.71,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-workflow.json",
+        "bytes": 111,
+        "sha256": "c692ad10b046d512abd927167fb1e745da7eb700f195257399af4c0c002e49a8"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-workflow.log",
+        "bytes": 1071,
+        "sha256": "817e48438a0c2c5e416059ca4674982294b7159dc56058a4661f96b6b68691ac"
+      }
+    },
+    {
+      "profile": "fuzz",
+      "exit": 0,
+      "seconds": 53.389,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-fuzz.json",
+        "bytes": 109,
+        "sha256": "5ecc0354a99e67002ceb43bb6043a8a8dc98313c85b2ba97c50a8ffac89c8c93"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-fuzz.log",
+        "bytes": 175,
+        "sha256": "8be3af30d830065d81916b1a89070680da721c52894b1a5fe767d66af2a0a40e"
+      }
+    },
+    {
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/artifact/pypi"
+      ],
+      "exit": 0,
+      "seconds": 5.27,
+      "files": [
+        {
+          "path": "internal/artifact/pypi/uv_sync_input.go",
+          "sha256": "8e6f3586d7746e9ce03824c7e0a983df2197a80cf99e4038d2c92b82912b8201"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_sync_input_test.go",
+          "sha256": "ca8d59656f77412dc742aac7a2d6c8ba6fef2e43595ae4073dc6dc5cf8a806a5"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_lock_test.go",
+          "sha256": "5993e8adfb0f3a51c6dd2a24925c4c249b36aef9fe26bab36d76d31d71ec0bd9"
+        }
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-artifact-race.json",
+        "bytes": 643,
+        "sha256": "e391de8e3ac25f011d898c9af8d7fa2e95ae01409bddd7f6035bf3e89a276635"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-first-artifact-race.log",
+        "bytes": 65,
+        "sha256": "5457633b3bcaa14f2e3c59ee4e9b0b8401e3b12b889ead283e2f2a9e8664e11b"
+      }
+    }
+  ],
+  "semantic_verification": [
+    "default blank skip is not positive empty; source presence and empty permission are separate canonical controls",
+    "exact public final PEP440 pins with comments and strict pylock; unsupported directives/range/extras/markers/URLs/build/hash continuation and duplicates refused",
+    "same complete name/version set and same pylock bytes/Python target required before independent binding",
+    "source match does not bypass full archive authentication or missing-dependency rejection",
+    "missing/unknown/duplicate controls and noncanonical/ambiguous intent refused; immutable source bytes"
+  ],
+  "native_product_execution": "NOT_RUN; CI384 belongs to predecessor12d9a50 and is not this codec qualification",
+  "cleanup": {
+    "go_tmpdir_entries": 0,
+    "new_native_resources_for_code_checks": 0,
+    "needed_sdk_source_cache_retained": true
+  }
+}

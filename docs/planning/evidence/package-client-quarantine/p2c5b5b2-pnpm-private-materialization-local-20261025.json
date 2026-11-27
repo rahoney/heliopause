@@ -1,0 +1,152 @@
+{
+  "schema": "helox.pnpm-private-materialization-local/v1",
+  "baseline": "aa204f2c942c83c65e1d1344dcf8b8b44dd29b80",
+  "scope": "private unpublished Host tree from actual approved PNPM cache, independent copies/internal links/readback/owned cleanup; no target publication",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (existing actual bootstrap consumer)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/promotion/pnpm_cache.go",
+      "bytes": 12260,
+      "sha256": "c750c363f959d25856d0ed8bd0c2aff1d2b040bc80efbfddd7341020b675b222"
+    },
+    {
+      "path": "internal/promotion/pnpm_materialize.go",
+      "bytes": 16039,
+      "sha256": "c214c539fe1975ea972ff452b0c22ef885ccd4f6cebbd8686c774f530c7c4681"
+    },
+    {
+      "path": "internal/promotion/pnpm_materialize_test.go",
+      "bytes": 8447,
+      "sha256": "507a82a4f591b1f05cfda1936b245908e31da4fe49d0480286c7b88973a67d28"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_test.go",
+      "bytes": 23246,
+      "sha256": "aee16c81f24094b13559d17c0ff3388348fcab87f86cbdf555b436c4dfd2c45d"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_cache_integration_test.go",
+      "bytes": 11230,
+      "sha256": "cc2c988e04cfa8e845ee0b03b7aa61e278a7f497e2f4048bf86198fb45b86e05"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "seconds": 0.547,
+      "exit": 0,
+      "scope": "final production source; before test-only Root.Link fixture call update",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-final-format.json",
+        "bytes": 593,
+        "sha256": "c3d647a165545374d395de912455d07ce41ce81c30e4d1677eafdbca59924546"
+      }
+    },
+    {
+      "profile": "quick",
+      "seconds": 179.296,
+      "exit": 0,
+      "scope": "final production source; before test-only Root.Link fixture call update",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-final-quick.json",
+        "bytes": 308,
+        "sha256": "f828fb525d9612f44b1fb6435671b60fd0fca4b57629a8fd746452be7e027313"
+      }
+    },
+    {
+      "profile": "security",
+      "seconds": 9.777,
+      "exit": 0,
+      "scope": "final production source; before test-only Root.Link fixture call update",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-final-security.json",
+        "bytes": 312,
+        "sha256": "42bb6e1bac2d50799a9ec4e7e4a22d1b676b65fe70c87b67337274938f737340"
+      }
+    },
+    {
+      "profile": "docs",
+      "seconds": 0.235,
+      "exit": 0,
+      "scope": "final production source; before test-only Root.Link fixture call update",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-final-docs.json",
+        "bytes": 304,
+        "sha256": "cbc12001aec296a5543c12764bc9fb8070833220fd7087cf44cbb5749c0182b6"
+      }
+    },
+    {
+      "profile": "race",
+      "seconds": 193.207,
+      "exit": 0,
+      "scope": "final production source; before test-only Root.Link fixture call update",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-final-race.json",
+        "bytes": 410,
+        "sha256": "d6eec8e4972571d8a543187e5ecc5286f94a00ac467c8cc4cd039e8806b374f4"
+      }
+    }
+  ],
+  "final_fixture": {
+    "scope": "test-only Root.Link/linkat flags0; production and actual client unchanged",
+    "format": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-portability-format.json",
+      "bytes": 540,
+      "sha256": "4abcd4bcb0c06ebced0dba1e277909df84d407db5708f4df42d95578def8ddf1"
+    },
+    "focused_race": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-final-focused-race.json",
+      "bytes": 683,
+      "sha256": "c4cbfc154694eafa9b729016c446df3502be226c5470138c711ee59ba9758f25"
+    },
+    "darwin_arm64_compile": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-darwin-arm64-compile.json",
+      "bytes": 574,
+      "sha256": "6fee09db3446de2e574fbfc59a33e7874df615a77834f40e90f77f8eb114940f"
+    },
+    "native_macOS": "NOT_RUN"
+  },
+  "first_cleanup_gap": {
+    "scope": "new uncommitted initial materializer; not an earlier npm regression",
+    "before": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-cleanup-red.json",
+      "bytes": 675,
+      "sha256": "8fe59d028808ee94f3e4736c1343d6344accb864035a5e3dd9e1cbff4697d88a"
+    },
+    "after": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-cleanup-green.json",
+      "bytes": 675,
+      "sha256": "7b9bcf9fa62c3701a4ef00c68c25d2dfab0bcd9fbeb830af3dee9b5c209c540a"
+    },
+    "original_cause": "same-inode content change after initial inventory was removed by identity-only per-member cleanup"
+  },
+  "actual": {
+    "seconds": 45.074,
+    "peer_entries": 4,
+    "empty_entries": 0,
+    "private_Host_prepare_verify_close_cases": 2,
+    "helper_wait": 0,
+    "host_unchanged": true,
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-private-materialization-result.json",
+      "bytes": 1420,
+      "sha256": "90788b85fe62aea8ef1bad3f072d538cdfc21c119e36ed408fdcefeb316b0444"
+    },
+    "compile": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b2-final-actual-compile.json",
+      "bytes": 728,
+      "sha256": "3a9c2103032b8d69aa51befed0c369269075f29db0181737c3db949c512a46f0"
+    }
+  },
+  "not_qualified": [
+    "independent retained target approval",
+    "target transaction/adoption/rollback/recovery",
+    "PNPM CLI and whole P2 acceptance",
+    "this source remote qualification"
+  ]
+}

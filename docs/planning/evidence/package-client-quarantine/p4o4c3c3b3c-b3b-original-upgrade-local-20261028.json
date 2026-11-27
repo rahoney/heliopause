@@ -1,0 +1,304 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-b3b public original-aware native upgrade/source binding only",
+  "baseline_commit": "2121fa2174b371089204c40c83f30f1193ca5741",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (named local default/Race/CPP128 and actual delta/no-op)",
+    "ACCEPTANCE_CLOSED": "YES (C-b3b metadata selection scope only)"
+  },
+  "go": {
+    "source_identity": [
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "2634211d82c93ec564c7b4f1964cb3443619d8b1102ce3358cba97a6b2a10f2f"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver.go",
+        "sha256": "2f605e7fc6b111fb380a60c5670b156fad6860df34b9249376c21a264b4e864e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_test.go",
+        "sha256": "9ca16b5496c9dd2124f1b12d401a1c578cee170259a700bb681d55f18d18d23e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_integration_linux_test.go",
+        "sha256": "133e4147d5d0665f55a4339224386a3b2890bb422e34d16126bc2ee423b69976"
+      },
+      {
+        "path": "internal/sandbox/uv_tool_replay.go",
+        "sha256": "1733d908ea2033d82a20915cd524aa601994fa8c5f12d6d31f844f1efd4fea84"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay.go",
+        "sha256": "7135d0552e2cee38b5aeef0ee6f49d095139c03b72274c21420bb5a334defcef"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay_test.go",
+        "sha256": "1f0d451f5adc7a200313963f9d185c23252d46c549e28745a5abffa713640dce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "069becc8872d7198c544ed6fee7b6fbad3a25cb7b92b344857a73883e4f21fef"
+      }
+    ],
+    "source_after_matches_before": true,
+    "binary_sha256": "e1aeb74996b3db2db17f1ec182909685808572b724ca5890ef7ee2ec305726a8",
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.706
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 95.439
+      },
+      {
+        "step": "sandbox-race",
+        "exit_code": 0,
+        "seconds": 25.087
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 1.041
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 7.452
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.238
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 13.364
+      }
+    ]
+  },
+  "cpp": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p4o4c3c3b3c-b3b-v3-observer"
+    ],
+    "exit_code": 0,
+    "seconds": 264.371,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "cef9553e3a7dc712092958c3eb8c5109a7561f39992127d2aad2609152c0772d"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "692606129fd4cf63b484c6ab88d84d7e71a2a5497ef69b10554483e22674467d"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "log_sha256": "f9f4d7d9f8a145da3830393b6d15d2b0e0fd5a4a0bc2790c0e00e7f4e65f5ba7",
+    "observer": {
+      "bytes": 3201920,
+      "sha256": "04400976a3c39d7fc83a750f960cbd1f5c10f2bace5060d428f71aaa5da03ccd"
+    }
+  },
+  "binding": {
+    "go_source13_both_disks_match": true,
+    "cpp_source6_both_disks_match": true,
+    "output_validator_unchanged": true,
+    "go_binary": "e1aeb74996b3db2db17f1ec182909685808572b724ca5890ef7ee2ec305726a8",
+    "cpp_binary": "04400976a3c39d7fc83a750f960cbd1f5c10f2bace5060d428f71aaa5da03ccd",
+    "latches_pass": 128,
+    "latches_fail": 0
+  },
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 91.332,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "e9ce5da213e2b8b37bf025dacda09e1b24abeaee51b52f8325b6e036c41aa6f6",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-b3b-actual-v3/protected-client",
+        "sha256": "e1aeb74996b3db2db17f1ec182909685808572b724ca5890ef7ee2ec305726a8"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-b3b-actual-v3/observer",
+        "sha256": "04400976a3c39d7fc83a750f960cbd1f5c10f2bace5060d428f71aaa5da03ccd"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "public_selection_confirmed": true,
+    "passed_named_tests": [
+      "TestLinuxPipxPublicOriginalUpgradeIntegration"
+    ],
+    "named_pass": true
+  },
+  "stages": [
+    {
+      "stage": "fresh",
+      "version": "6.0",
+      "cpu_usec": 2075083,
+      "controls": [
+        {
+          "name": "pipx-tool-intent.json",
+          "sha256": "be62dbda6ed5f4c65646e1f0b57413de197a26e89dede98ba5d3b5855187d457"
+        },
+        {
+          "name": "pipx-tool-receipt.json",
+          "sha256": "76847a763cbb7dab14a39b4f74cb31ac7b2f2c2b1bdd47e3dc78186671f3b04c"
+        },
+        {
+          "name": "pipx-tool-pylock.toml",
+          "sha256": "0542a3cd5e4a242c0555dd297085de5294a220212789f2a67ef3690cc5917e7c"
+        },
+        {
+          "name": "pipx-tool-census.json",
+          "sha256": "757e02c095e060dc29ffe71d7c76ba19c7fc72fbded53afae8ab1804850dbeb8"
+        }
+      ],
+      "lock_fingerprint": "c692bcf867911e9d3ce5f71d3ae4f4fd0bae6c0c029ea00081bf2ad928e98677",
+      "runtime": "pipx-tool-install:pipx:1.18.4;backend:uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi;zip:0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670"
+    },
+    {
+      "stage": "upgrade",
+      "version": "6.1",
+      "cpu_usec": 2082914,
+      "controls": [
+        {
+          "name": "pipx-tool-intent.json",
+          "sha256": "7c21aae906445d3d56575475ee32d5979b23c838373ad41e8daea5db4cc645af"
+        },
+        {
+          "name": "pipx-tool-receipt.json",
+          "sha256": "3f70a21a2d8eacd2d228270646f08a145b0d26951eb9c5d19fbc0e1d7eb6d507"
+        },
+        {
+          "name": "pipx-tool-pylock.toml",
+          "sha256": "696b9b1650b79ee2099eae373f1d388b2b2616a869ce0a5945de376ff54c1006"
+        },
+        {
+          "name": "pipx-tool-census.json",
+          "sha256": "57a7bb3f097e6d859cab1e3cc5eb425a87e4950f1c676e45f25a4dced881c539"
+        },
+        {
+          "name": "pipx-tool-upgrade-input.json",
+          "sha256": "1c98011949e3553bdfdad8765a48042e5a49c2e67a142aed0eabbdd4f28d8a12"
+        },
+        {
+          "name": "pipx-tool-upgrade-wheels.json",
+          "sha256": "d0acf1b22228fb9b0e6af9ad3cf386bc1a855b8863c42dd36eed463fe884b5ec"
+        },
+        {
+          "name": "pipx-tool-selection-delta.json",
+          "sha256": "4291b195e86dd4d59096bee4e455651a72634ce8f2f8fe2455b22a47015f6481"
+        }
+      ],
+      "lock_fingerprint": "d5cdde5286d5975d31f4eebb55c8def1403d9710f0a063fe43170aece20862d2",
+      "runtime": "pipx-tool-upgrade:pipx:1.18.4;backend:uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi;zip:0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670"
+    },
+    {
+      "stage": "noop",
+      "version": "6.1",
+      "cpu_usec": 2044665,
+      "controls": [
+        {
+          "name": "pipx-tool-intent.json",
+          "sha256": "7c21aae906445d3d56575475ee32d5979b23c838373ad41e8daea5db4cc645af"
+        },
+        {
+          "name": "pipx-tool-receipt.json",
+          "sha256": "3f70a21a2d8eacd2d228270646f08a145b0d26951eb9c5d19fbc0e1d7eb6d507"
+        },
+        {
+          "name": "pipx-tool-pylock.toml",
+          "sha256": "696b9b1650b79ee2099eae373f1d388b2b2616a869ce0a5945de376ff54c1006"
+        },
+        {
+          "name": "pipx-tool-census.json",
+          "sha256": "57a7bb3f097e6d859cab1e3cc5eb425a87e4950f1c676e45f25a4dced881c539"
+        },
+        {
+          "name": "pipx-tool-upgrade-input.json",
+          "sha256": "e3be0ba613b6e870cb4ec17270f6c7a394c77d391dc7b901f0916d36c450ee0c"
+        },
+        {
+          "name": "pipx-tool-upgrade-wheels.json",
+          "sha256": "5321bb4a6bd1b00924f3ec2f583a8efefaf81b1b9458b7432dd69a9e6e512203"
+        },
+        {
+          "name": "pipx-tool-selection-delta.json",
+          "sha256": "6693bece1fad54d604c78c445fe4841ed50568f7eca34497c8b855fa267c8132"
+        }
+      ],
+      "lock_fingerprint": "230cc8038ca6c2a159a844d92eef5173689f2be7eec2189ab8f3bd90f4ec9912",
+      "runtime": "pipx-tool-upgrade:pipx:1.18.4;backend:uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi;zip:0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670"
+    }
+  ],
+  "failed_candidates_preserved": [
+    "actual-v1 native exit0 but complete output refused; no-op not reached",
+    "actual-v2 bounded header census/offline original-conditions overlay identifies missing activation auxiliaries; no-op not reached"
+  ],
+  "verified_fix": "reuse existing pinned UV venv owner in same ARTIFACT root before upgrade; exact Go/CPP program and live-root venv grammar coupled; full output validator unchanged",
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-b3b-",
+  "MISSING": [
+    "current complete inspection/Evidence/Policy and approval cache",
+    "guarded Host transaction and public CLI",
+    "hosted/final CPU-CUDA/signed-native and independent legacy ZIP CPU boundary qualification"
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "scope": "CI414 frozen P4 project/tool backend and shared existing consumers; whole run failed; scoped fixture lifecycle mitigation local only",
+  "source": "294bb578c168baca86121d4ba75ce1afb30983c6",
+  "checkout": "1a04336295986d787f6b48b55c788f3497a71cd5",
+  "tree": "5a1408858bda0b7f4ce1897e271f9e8b16e85b06",
+  "files": 2596,
+  "run_id": 40260473482,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40260473482",
+  "overall": "FAILURE",
+  "jobs_success": 8,
+  "jobs_failure": [
+    "Quick",
+    "Required"
+  ],
+  "qualified": "NO (whole CI); named Linux/macOS/other successful consumer results only",
+  "acceptance_closed": "NO",
+  "first_timer": {
+    "due": "2026-10-26T03:48:42.522120+00:00",
+    "fired": "2026-10-26T03:48:42.522450+00:00",
+    "observed": "2026-10-26T03:49:19+00:00",
+    "status": "Quick FAIL/Linux RUNNING/Required not created"
+  },
+  "extension_timer": {
+    "due": "2026-10-26T04:09:19+00:00",
+    "fired": "2026-10-26T04:09:19.000147+00:00",
+    "observed": "2026-10-26T04:10:00+00:00",
+    "status": "FINAL8SUCCESS2FAILURE; consumed"
+  },
+  "logs": {
+    "files": 10,
+    "bytes": 1175342,
+    "chunks": 100,
+    "all_exact_utf8_readback": true,
+    "whole_source_checkout_matches": true,
+    "inventories": [
+      "ci414-first-completed-log-inventory.json",
+      "ci414-final-two-log-inventory.json",
+      "ci414-whole-checkout-first-eight.json"
+    ],
+    "initial_archive_note": "ci414-quick.log preserved with one archive-operator-added final LF; ci414-quick-decoded.log is exact tool-decoded UTF8"
+  },
+  "passed_linux": {
+    "root_tests": 72,
+    "observer_latches_pass": 121,
+    "observer_latches_fail": 0,
+    "cpu_pytorch_seconds": 258.26,
+    "helper_wait0": 9,
+    "aggregate_cleanup_original": 0,
+    "final_helper_state": "CONFIRMED_STOPPED",
+    "pnpm_cli_seconds": 153.19,
+    "bun_cli_seconds": 157.1,
+    "old_uv_cli_seconds": 197.95,
+    "scope": "Existing selected hosted consumers; not later local public tool CLI/original upgrade/final CUDA"
+  },
+  "observed_job_log_window": {
+    "first": "2026-10-26T02:43:11.0324346Z",
+    "last": "2026-10-26T03:50:26.5256386Z",
+    "seconds": 4035.493204,
+    "scope": "job log first-to-last, not exact workflow created/updated or queued duration"
+  },
+  "quick_failure": {
+    "test": "TestAcquisitionFailureAndStateLock",
+    "phase": "TempDir cleanup after test body",
+    "error": ".git/objects directory not empty",
+    "ci_git": "2.55.0",
+    "local_git": "2.43.0",
+    "detached_maintenance_cause": "plausible exact-source-supported lifecycle mechanism, historical single cause NOT_CONFIRMED; no CI process trace"
+  },
+  "local_fixture_mitigation": {
+    "baseline": "65320b061d48f44df2c299fa2591d853baebfc6e",
+    "source_file": "scripts/update-runtime/update_test.go",
+    "source_sha256": "43ab298c53d2aa6c16580da1e605693d581527e154bab263a2910b352defa070",
+    "scope": "Set maintenance.autoDetach=false and gc.autoDetach=false only in disposable fixture repository; production/actual/global Git config unchanged",
+    "checks": [
+      {
+        "receipt": "ci414-git-fixture-v1-quick.json",
+        "seconds": 87.543,
+        "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+      },
+      {
+        "receipt": "ci414-git-fixture-v1-security.json",
+        "seconds": 9.22,
+        "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "receipt": "ci414-git-fixture-v1-docs.json",
+        "seconds": 0.246,
+        "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "receipt": "ci414-git-fixture-v1-full-affected-race.json",
+        "seconds": 25.588,
+        "log_sha256": "9c82a0bed260bebc53400d3b1a5bb0cbeab6992c05e7e6a54d94ed2449259436"
+      }
+    ],
+    "mechanical_reuse": "ci414-git-fixture-mechanical-scope-v1.json",
+    "remote_git_2_55_validation": "OPEN; next grouped source, no immediate full CI rerun"
+  },
+  "missing": [
+    "Next grouped candidate Quick/Required success under CI Git2.55",
+    "M4 actual native tool upgrade/current update/CLI",
+    "Native adoption/pipx and final P5/P6/P7 support matrix"
+  ]
+}

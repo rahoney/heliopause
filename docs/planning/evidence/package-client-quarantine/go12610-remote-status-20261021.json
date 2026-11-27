@@ -1,0 +1,185 @@
+{
+  "head": "c2c1750f8b7558666a4f6ca12c3bfd61d4297a9b",
+  "tree": "106e0a5acb97931792c908866ee3cc29327c8650",
+  "ci361": {
+    "run": 39583932519,
+    "checkout": "6d2d27e5792a1ec9f22de8149a30be09768f00e1",
+    "tree": "106e0a5acb97931792c908866ee3cc29327c8650",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 119168038568,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038744,
+        "name": "Security",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038814,
+        "name": "Docs",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038833,
+        "name": "Quick",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038900,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038905,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038928,
+        "name": "Minimum Go",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038960,
+        "name": "Vulnerability",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168039003,
+        "name": "macOS",
+        "conclusion": "success"
+      },
+      {
+        "id": 119185941337,
+        "name": "Required",
+        "conclusion": "success"
+      }
+    ],
+    "cpu_full_seconds": 293.64,
+    "helper_reaped_wait_zero": 5,
+    "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0"
+  },
+  "cu126": {
+    "run": 39584112821,
+    "conclusion": "failure",
+    "cpu_full_seconds": 298.3,
+    "cu126_full_seconds": 491.98,
+    "first_failure": {
+      "phase": "installation",
+      "kind": "trusted CPU accounting sample late",
+      "gap_ns": 1035052225,
+      "poll_ns": 1000000000,
+      "read_ns": 589410876,
+      "before_read_gap_ns": 445640217,
+      "ledger_lock_ns": 1132,
+      "usage_us": 58280074,
+      "cpu_limit_seconds": 300,
+      "wall_remaining_ns": 2337338520997
+    },
+    "cleanup": "original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED",
+    "cause": "underlying read/scheduling latency and Go patch causality unproven; no suppression or retry-to-green"
+  },
+  "cu132": {
+    "run": 39584119816,
+    "head": "c2c1750f8b7558666a4f6ca12c3bfd61d4297a9b",
+    "tree": "106e0a5acb97931792c908866ee3cc29327c8650",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 119189956811,
+        "name": "Minimum Go",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189956910,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189956952,
+        "name": "Security",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957050,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957150,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957168,
+        "name": "macOS",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957277,
+        "name": "Docs",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957303,
+        "name": "Vulnerability",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957434,
+        "name": "Quick",
+        "conclusion": "success"
+      },
+      {
+        "id": 119215071841,
+        "name": "Required",
+        "conclusion": "success"
+      }
+    ],
+    "cpu_full_seconds": 289.67,
+    "cu132_full_seconds": 1054.68,
+    "helper_wait_zero": 5,
+    "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0",
+    "scope": "c2c1750 supported cu132 qualification only; cu126 failure unresolved; new diagnostics not included"
+  },
+  "cu130": {
+    "run": 39590623512,
+    "head": "c2c1750f8b7558666a4f6ca12c3bfd61d4297a9b",
+    "conclusion": "failure",
+    "linux": {
+      "conclusion": "success",
+      "cpu_full_seconds": 257.76,
+      "cu130_full_seconds": 980.48,
+      "helper_wait_zero": 5,
+      "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0"
+    },
+    "macos": {
+      "job": 119215272543,
+      "conclusion": "failure",
+      "error": "canonical production build command timed out after2m; context deadline exceeded",
+      "go_patch_cause": "unproven; same c2 source native jobs in CI361/cu126/cu132 passed"
+    },
+    "required": "failure",
+    "new_diagnostic_head": "270c7c834d75cc7f62936c87a5c19606b72d112f",
+    "new_pr_ci": 39605808634,
+    "new_cu126_run": 39605942685,
+    "new_results": "CI366 SUCCESS10; diagnostic cu126 Linux SUCCESS/full1296.54s; manual macOS default test6m timeout/Required FAIL"
+  },
+  "qualified": false,
+  "remaining": [
+    "earlier sample-late root cause unproven; new successful full does not establish a fix",
+    "macOS command-deadline variability review; same-source CI366 native success retained",
+    "new UV candidate actual runtime/full consumer qualification",
+    "no Host runtime activation"
+  ],
+  "diagnostic_source": {
+    "head": "270c7c834d75cc7f62936c87a5c19606b72d112f",
+    "pr_ci": 39605808634,
+    "cu126": 39605942685,
+    "status": "actual timing/OS observations complete; CPU/cu126 passed; separate manual macOS timeout unresolved",
+    "evidence": "go12610-diagnostic-remote-20261021.json"
+  }
+}

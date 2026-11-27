@@ -52,7 +52,7 @@ func TestLinuxNPMInspectCLIIntegration(t *testing.T) {
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
 		t.Fatal(err)
 	}
-	if result.Schema != "helox.operation-result/v1" || result.Status != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Artifact.Identity.SourceID != "npm" || result.Artifact.Identity.Name != "is-number" || result.Artifact.Identity.Version != "7.0.0" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
+	if result.Schema != "helox.operation-result/v2" || result.Status != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Artifact.Identity.SourceID != "npm" || result.Artifact.Identity.Name != "is-number" || result.Artifact.Identity.Version != "7.0.0" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
 		t.Fatalf("incomplete inspect result: %s", stdout.String())
 	}
 	for _, check := range result.Checks {

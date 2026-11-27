@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "baseline": "12cfa7afda1de64083520fde7c482f39b080d2d7",
+  "scope": "CI385 precompiled shared fixture consumer cwd correction; no production native protocol/argv/runtime change",
+  "IMPLEMENTED": "YES for fixture invocation correction",
+  "WIRED": "YES at existing unconditional lifecycle command; checker validates actual UV and Cargo fixture scopes",
+  "QUALIFIED": "LOCAL ONLY; fresh actual native complete/source shared CI pending",
+  "ACCEPTANCE_CLOSED": "NO for C3e2b",
+  "MISSING": [
+    "same-source actual native five complete cases and shared full Required qualification"
+  ],
+  "source": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "bytes": 26007,
+      "sha256": "f41366bed978cf93f35ebf91d202236e33317125cc4bc6c347e3075247c36197"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "bytes": 30430,
+      "sha256": "d660034a6bff2147f6f55f0e92611587caeb8fdf50c874506941c5f2653b44bd"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "bytes": 19015,
+      "sha256": "157d8d0f338735a8cc299eb5b040d70706e032960d51483170c379d227247f38"
+    },
+    {
+      "path": "internal/sandbox/uv_sync_resolver_integration_linux_test.go",
+      "bytes": 5029,
+      "sha256": "ccdc3eb3e6c04f591750e8c7acfdd328e159a9ed510678b7ed3aa89507f10d9c"
+    }
+  ],
+  "compiled_control": {
+    "scope": "recovered data-only same-compiled-consumer cwd observations; not whole operator PASS",
+    "operator_exit": 1,
+    "operator_failure": "summary assertion incorrectly required shared Go TMPDIR empty while independent canonical Quick was still active; failed after both case assertions and binary/workroot cleanup",
+    "binary_identity": "same inode/SHA256 checked during both runs, but digest was not persisted before the final summary assertion; exact digest NOT_AVAILABLE",
+    "source": {
+      "path": "internal/sandbox/uv_sync_resolver_integration_linux_test.go",
+      "sha256": "ccdc3eb3e6c04f591750e8c7acfdd328e159a9ed510678b7ed3aa89507f10d9c"
+    },
+    "case_observations": [
+      {
+        "cwd": "private repository root",
+        "test": "TestUVPublicCompleteSourceInputs",
+        "expected_exit": 1,
+        "observed": "FAIL with tracked fixture relative ENOENT"
+      },
+      {
+        "cwd": "private internal/sandbox package",
+        "test": "TestUVPublicCompleteSourceInputs",
+        "expected_exit": 0,
+        "observed": "PASS with all five actual input cases"
+      }
+    ],
+    "recovery_boundary": "Per-case logs and completed cleanup recover observations only; no re-run or invented binary digest and no native execution/qualification claim",
+    "cleanup": {
+      "binary_and_workroot_absent": true,
+      "fresh_post_quick_go_tmpdir_entries": 0
+    }
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.838,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-format.json",
+        "bytes": 110,
+        "sha256": "e58197e00021f4c72fdaedb8bd072f0b5a2a5209810ed61120b46782ea7ebe3e"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 47.213,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-quick.json",
+        "bytes": 110,
+        "sha256": "580a77d4cec1a2fb258663b76b932bb9fa7cb6ecb22eb9fa38913535a985d532"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-quick.log",
+        "bytes": 1354,
+        "sha256": "75ade6ac7944241b5606159239821511cc68664cb7348492352d448ddc1130ad"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.9,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-security.json",
+        "bytes": 110,
+        "sha256": "439cb68e879950d0619db35f9c00455a95731597fbbaf79738a996db007cddb6"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.225,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-docs.json",
+        "bytes": 108,
+        "sha256": "7bde8bc9ca38b40b65335fe33e579196b66bb4b903d8b36bd6a38252a4b96643"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.723,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-workflow.json",
+        "bytes": 112,
+        "sha256": "47c5fcc5d29c99fa4d772ff783b03e50abbfe761cffac3d44154b239894c45ee"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-final-workflow.log",
+        "bytes": 1071,
+        "sha256": "88264619f503566230f32c005e0870355ff91fb1ee56711f8e0279e4b532508c"
+      }
+    }
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-repository.log",
+      "bytes": 240,
+      "sha256": "895951047042c1a303cd665ce0ead07f6b5f4b0da9282505214f254f4fbe7614"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-package.log",
+      "bytes": 99,
+      "sha256": "dcee8080c0308ccf83154f1cfdb2f9d71af99c1db59f2930f211c8983aace623"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-fixture-cwd-control-recovered.json",
+      "bytes": 1349,
+      "sha256": "46bd7c8d07d6c38164c0a8f775fe0bd97916edf6681642035e3bc456e498449f"
+    }
+  ]
+}

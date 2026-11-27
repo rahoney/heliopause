@@ -1,0 +1,432 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P7 grouped G3 and final-profile checkpoint",
+  "source": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+  "whole_tree": "a5eedf7aa95d002c2542822741b3f173d9402ce5",
+  "previous_remote": "6d9d3bf8967f2116f01c7a05e5e8ce5cf52b7530",
+  "normal_fast_forward": true,
+  "outgoing_commits": [
+    "684a6df3a2b6689354abdf100a05de1eff4d37c3",
+    "ddc9073485c9fc0ccf3cf0a96b866c1390b7142b",
+    "19f4d1ca1e1d3da5772f231a912ee0024bf0cd7b",
+    "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3"
+  ],
+  "outgoing_paths": 42,
+  "remote_ref_matches": true,
+  "run_id": 41060068858,
+  "run_number": 441,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41060068858",
+  "started_at": "2026-10-30T13:03:20Z",
+  "initial_status": "in_progress",
+  "initial_jobs": [
+    {
+      "id": 124077271882,
+      "name": "gVisor Observer Helper",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124077272164,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124077272254,
+      "name": "macOS",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124077272282,
+      "name": "Security",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124077272290,
+      "name": "Minimum Go",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124077272318,
+      "name": "Quick",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124077272332,
+      "name": "Representative Wheel Corpus",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124077272390,
+      "name": "Vulnerability",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124077272398,
+      "name": "gVisor Linux Integration",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "initial_MCP_run_jobs_read_verified": true,
+  "timer": {
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "session_id": 58611,
+    "host_pid": 657507,
+    "uid": 1000,
+    "process_start_ticks": "4109728",
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "config": "/tmp/haa-ci441-autopoll-config.json",
+    "state_file": "/tmp/haa-ci441-autopoll/state.json",
+    "first_due_at": "2026-10-30T13:23:20+00:00",
+    "first_due_KST": "2026-10-30 22:23:20 KST",
+    "actual_queries_at_registration": 0,
+    "future_execution_not_claimed": true,
+    "actual_queries": 6,
+    "next_due_at": null,
+    "stop": {
+      "signal": "SIGTERM",
+      "expected_owner_pid_start_script_config_verified": true,
+      "terminal_status": "completed",
+      "terminal_conclusion": "failure",
+      "at": "2026-10-30T15:11:31.414829+00:00",
+      "not_natural_exit": true,
+      "CI_cancelled_by_us": false,
+      "worker_session_exit_code": 143,
+      "worker_session_consumed": true
+    }
+  },
+  "expected_qualification": {
+    "ordinary_Linux_top_level_parents": 122,
+    "CPP_latches": 133,
+    "Required_jobs": 10,
+    "Linux_job_minutes": 120,
+    "new_G3_parents": 3,
+    "single_controlled_Bun_parent_expected_distinct_cases": 12,
+    "scope": "Ordinary PR run only; three CUDA selected runs remain separate same-source required qualification"
+  },
+  "duration_estimate_basis": {
+    "seconds": 6875.72,
+    "basis": "CI439 whole6254 + CI440 new G1/G2 named hosted143.22 + G3 local app65.68/CLI177.83/controlled coverage234.99; local/hosted speed and network differ",
+    "estimate_only_no_guarantee": true
+  },
+  "result": "COMPLETED FAILURE:6success/macOS+Corpus+Required failure/Linux cancelled by 120min job timeout",
+  "scope": "Explicit Bun Node-compatible JS and guarded final-profile CI dispatch; no general/Bun-only automatic-entry/whole support or signed release claim",
+  "independent_local_next": "Preserve first Corpus SumDB stream failure and macOS default-test6m timeout; keep Linux/source frozen and consume next20min. Support audit identified UVx extras/--with goal gap: root extras can reuse current connected graph; disconnected --with requires a separate model decision. No feature source changed; final CUDA3 deferred until required source changes complete.",
+  "authorization": "User-authorized sequential work and important grouped CI; main/release untouched",
+  "latest_actual_poll": {
+    "number": 6,
+    "due_at": "2026-10-30T15:03:25.419251+00:00",
+    "query_started_at": "2026-10-30T15:03:25.419444+00:00",
+    "api_get_only": true,
+    "status": "in_progress",
+    "conclusion": null,
+    "jobs": [
+      {
+        "id": 124077271882,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124077272164,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124077272254,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
+      },
+      {
+        "id": 124077272282,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124077272290,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124077272318,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124077272332,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
+      },
+      {
+        "id": 124077272390,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124077272398,
+        "name": "gVisor Linux Integration",
+        "status": "in_progress",
+        "conclusion": null,
+        "current_step": "Qualify current execution workflows and boundaries"
+      }
+    ],
+    "query_ended_at": "2026-10-30T15:03:26.442991+00:00",
+    "next_due_at": "2026-10-30T15:23:26.442991+00:00"
+  },
+  "completed8_proof": {
+    "scope": "Completed8 only:6SUCCESS/2FAIL; Linux in progress/Required pending",
+    "source": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+    "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+    "whole_tree": "a5eedf7aa95d002c2542822741b3f173d9402ce5",
+    "source_parent_verified": true,
+    "jobs": [
+      {
+        "job_id": 124077271882,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success",
+        "bytes": 279382,
+        "sha256": "aa128445e21597228e02ffbe982bcaca14fe2ba30435cab1bf0ef56e84634144",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272164,
+        "name": "Docs",
+        "conclusion": "success",
+        "bytes": 20519,
+        "sha256": "6ce147b9eec4b4278ec45c60905cd9160e44e8fd87172b76a5671a4763c13e36",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272254,
+        "name": "macOS",
+        "conclusion": "failure",
+        "bytes": 115075,
+        "sha256": "f721db06cea20c0804539cf843639c910ed8ec06124825539ebe528a230aaa0d",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272282,
+        "name": "Security",
+        "conclusion": "success",
+        "bytes": 21964,
+        "sha256": "7f5721c67d28bdd9938e68cd18df81edb5d168846312bc53bbdaaba29c40263f",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272290,
+        "name": "Minimum Go",
+        "conclusion": "success",
+        "bytes": 21503,
+        "sha256": "f9e1888b2d411d6bef6a63abfae8019a378deb74d63b30a54b7510b482f17230",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272318,
+        "name": "Quick",
+        "conclusion": "success",
+        "bytes": 23839,
+        "sha256": "4d277a9fe3c521b2ff747b4eaffbaf534869081df7ffb2f959d4ac341371416e",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272332,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "failure",
+        "bytes": 21937,
+        "sha256": "218afce174a4177a2a4a0d06bc0086f38099cdece0a51ca6c59022dc0df46d9a",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272390,
+        "name": "Vulnerability",
+        "conclusion": "success",
+        "bytes": 21705,
+        "sha256": "caf8a7c8b9e3b29c753ca0c24095ee41c4a4bb5af8958516fe022e6d447c2e3c",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      }
+    ],
+    "bytes": 525924,
+    "fetched_once_no_refetch": true
+  },
+  "terminal_external_MCP_GET": {
+    "status": "completed",
+    "conclusion": "failure",
+    "run_updated_at": "2026-10-30T15:04:30Z",
+    "all10_jobs": [
+      {
+        "id": 124077271882,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124077272164,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124077272254,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 124077272282,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124077272290,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124077272318,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124077272332,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 124077272390,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124077272398,
+        "name": "gVisor Linux Integration",
+        "status": "completed",
+        "conclusion": "cancelled"
+      },
+      {
+        "id": 124136518136,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ],
+    "not_a_seventh_timed_GET": true
+  },
+  "whole_log_readback": {
+    "source": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+    "tree": "a5eedf7aa95d002c2542822741b3f173d9402ce5",
+    "all10_checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+    "jobs": [
+      {
+        "job_id": 124077271882,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 279382,
+        "sha256": "aa128445e21597228e02ffbe982bcaca14fe2ba30435cab1bf0ef56e84634144"
+      },
+      {
+        "job_id": 124077272164,
+        "name": "Docs",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 20519,
+        "sha256": "6ce147b9eec4b4278ec45c60905cd9160e44e8fd87172b76a5671a4763c13e36"
+      },
+      {
+        "job_id": 124077272254,
+        "name": "macOS",
+        "conclusion": "failure",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 115075,
+        "sha256": "f721db06cea20c0804539cf843639c910ed8ec06124825539ebe528a230aaa0d"
+      },
+      {
+        "job_id": 124077272282,
+        "name": "Security",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21964,
+        "sha256": "7f5721c67d28bdd9938e68cd18df81edb5d168846312bc53bbdaaba29c40263f"
+      },
+      {
+        "job_id": 124077272290,
+        "name": "Minimum Go",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21503,
+        "sha256": "f9e1888b2d411d6bef6a63abfae8019a378deb74d63b30a54b7510b482f17230"
+      },
+      {
+        "job_id": 124077272318,
+        "name": "Quick",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 23839,
+        "sha256": "4d277a9fe3c521b2ff747b4eaffbaf534869081df7ffb2f959d4ac341371416e"
+      },
+      {
+        "job_id": 124077272332,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "failure",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21937,
+        "sha256": "218afce174a4177a2a4a0d06bc0086f38099cdece0a51ca6c59022dc0df46d9a"
+      },
+      {
+        "job_id": 124077272390,
+        "name": "Vulnerability",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21705,
+        "sha256": "caf8a7c8b9e3b29c753ca0c24095ee41c4a4bb5af8958516fe022e6d447c2e3c"
+      },
+      {
+        "job_id": 124077272398,
+        "name": "gVisor Linux Integration",
+        "conclusion": "cancelled",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 890065,
+        "sha256": "aa1168ef153ed87a8cdb92dc618b6a06447be1cd093c3dc65602f6aad1e6833e"
+      },
+      {
+        "job_id": 124136518136,
+        "name": "Required",
+        "conclusion": "failure",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 22501,
+        "sha256": "eb85d9bd3a1d9a39a9d629c7637f0ba9eadaac19bb92a86c1510f2e880cc4507"
+      }
+    ],
+    "bytes": 1438490,
+    "completed8_not_refetched": true,
+    "last2_fetched_once": true
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004/P6-C current Python application workflow named local",
+  "baseline": "3a83394592622e2cbbf592724dd19641e89cece1",
+  "baseline_tree": "79d5dc525dce3d3fddb0685c861063a42ec4c8d4",
+  "runtime_inputs": 1368,
+  "existing1365_unchanged": true,
+  "new_paths": [
+    "internal/bootstrap/python_execution_run.go",
+    "internal/bootstrap/python_execution_run_test.go",
+    "internal/bootstrap/python_execution_run_integration_test.go"
+  ],
+  "implementation": "private concrete application.ExecutionRuntime rereads current opaque console inventory and delegates same context to existing backend; factory reuses generic workflow/current preparation; honest uv-tool-install identity",
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.719
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/bootstrap",
+        "-run",
+        "^TestPythonExecutionRuntime"
+      ],
+      "exit_code": 0,
+      "seconds": 11.894
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 323.823
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/bootstrap",
+        "./internal/application"
+      ],
+      "exit_code": 0,
+      "seconds": 22.892
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.923
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 4.275
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-c-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.271
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 18.281
+    }
+  ],
+  "test_binary": {
+    "role": "bootstrap",
+    "path": "/tmp/haa-p6-c-v1-bootstrap.test",
+    "sha256": "f6854333111431e27dea729501fd5ea1bfff6345d66a0fcd091035ee5c22f5b2",
+    "bytes": 51683410
+  },
+  "CPP": {
+    "sha256": "f69b315ea353f7e1840c6e176e5837cbb89a0839012bd1af118cc5f84a2551db",
+    "latches": 132,
+    "unchanged": true
+  },
+  "actual": {
+    "parent": "TestLinuxPythonExecutionWorkflowIntegration",
+    "parent_seconds": 95.89,
+    "operator_seconds": 98.513,
+    "cases": [
+      "normal0: current ALLOW, attempted=true, complete=true",
+      "guest2: current ALLOW, typed PythonProgramError, attempted=true, complete=true",
+      "missing-console: current ALLOW, PREPARATION_FAILED, attempted=false, complete=false, staging unchanged"
+    ],
+    "success_case_readback": [
+      [
+        "1",
+        "true",
+        "true",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ],
+      [
+        "2",
+        "true",
+        "true",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ],
+      [
+        "3",
+        "false",
+        "false",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ]
+    ],
+    "native_solver": "ACTUAL UV tool install; NOT UVx equivalence",
+    "current_integrity_static_dynamic_Evidence_M3_M5": "ACTUAL fresh each request",
+    "manifest_SBOM_staged_bytes_and_Evidence_readback": true,
+    "source_sha256": "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a",
+    "source_host5_fixed42_ZIP_Docker_unchanged": true,
+    "helper_wait": 0,
+    "owned_workspaces_observer_endpoints_absent": true,
+    "no_skip": true,
+    "log_sha256": "7bdf758f91087ce488a673948e21c87d247c00a5c9ea6a8fc28200f8398b34ed"
+  },
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (internal generic workflow)",
+    "QUALIFIED": "YES (named local public3)",
+    "ACCEPTANCE_CLOSED": "YES (named internal workflow3 only)",
+    "MISSING": [
+      "new-source grouped hosted boundary8/hostile5/workflow3 qualification",
+      "native UVx/run bounded equivalence/golden",
+      "aliases/CLI and whole final profiles/signed support",
+      "prior raw fork-only/CPU/drop causes remain unconfirmed"
+    ]
+  },
+  "cleanup": {
+    "removed_files": 2,
+    "logical_bytes": 54905002,
+    "root_processes": 85,
+    "references": 0,
+    "query_errors": 0,
+    "cumulative_removed_files": 209,
+    "cumulative_logical_bytes": 7643045639,
+    "Windows_VHD_physical_shrink": false
+  },
+  "originals": {
+    "checks_source": "docs/github-logs/package-client-quarantine-20261021/p6-c-preactual-original-inventory.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p6-c-actual-v1-original-inventory.json",
+    "cleanup": [
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c-cleanup-inventory.py",
+        "bytes": 2192,
+        "sha256": "d7aee55eabaaa1be6559c2136bbaec34970680b3295cecd12bbf00257b4c0a48"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c-cleanup.py",
+        "bytes": 5033,
+        "sha256": "ec74d1088764b27c28fee0817a27a396434722fcf4bbc70edaee906ae7074b1a"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c-cleanup-candidate.json",
+        "bytes": 1890,
+        "sha256": "fee1a40d037fbf8a1b0b36cb08f275a0714c892e5fc6d7057ff05c8dd8195c35"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c-cleanup-preflight.json",
+        "bytes": 2155,
+        "sha256": "08b5c2d949bac38bf0ad3502c278c70162c472d602a5a98135ea3929998cc891"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c-cleanup-result.json",
+        "bytes": 2544,
+        "sha256": "ab3cd6971e6a651c7f24ac0bd7a1166ef269054318434764a6d4e2ec75ea3036"
+      }
+    ]
+  },
+  "hosted_scope": "CI432 source9198/tree98ecc runtime1361 all10SUCCESS; these later runtime1368 sources are outside it"
+}

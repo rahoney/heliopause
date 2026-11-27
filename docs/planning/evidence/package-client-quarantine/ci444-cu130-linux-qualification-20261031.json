@@ -1,0 +1,47 @@
+{
+  "profile": "cu130",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "status": "LINUX_QUALIFIED_WHOLE_PROFILE_PENDING_MACOS",
+  "job": 124316524714,
+  "CPU_full_seconds": 300.39,
+  "cu130_full_seconds": 1145.81,
+  "top_parent_occurrences": 6,
+  "unique_top_parents": 5,
+  "no_fail_or_skip": true,
+  "explicit_qualification_input": {
+    "expected_identity_origin": "official source resolver metadata, before main intake; never payload bytes or artifact output",
+    "explicit_input": {
+      "target_sha256": "680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+      "source": "pypi",
+      "project": "numpy",
+      "version": "2.4.6",
+      "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+      "reason": "BROADER_MODULE_PROBES"
+    },
+    "plan": "cuda-bindings-numpy",
+    "profile": "cu130",
+    "resolution_sha256": "93614a35aeb83d72800460112f3b1ddd15c09b58346390f18fc9102589e770e3",
+    "runtime": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu130",
+    "schema_version": 1,
+    "target_declared_integrity": "sha256:680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+    "target_project": "cuda-bindings",
+    "target_source": "pypi",
+    "target_url": "https://files.pythonhosted.org/packages/15/65/0b8f2f2509e5f1a8e556a2e083ac0287fe4af79afdba3153454229306f39/cuda_bindings-13.4.4-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "target_version": "13.4.4",
+    "torch_version": "2.14.0+cu130"
+  },
+  "bounded_command_module": "triton.profiler.viewer",
+  "bounded_command_disposition": "NOT_ATTESTED",
+  "asserted_by_full_test": [
+    "installed torch/current source manifest exists",
+    "bounded not-attested evidence referenced in result/promotion",
+    "qualification-only NumPy not promoted as a requested dependency"
+  ],
+  "helper_waits": [
+    "0",
+    "0"
+  ],
+  "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=170170",
+  "raw_log": "docs/github-logs/package-client-quarantine-20261021/ci444-job124316524714.log"
+}

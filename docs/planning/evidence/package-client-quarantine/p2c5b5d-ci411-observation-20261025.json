@@ -1,0 +1,85 @@
+{
+  "schema": "p2-pnpm-ci411-cu132-observation/v1",
+  "source": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+  "tree": "e4ea86ceba92445ccb4de99078a6aac1c363b5df",
+  "run_id": 40155809883,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40155809883",
+  "elapsed_seconds": 4808,
+  "overall": "FAILURE: macOS default-test timeout + Required failure; 8 successful jobs",
+  "linux": "SUCCESS: actual cu132 and PNPM whole source; not overall Required success",
+  "linux_top_level_pass": 65,
+  "selected_actual": [
+    {
+      "test": "TestPNPMActualIsolatedNativeStartup",
+      "seconds": 3.25
+    },
+    {
+      "test": "TestPNPMActualIsolatedEmptyLock",
+      "seconds": 2.91
+    },
+    {
+      "test": "TestPNPMActualIsolatedNodeQuery",
+      "seconds": 2.96
+    },
+    {
+      "test": "TestPNPMActualReleaseArtifactProbe",
+      "seconds": 4.5
+    },
+    {
+      "test": "TestPNPMActualProductionProjectInspection",
+      "seconds": 36.86
+    },
+    {
+      "test": "TestPNPMActualProductionInstanceExecution",
+      "seconds": 14.32
+    },
+    {
+      "test": "TestPNPMPublicNativeResolverIntegration",
+      "seconds": 88.99
+    },
+    {
+      "test": "TestPNPMPublicApprovedCacheIntegration",
+      "seconds": 33.69
+    },
+    {
+      "test": "TestPNPMPublicProjectTransactionIntegration",
+      "seconds": 114.86
+    },
+    {
+      "test": "TestPNPMProjectCLIIntegration",
+      "seconds": 142.61
+    },
+    {
+      "test": "TestPNPMNativeOriginalIntegration",
+      "seconds": 99.99
+    },
+    {
+      "test": "TestLinuxPyTorchResolverIntegration",
+      "seconds": 35.33
+    },
+    {
+      "test": "TestLinuxPyTorchFullIntegration",
+      "seconds": 298.48
+    },
+    {
+      "test": "TestLinuxPyTorchFullIntegration",
+      "seconds": 1089.44
+    }
+  ],
+  "observer_latches_each": 112,
+  "helper_reaped_wait0": 7,
+  "cleanup": "original0 CONFIRMED_STOPPED stop0/client_error0/client_restore0",
+  "macos": {
+    "actual_go27": true,
+    "failure": "default test outer6minute command deadline, no test assertion failure or package timeout panic captured",
+    "active_snapshot": [
+      "promotion package elapsed277382ms",
+      "update-runtime package elapsed138225ms",
+      "UVSameVersion root test elapsed1768ms"
+    ],
+    "caution": "snapshot active means incomplete telemetry, not culprit; promotion package success227.625s printed in tail while snapshot remains active; current running Root test only1.768s, no hang proved; slow parallel test capture includes wall time since run and pause intervals"
+  },
+  "all10_decoded_logs_readback": true,
+  "raw": "docs/github-logs/package-client-quarantine-20261021/ci411-*",
+  "status": "P2 ACCEPTANCE OPEN: failed macOS qualification and B5e direct ENOSPC acceptance remain; no blind rerun"
+}

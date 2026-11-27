@@ -1,0 +1,134 @@
+{
+  "work_item": "M13-004/P3-B6a",
+  "baseline": "386777d5235411e9f892ce2de8add78717a2861f",
+  "status": {
+    "IMPLEMENTED": "YES (existing native tool/volume owner reused)",
+    "WIRED": "YES (separate typed runtime-supply consumer); NO (whole inspector)",
+    "QUALIFIED": "YES (named local protected supply/Node lifecycle only)",
+    "ACCEPTANCE_CLOSED": "YES (transport only); NO (explicit Bun Artifact execution/whole P3)",
+    "MISSING": [
+      "B6b explicit Bun Artifact command/admission and required coverage",
+      "whole inspection/Policy and hosted exact-source qualification",
+      "final support and affected profiles"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/sandbox/bun_artifact_runtime_real_test.go",
+      "sha256": "ed583eb8140720f5359b8586192a215380f08098ecadb13da6c2db818b2e56eb",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend.go",
+      "sha256": "53922a0ceadc8a3a668affa5e6954c7ae1816dbfa4fa531d240021f635666faf",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/bun_artifact_runtime.go",
+      "sha256": "6338296343bc5df986d5300e029594d24cce68f12133415899d4fa5c46e0703f",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/bun_artifact_runtime_test.go",
+      "sha256": "e70633e843099360f1fd3fd9dd33877b3a3a87d16044f9926f7a3b46f091ae4b",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "fbe15cd5033d52c20d1b0e5ce8f78e2b2943c122194086890fb87c6b23b29ee6",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b6a-first-quick.json",
+      "exit": 0,
+      "seconds": 181.662,
+      "receipt_sha256": "9cbe944f78a0829d1aa03692496b65cff4aa060998e273451cdf3b02bf63c548"
+    },
+    {
+      "receipt": "p3b6a-first-security.json",
+      "exit": 0,
+      "seconds": 12.226,
+      "receipt_sha256": "45e05af04a2afce3d9faba1319b51155d6f044f2e5816482fbe3141dc76708cf"
+    },
+    {
+      "receipt": "p3b6a-first-docs.json",
+      "exit": 0,
+      "seconds": 0.243,
+      "receipt_sha256": "d96bbfdc8fbb2cea9f0031672a72cefab878b1363971d766bb124bd33c0141da"
+    },
+    {
+      "receipt": "p3b6a-runtime-unit.json",
+      "exit": 0,
+      "seconds": 0.067,
+      "receipt_sha256": "f040002e4b2c019764dd4a74cc2931570482985595b86627e719cd347176913e"
+    },
+    {
+      "receipt": "p3b6a-sandbox-full-race.json",
+      "exit": 0,
+      "seconds": 24.57,
+      "receipt_sha256": "22b883f6185e79e5a575640a4b63b0b3245634afbbc432c16e464fffba563124"
+    },
+    {
+      "receipt": "p3b6a-bun-instance-tagged-vet.json",
+      "exit": 0,
+      "seconds": 1.273,
+      "receipt_sha256": "1e793c1910b5d305c91363166a50b04b5b2a4794f4455bac98b513f9aab726b3"
+    },
+    {
+      "receipt": "p3b6a-bun-runtime-v1-result.json",
+      "exit": 0,
+      "seconds": 93.696,
+      "receipt_sha256": "dea1a6d5e0d7ae201479137e81f2ce2765246516fd778366a813b9a8a9362f24"
+    }
+  ],
+  "reuse": {
+    "baseline": "386777d5235411e9f892ce2de8add78717a2861f",
+    "legacy_nil_runtime_body_normalized_equal": true,
+    "body_sha256": "e4f54bfe47485b436de95209ef5f16b9931c12fa851759266f7eb94ef6dd6940",
+    "unchanged": [
+      {
+        "path": "internal/sandbox/bun_instance_backend.go",
+        "sha256": "7116572cb3eb142236446a8a5194a40bf12f2386ffd2f616a6e3651c7056dbb2"
+      },
+      {
+        "path": "internal/sandbox/bun_target_lifecycle.go",
+        "sha256": "036218c5135f575f055ff1710fb1ce5dad3315979ec2276f743874748d9c0b19"
+      },
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "7df0504c141e42cdd395daa6b0b5db83066ddabea1ceabad82b0e43da9d45d7a"
+      },
+      {
+        "path": "internal/sandbox/native_tool_transport.go",
+        "sha256": "52b4e3cb8c6e589ef7ef6684083b739348eaeb377f8dfbe08ec7b542c0a74403"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime_volume.go",
+        "sha256": "c7fb5a8aa1e04199539a953e6dd1301611042a69a5369af261e9c15f79aec448"
+      }
+    ],
+    "scope": "Only explicit Bun native guards and resource finalization added; legacy Node/PNPM use nil prepare and zero native owner"
+  },
+  "actual": {
+    "Bun_public_peer_archives": 4,
+    "Bun_exact_instances_and_fresh_sessions": 4,
+    "Bun_seconds": 42.09,
+    "PNPM_transitive_and_peer_archives": "2 and4",
+    "PNPM_seconds": 48.69,
+    "operator_seconds": 93.696,
+    "pinned_supply": "protected installed full107308936B native tool/whole SHA readback in each separate root-owned volume",
+    "command": "unchanged npm/Node target lifecycle",
+    "no_skip": true,
+    "helper": "CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "IDENTICAL; runtime endpoints and all owned volumes/containers removed"
+  },
+  "preserved": [
+    "existing Node-only Bun and PNPM commands/topologies",
+    "original nil-native resource owner body normalized identical",
+    "CPP119, runtime pins, Policy, FS/network permissions and budgets"
+  ],
+  "remote": "no new push/dispatch for this helper phase; backend412 frozen7544 does not qualify this source",
+  "scope": "runtime transport is not Bun Artifact execution or whole supported feature; follow B6b actual command and coverage before final acceptance"
+}

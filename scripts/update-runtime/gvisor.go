@@ -116,7 +116,7 @@ func captureGvisor(args []string, out io.Writer) error {
 	if err := json.Unmarshal(lockBytes, &lock); err != nil {
 		return err
 	}
-	if lock.Schema != 1 || lock.GVisor.Bundle.Architecture != "amd64" || len(lock.GVisor.Bundle.Members) != len(bundlePaths) {
+	if lock.Schema != 5 || lock.GVisor.Bundle.Architecture != "amd64" || len(lock.GVisor.Bundle.Members) != len(bundlePaths) {
 		return errors.New("unknown runtime bundle capture schema")
 	}
 	selected, err := selectedVersion(root, "go")

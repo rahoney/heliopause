@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "baseline": "d1d4fdcef5df5c5d2b6040df8189cdb1ee032654",
+  "scope": "data-only native UV auxiliary ownership format research; no public/gVisor/Policy/adoption qualification",
+  "runtime": {
+    "uv": "0.13.4",
+    "python": "3.14.7",
+    "execution": "runc/network-none/read-only/UID1000/no-cap/NPP; no artifact imports or entrypoint execution"
+  },
+  "cases": {
+    "local_layout_commands": 11,
+    "registry_shape_commands": 3
+  },
+  "observations": {
+    "installer_bytes_hex": "7576",
+    "installer_bytes_length": 2,
+    "requested_empty": true,
+    "local_wheel_uv_cache": "present; timestamp object/null commit/null tags/empty env/empty directories; untrusted data, not ownership authority",
+    "registry_shape_uv_cache": "absent; observed local loopback index only",
+    "console_wrapper": "302B and mode0755 in venv bin; RECORD uses ../../../bin; not executed, existing generated-script refusal remains",
+    "compile_bytecode": "one cpython-314 timestamp .pyc observed outside RECORD; default no .pyc; no cache approved or executed"
+  },
+  "cleanup": {
+    "containers_removed": 6,
+    "derived_images_removed_no_prune": 2,
+    "host_before_after_identical": true,
+    "completed_entries_removed": 6,
+    "completed_bytes_removed": 20410,
+    "root_references": 0,
+    "unknown_query_errors": 0,
+    "confirmed_zombie_mountinfo_einval": "state Z and same start_time plus empty fd/maps/cmdline; original errors retained; no unrelated process action",
+    "first_registry_workspace_cleanup": "own archive-copy wrapper cmdline reference blocked deletion; fresh query after its exit found zero"
+  },
+  "upstream": [
+    {
+      "role": "pinned wheel metadata/template",
+      "url": "https://github.com/astral-sh/uv/blob/0.13.4/crates/uv-install-wheel/src/wheel.rs"
+    },
+    {
+      "role": "optional nonempty cache info caller",
+      "url": "https://github.com/astral-sh/uv/blob/0.13.4/crates/uv-installer/src/installer.rs"
+    },
+    {
+      "role": "cache schema",
+      "url": "https://github.com/astral-sh/uv/blob/0.13.4/crates/uv-cache-info/src/cache_info.rs"
+    }
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-cleanup-proc-notice.json",
+      "bytes": 1680,
+      "sha256": "4d90961dbe24f139cb65bf4fa2114d5bdc2e10592446e6388ff1cd06e50fb007"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-compiled-census.json",
+      "bytes": 3613,
+      "sha256": "7db3287e7b073316f136af17ead0ac69b92a4a60ea010186173a75c9a5c33352"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-compiled-install.json",
+      "bytes": 652,
+      "sha256": "ef60cae2543afccf513dd687edfd63d4eee6f72c7280727ef19b75c87108bd95"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-entry-census.json",
+      "bytes": 3687,
+      "sha256": "7bb33a2b39569807ad746c06284f1d13e8dac48125ad4cce06ff549022e10035"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-entry-create.json",
+      "bytes": 388,
+      "sha256": "d633c0c308048afef9edd38346ac90325b7b32890384bae5257c5d62f1216a99"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-entry-install.json",
+      "bytes": 538,
+      "sha256": "aa10ddb5c9fbdc0b5a0b5a42cbc9c1346920d63dd8d1e59991ac1810f81e95d0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-entry-wrapper.json",
+      "bytes": 746,
+      "sha256": "e9f3c47fbd3851d168c6147687d2087cec7e7160fd49cf62cf88da4d2c6a572b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-host-after.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-host-before.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-result.json",
+      "bytes": 19445,
+      "sha256": "1fb3f247c88664682f3ff9818d3d9d85883fbaf2fc8cf7d168aa0bab45e83b3b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-target-census.json",
+      "bytes": 3353,
+      "sha256": "057c6f7aa80cfca1010cee7d44b78bd80ef7b67fa5defb141809382000b3195c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-target-install.json",
+      "bytes": 587,
+      "sha256": "a855e07ae2e90b9317407ab1c6e00e9471386f5a55e3a73474e3a768ffb8d080"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-venv-census.json",
+      "bytes": 3202,
+      "sha256": "02a451cb9895ac4495f2c536474fb343aee2192a9d55c337435f3cc844883677"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-venv-create.json",
+      "bytes": 385,
+      "sha256": "acbe5b5457d2d4333611983420e89e419b5194d91ba9dd28ad9865a7551ba2f0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-venv-install.json",
+      "bytes": 536,
+      "sha256": "76fa040e0ff92e055347d5b1543ff132f3ef9f130247ae9906a14cd794f72b92"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-ownership-format-discovery-workspace-cleanup.json",
+      "bytes": 2271,
+      "sha256": "d0589246f4d6a3627d1b329737735bc0059915a5b391af35e96a52ea0e608b70"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-registry-aux-discovery-host-after.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-registry-aux-discovery-host-before.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-registry-aux-discovery-index-ready.json",
+      "bytes": 387,
+      "sha256": "3719086763dabb1303c2705035db275b0427cdb56818eafcacea806bc356c62d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-registry-aux-discovery-registry-census.json",
+      "bytes": 2873,
+      "sha256": "cf1891e1dcd38295200e86a6545ad7ebad6ddad962f4705f55ed0e3c24894dc1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-registry-aux-discovery-registry-install.json",
+      "bytes": 590,
+      "sha256": "1275fd709e67c19a2fd73221d64f5d96f714f5ff9e1738c637253d826f762fd0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-registry-aux-discovery-result.json",
+      "bytes": 5283,
+      "sha256": "476ba3ebfe277662f5d461e7427834af6b39c3c255c82d7caf3d5f44ebf9dd3f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-registry-aux-discovery-workspace-cleanup.json",
+      "bytes": 2299,
+      "sha256": "37e2a374a015cdb87f05c611b92dcc7a40efd34b5aad07287cd816dc74ae3cb5"
+    }
+  ],
+  "operators": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-ownership-format-discovery.py",
+      "bytes": 10623,
+      "sha256": "ab8cb57a777fa9f15a3d190dcd9a6a216acb367087c0199fb9a958d91012a883"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-registry-aux-discovery.py",
+      "bytes": 9787,
+      "sha256": "ffc466407aff91e5c3f0b984da05bf499f8743d372f98f75daa2377d8a28c737"
+    }
+  ]
+}

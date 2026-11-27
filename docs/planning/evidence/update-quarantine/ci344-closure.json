@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "run_id": 39262321706,
+  "run_number": 344,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39262321706",
+  "source": "cdac96d8b5b069f6a6716a9f7822160eefc65291",
+  "checkout": "fbcaedfcf4dcb2abe58245e7266bd3fbc6f85c3b",
+  "parents": [
+    "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "cdac96d8b5b069f6a6716a9f7822160eefc65291"
+  ],
+  "tree": "18d0c65c35a177c57bd70503a91bf8d2e8f4989f",
+  "whole_tree_equal": true,
+  "jobs": [
+    {
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "conclusion": "success"
+    },
+    {
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "conclusion": "success"
+    }
+  ],
+  "native_macos": "Go1.26.9 darwin/amd64 production/default PASS",
+  "all_verbose_top_level_count": 45,
+  "related_top_level_count": 36,
+  "related_including_subtests_count": 56,
+  "CPU_seconds": 291.84,
+  "helper_waits": [
+    {
+      "pid": "149266",
+      "wait": 0
+    },
+    {
+      "pid": "161551",
+      "wait": 0
+    },
+    {
+      "pid": "169468",
+      "wait": 0
+    },
+    {
+      "pid": "268551",
+      "wait": 0
+    },
+    {
+      "pid": "270144",
+      "wait": 0
+    }
+  ],
+  "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=270144",
+  "logs": [
+    {
+      "path": "docs/github-logs/update-quarantine-20261018/ci344-quick.log",
+      "sha256": "0f7f05a028d7a8899f6649288ce0371913cf6daa1874a1e14289ef74e28c7a26"
+    },
+    {
+      "path": "docs/github-logs/update-quarantine-20261018/ci344-macos.log",
+      "sha256": "03f4290e16f40773e07e8c3f7aacb0e1e0782812f97c93d50b11ba26920107ab"
+    },
+    {
+      "path": "docs/github-logs/update-quarantine-20261018/ci344-linux.log",
+      "sha256": "9e74e50632533a8c843f1069a967a23ec6ba15d982edd8c07a4238041064a76d"
+    }
+  ],
+  "raw_availability": "local/untracked; hashes and normalized conclusions committed, full logs are not remote attachments",
+  "scope": "final M6-test/document source CI, exact tree/native macOS/existing consumers/CPU/confirmed cleanup; cb1 actual archive/ELF and shared consumer results retained only for identical product bytes; no new full CUDA or permanent activation/main merge/publication claim"
+}

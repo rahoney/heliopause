@@ -1,0 +1,184 @@
+{
+  "scope": "source9eb current production Node backend/preparation, controlled12, application2, public CLI4 and prior common consumers; later C7/P6 excluded",
+  "status": "PASS (named hosted scope)",
+  "run_id": 40803448693,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40803448693",
+  "source": "9eb854f43fd40cb8a2c034f383bdecfac98cc733",
+  "tree": "51a9a25c58a3f98df7572d43cde61d9fd10e381a",
+  "checkout": "b2eb8b6e5a773101199f37deb21a4f383ec5c6ba",
+  "tracked_files": 2996,
+  "runtime_inputs": 1343,
+  "all10_success": true,
+  "all10_checkout_whole_tree_matches_source": true,
+  "started_at": "2026-10-29T01:57:02Z",
+  "finished_updated_at": "2026-10-29T03:37:23Z",
+  "elapsed_to_final_update_seconds": 6021,
+  "final_query_at": "2026-10-29T03:37:45Z",
+  "timer05_consumed_retired": true,
+  "decoded10_logs_utf8_bytes": 1308207,
+  "previous8_logs_reused_verified": true,
+  "helper_latches": 131,
+  "linux": {
+    "passed_parents": 97,
+    "failed": 0,
+    "skipped": 0,
+    "CPU_full_seconds": 300.35,
+    "preparation_parent_seconds": 48.4,
+    "controlled_boundary_parent_seconds": 166.71,
+    "application_parent_seconds": 38.97,
+    "CLI_parent_seconds": 81.39,
+    "kernel_parent_seconds": 5.26,
+    "Node_public_fresh2": [
+      [
+        "1",
+        "0",
+        "4980",
+        "0"
+      ],
+      [
+        "2",
+        "1",
+        "62",
+        "0"
+      ]
+    ],
+    "controlled_boundary12": [
+      [
+        "argv",
+        "true",
+        "73",
+        "0"
+      ],
+      [
+        "term",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "kill",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "cancel",
+        "false",
+        "6",
+        "0"
+      ],
+      [
+        "stdout-overflow",
+        "false",
+        "1048576",
+        "0"
+      ],
+      [
+        "stderr-overflow",
+        "false",
+        "0",
+        "1048576"
+      ],
+      [
+        "outside-read",
+        "false",
+        "9",
+        "0"
+      ],
+      [
+        "network",
+        "false",
+        "14",
+        "0"
+      ],
+      [
+        "child",
+        "false",
+        "12",
+        "0"
+      ],
+      [
+        "comm-spoof",
+        "false",
+        "12",
+        "0"
+      ],
+      [
+        "readonly",
+        "true",
+        "16",
+        "0"
+      ],
+      [
+        "deadline",
+        "false",
+        "6",
+        "0"
+      ]
+    ],
+    "child_scope": "clone-startup fault/ARTIFACT/incomplete/cleanup; child JS and held-pipe WaitDelay not proven",
+    "Application_public_fresh2": [
+      [
+        "1",
+        "0",
+        "4980",
+        "0"
+      ],
+      [
+        "2",
+        "1",
+        "62",
+        "0"
+      ]
+    ],
+    "public_CLI4": [
+      [
+        "1",
+        "npx",
+        "json",
+        "en",
+        "false",
+        "0"
+      ],
+      [
+        "2",
+        "exec",
+        "json",
+        "ko",
+        "true",
+        "1"
+      ],
+      [
+        "3",
+        "npx",
+        "human",
+        "ko",
+        "true",
+        "0"
+      ],
+      [
+        "4",
+        "exec",
+        "human",
+        "en",
+        "false",
+        "1"
+      ]
+    ],
+    "kernel_root_cases": 8,
+    "helper_wait0": 16,
+    "final_cleanup_original0": 3,
+    "restored_client": true
+  },
+  "other_jobs": "native macOS/minimum Go/Quick/Security/Vulnerability/corpus/Docs/Required SUCCESS",
+  "raw_evidence": {
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/ci429-final-decoded-log-inventory.json",
+    "source_proof": "docs/github-logs/package-client-quarantine-20261021/ci429-final-source-proof.json",
+    "poll": "docs/github-logs/package-client-quarantine-20261021/ci429-poll05-final-decoded.json"
+  },
+  "MISSING": [
+    "later local C7 refusal and P6 source qualification",
+    "whole P4/P5-P7/final4profiles/signed qualification"
+  ],
+  "unchanged_uncertainty": "older macOS deadline direct cause remains OPEN; this PASS is not a causal explanation"
+}

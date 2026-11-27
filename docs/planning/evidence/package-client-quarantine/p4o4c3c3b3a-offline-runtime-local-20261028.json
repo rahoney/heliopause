@@ -1,0 +1,260 @@
+{
+  "scope": "M13-004/P4-O4-C3c3b3a closed offline native constructor and distinct Go topology; named local only",
+  "baseline": {
+    "source": "0554b0ae6519b75840142078967b6a4a6a74bb81",
+    "tree": "d5c90876d800d259903a04d07ed4d5a390c02f13",
+    "files": 2836
+  },
+  "implemented": "YES (closed constructor/Go topology); NO (CPP native profile/session)",
+  "wired": "YES (runc diagnostic directly consumes constructor, runtime-only override); NO (production native session/factory/CLI)",
+  "qualified": "YES (constructor/Go topology/runc scope); NO (CPP external admission)",
+  "acceptance_closed": "NO (whole native pipx/CLI)",
+  "source": [
+    {
+      "path": "internal/sandbox/pipx_native_runtime.go",
+      "sha256": "4d703a03b88aa81a947bcd7f4ff0873b958ad3104a6e99915da4cf926372e7ce"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_runtime_test.go",
+      "sha256": "298949512a98edc54b120eab6833d57cc0e8c3f6398c78bf4c829684fbb4a790"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "9901e151cfb37dbcf3a26de5d7d35ca15972442cb4f05679d0828796c866c9da"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+      "sha256": "853dfeca095b651a1967c29527b259409124a3c9a2bbe1efffa6cc3d57e54720"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 1.847,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 390.74,
+      "log_sha256": "de25279a746d221ef66f0a5a8f12cfd608f33c8c019fdae2965c64e6510367bc"
+    },
+    {
+      "step": "sandbox-race",
+      "exit_code": 0,
+      "seconds": 24.889,
+      "log_sha256": "30a6ad07709a9cf8a811ae3832c9b5352d58b1a2bdce3cb7406a054f4fa7fe1f"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 1.116,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 7.31,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.311,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 12.823,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "race_scope": [
+    "ok  \tgithub.com/rahoney/heliopause/internal/sandbox\t15.085s",
+    "ok  \tgithub.com/rahoney/heliopause/internal/artifact/pypi\t(cached)"
+  ],
+  "actual": {
+    "scope": "runc ordinary1000 closed offline constructor with only runc runtime override/complete frozen native output; no gVisor/installed current/Policy/publication",
+    "seconds": 12.907,
+    "exit_code": 0,
+    "failure": null,
+    "top_level_passes": [
+      "TestPipxActualOfflineNativeProgram"
+    ],
+    "exact_parent_pass": true,
+    "no_skip": true,
+    "Host_Docker_input42_ZIP_identical": true,
+    "binary_sha256": "90417b80894a38aaefdf432ada0e915b20cfbd58109d0a14b0beebe1cc96b9b5",
+    "binary_unchanged": true,
+    "source": [
+      {
+        "path": "internal/sandbox/pipx_native_runtime.go",
+        "sha256": "4d703a03b88aa81a947bcd7f4ff0873b958ad3104a6e99915da4cf926372e7ce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_runtime_test.go",
+        "sha256": "298949512a98edc54b120eab6833d57cc0e8c3f6398c78bf4c829684fbb4a790"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "9901e151cfb37dbcf3a26de5d7d35ca15972442cb4f05679d0828796c866c9da"
+      },
+      {
+        "path": "internal/sandbox/pypi_resolver.go",
+        "sha256": "f8ef3509b334523cce64625e7ec38ed874983eb0af9f040a32f812150828e30e"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime_volume.go",
+        "sha256": "f96d000d70ef83111b1b6621c35bcfd17c6f6b61751425311135c11311aaa673"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7108331b1311bd622df167994244f2613ead63ba1e4f716d3c7664f9301d3cd2"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_output.go",
+        "sha256": "ecd894899420fa0284ec0c4c74a1535f0c233c25b0bda4a487ecbefd5016fd1d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_output_test.go",
+        "sha256": "84e455f7d64a74e84802309f6f67fbc0a5d9e5843728265903e899495309399d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input.go",
+        "sha256": "8462d39311118e667ecae1cab7b0e4d0e6d7dced0cf752c93bc6384a26deda8f"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input_test.go",
+        "sha256": "ba06bcd88dcd273d7bff5e3faf04a5292767d0eab3d756015fee543578ba0362"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume.go",
+        "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume_test.go",
+        "sha256": "52369892714bedf97c2bf438dcbe90ee91dfd90750bc3292cc3ba1976ec7d32a"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_test.go",
+        "sha256": "9adf41996efef3c2655ebffef98d6fccec73bf2718fc02aa15d4d63f946ee129"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+        "sha256": "853dfeca095b651a1967c29527b259409124a3c9a2bbe1efffa6cc3d57e54720"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_query_wheels.go",
+        "sha256": "8fe57170b6c5292d10655bfe963f7b845306713875faa6b6e58734b8fd305a4d"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+        "sha256": "724b7332fc3950e967a72ae9ac709e36fae3b4946dac4b36c0a90f274a7e0e4d"
+      }
+    ],
+    "source_unchanged": true
+  },
+  "actual_constructor_delta": "test changes only --runtime from fixed runsc to runc, then adds exact existing owned name/label. No user/mount/environment/path override.",
+  "closed_contract": {
+    "profile": "pipx-native-resolver",
+    "network": "none",
+    "workdir": "/",
+    "Config.User": "image empty, canonical PID1/every native exec demotion",
+    "inputs": "sealed ZIP RO plus sealed original whole-wheel RO; UV-only runtime and separate output",
+    "output": "manifest equals same frozen wheel snapshot ID; promotion128MiB",
+    "memory": "512MiB",
+    "scratch": "128MiB",
+    "CPU": "existing resolver per-process60 narrowed to public profile30; not aggregate inspection accounting proof",
+    "trace": "default10k/2MiB, new six-mount topology; old UV/acquired ZIP remain four and not wheel-phase profiles"
+  },
+  "negative_tests": [
+    "nil/unsealed/changed input",
+    "foreign native runtime/output root",
+    "output manifest or capacity mismatch",
+    "fixed offline environment/no user-host override",
+    "fresh isolated topology/default budget and old-profile preservation"
+  ],
+  "reused_owners": [
+    {
+      "path": "internal/sandbox/pypi_resolver.go",
+      "sha256": "f8ef3509b334523cce64625e7ec38ed874983eb0af9f040a32f812150828e30e",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_volume.go",
+      "sha256": "f96d000d70ef83111b1b6621c35bcfd17c6f6b61751425311135c11311aaa673",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/collector.go",
+      "sha256": "7108331b1311bd622df167994244f2613ead63ba1e4f716d3c7664f9301d3cd2",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command.go",
+      "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_input.go",
+      "sha256": "8462d39311118e667ecae1cab7b0e4d0e6d7dced0cf752c93bc6384a26deda8f",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_output.go",
+      "sha256": "ecd894899420fa0284ec0c4c74a1535f0c233c25b0bda4a487ecbefd5016fd1d",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_wheel_volume.go",
+      "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_data_volume.go",
+      "sha256": "ee73bd0afc33b8239eeb7e8584f852ab6a59c321088621760e6731261ee6fc9c",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "a4aec7cd892204779528b59c78fc9f560ba0c506c1a2479064ff00aa7fbfb7f9",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "661653a517309352f572d273af6a33599b59e0e3a281248a4c75ff92b4085848",
+      "identical_to_baseline": true
+    }
+  ],
+  "first_failures": [],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "CPP dedicated native profile and exact ARTIFACT pipx-parent/UV-child/Python-query provenance and restricted reads",
+    "actual gVisor offline session/installed supply consumer and full native end-to-end",
+    "existing current inspection/Evidence/Policy/transaction and public CLI; hostedUID1001/signed/final profiles"
+  ]
+}

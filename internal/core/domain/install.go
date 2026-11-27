@@ -36,9 +36,11 @@ func (t InstallTarget) String() string { return t.value }
 type InstallMode string
 
 const (
-	InstallNewTarget  InstallMode = "NEW_TARGET"
-	InstallNPMProject InstallMode = "NPM_PROJECT"
-	InstallPythonVenv InstallMode = "PYTHON_VENV"
+	InstallNewTarget             InstallMode = "NEW_TARGET"
+	InstallNPMProject            InstallMode = "NPM_PROJECT"
+	InstallPythonVenv            InstallMode = "PYTHON_VENV"
+	InstallPythonProjectControls InstallMode = "PYTHON_PROJECT_CONTROLS"
+	InstallGitHubAsset           InstallMode = "GITHUB_MANAGED_ASSET"
 )
 
 // InstallContext identifies either the M4 explicit new target or an M9 npm
@@ -73,11 +75,29 @@ func NewPythonVenvInstallContext(venvRoot InstallTarget) (InstallContext, error)
 	return InstallContext{target: venvRoot, mode: InstallPythonVenv}, nil
 }
 
+// NewPythonProjectControlContext selects only a project's control files.
+// It grants no venv discovery, package installation or artifact execution.
+func NewPythonProjectControlContext(projectRoot InstallTarget) (InstallContext, error) {
+	if projectRoot.value == "" {
+		return InstallContext{}, errors.New("python project control root is required")
+	}
+	return InstallContext{target: projectRoot, mode: InstallPythonProjectControls}, nil
+}
+
+// NewGitHubAssetInstallContext selects an explicitly managed standalone target.
+// The trusted original-state session must prove ownership before resolution.
+func NewGitHubAssetInstallContext(target InstallTarget) (InstallContext, error) {
+	if target.value == "" {
+		return InstallContext{}, errors.New("managed GitHub asset target is required")
+	}
+	return InstallContext{target: target, mode: InstallGitHubAsset}, nil
+}
+
 func (c InstallContext) Target() InstallTarget   { return c.target }
 func (c InstallContext) Mode() InstallMode       { return c.mode }
 func (c InstallContext) RequiresNewTarget() bool { return c.mode == InstallNewTarget }
 func (c InstallContext) Valid() bool {
-	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv)
+	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv || c.mode == InstallPythonProjectControls || c.mode == InstallGitHubAsset)
 }
 
 // DependencyNodeID is an adapter-generated opaque identifier for one exact
@@ -277,12 +297,13 @@ func (g LockedDependencyGraph) Derivations() []DerivedGraphBinding {
 }
 
 // DependencyResolution binds an exact graph to the resolver runtime and raw
-// lockfile content identity that produced it. Raw lockfile bytes stay inside
-// the resolver adapter.
+// lockfile content identity that produced it. Optional opaque control records
+// preserve the selected bytes without interpreting ecosystem syntax in Core.
 type DependencyResolution struct {
 	graph           LockedDependencyGraph
 	runtimeIdentity string
 	lockfileDigest  ContentDigest
+	controls        []ProjectControlFile
 }
 
 func NewDependencyResolution(graph LockedDependencyGraph, runtimeIdentity string, lockfileDigest ContentDigest) (DependencyResolution, error) {
@@ -299,4 +320,25 @@ func (r DependencyResolution) Graph() LockedDependencyGraph { return r.graph }
 func (r DependencyResolution) RuntimeIdentity() string      { return r.runtimeIdentity }
 func (r DependencyResolution) LockfileDigest() ContentDigest {
 	return r.lockfileDigest
+}
+
+// WithProjectControls retains bounded opaque selection inputs for exact later
+// publication. Content is not approval; adapters validate ecosystem semantics.
+func (r DependencyResolution) WithProjectControls(controls []ProjectControlFile) (DependencyResolution, error) {
+	if r.lockfileDigest.String() == "" || len(controls) == 0 || len(controls) > 32 {
+		return DependencyResolution{}, errors.New("selection controls require a valid resolution")
+	}
+	copy := append([]ProjectControlFile(nil), controls...)
+	sort.Slice(copy, func(i, j int) bool { return copy[i].Name() < copy[j].Name() })
+	for i, control := range copy {
+		if control.Name() == "" || control.Digest().String() == "" || !control.Present() || i > 0 && copy[i-1].Name() == control.Name() {
+			return DependencyResolution{}, errors.New("selection controls are invalid")
+		}
+	}
+	r.controls = copy
+	return r, nil
+}
+
+func (r DependencyResolution) ProjectControls() []ProjectControlFile {
+	return append([]ProjectControlFile(nil), r.controls...)
 }

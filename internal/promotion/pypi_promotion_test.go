@@ -395,6 +395,16 @@ func TestValidatePyPIOutputRejectsRecordIntegrityAndOutputMismatches(t *testing.
 		{"incorrect hash", func(t *testing.T, _ string, _ string, dist string) {
 			replaceRecord(t, dist, "sha256=", "sha256=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 		}},
+		{"same-size file content changed", func(t *testing.T, _ string, site string, _ string) {
+			if err := os.WriteFile(filepath.Join(site, "fixture", "__init__.py"), []byte("fail\n"), 0o600); err != nil {
+				t.Fatal(err)
+			}
+		}},
+		{"valid digest on a multiply linked file", func(t *testing.T, root, site string, _ string) {
+			if err := os.Link(filepath.Join(site, "fixture", "__init__.py"), filepath.Join(root, "outside-site.py")); err != nil {
+				t.Fatal(err)
+			}
+		}},
 		{"incorrect size", func(t *testing.T, _ string, _ string, dist string) {
 			replaceRecord(t, dist, ",5\n", ",6\n")
 		}},

@@ -1,0 +1,372 @@
+# Step 3 from CI480, ae28e25. Keep the failing run scalar as received.
+on:
+  pull_request:
+jobs:
+  gvisor-integration:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: 'true'
+      - run: 'true'
+      - name: Install pinned runtime and run lifecycle integration
+        shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
+        run: |
+          set -eu
+          if [ "$HELOX_CI_CUDA_ONLY" = true ] && [ "$HELOX_CI_SUITE" != exec-py ]; then echo 'qualification_scope=exec-py-leg'; exit 0; fi
+          runtime_lock=scripts/runtimes.lock.json
+          test -f "$runtime_lock"
+          docker_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.docker_ce_package' "$runtime_lock")"
+          containerd_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.containerd_package' "$runtime_lock")"
+          docker_engine_version="$(jq -er '.docker.ci_engine_version' "$runtime_lock")"
+          node_image="$(jq -er '.node_image.reference' "$runtime_lock")"
+          python_image="$(jq -er '.python_image.reference' "$runtime_lock")"
+          go_image="$(jq -er '.go_image.reference' "$runtime_lock")"
+          rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"
+          uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"
+          # The hosted runner's Azure mirror can stall before runtime setup.
+          # Keep Ubuntu's signed sources; use its official HTTPS archive directly.
+          test -f /etc/apt/apt-mirrors.txt
+          printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          apt_options=(-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15)
+          conflicting_packages=()
+          for package in docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc moby-engine moby-cli; do
+            if dpkg-query -W -f='${db:Status-Abbrev}' "$package" 2>/dev/null | grep -q '^ii'; then
+              conflicting_packages+=("$package")
+            fi
+          done
+          if ((${#conflicting_packages[@]})); then
+            sudo apt-get remove -y "${conflicting_packages[@]}"
+          fi
+          sudo install -m 0755 -d /etc/apt/keyrings
+          curl --fail --location --silent --show-error https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.asc >/dev/null
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          printf '%s\n' \
+            'Types: deb' \
+            'URIs: https://download.docker.com/linux/ubuntu' \
+            'Suites: noble' \
+            'Components: stable' \
+            'Architectures: amd64' \
+            'Signed-By: /etc/apt/keyrings/docker.asc' | sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null
+          sudo timeout --kill-after=30s 10m apt-get "${apt_options[@]}" -o APT::Update::Error-Mode=any update
+          sudo timeout --kill-after=30s 15m apt-get "${apt_options[@]}" install -y --allow-downgrades --no-install-recommends \
+            "docker-ce=$docker_package_version" \
+            "docker-ce-cli=$docker_package_version" \
+            "containerd.io=$containerd_package_version" \
+            binutils-aarch64-linux-gnu \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            libbpf-dev \
+            libc6-dev-i386 \
+            libc6-dev-arm64-cross
+          test -f /usr/include/bpf/bpf_helpers.h
+          test -f /usr/include/x86_64-linux-gnu/gnu/stubs-32.h
+          command -v clang >/dev/null
+          for tool in gcc g++ as ld objcopy; do
+            command -v "aarch64-linux-gnu-$tool" >/dev/null
+          done
+          test -x "$(aarch64-linux-gnu-g++ -print-prog-name=cc1plus)"
+          for header in \
+            asm/sigcontext.h \
+            asm/unistd.h \
+            errno.h \
+            linux/audit.h \
+            linux/futex.h \
+            linux/unistd.h \
+            signal.h \
+            stdint.h \
+            stdlib.h \
+            sys/prctl.h \
+            sys/types.h \
+            sys/ucontext.h \
+            sys/user.h; do
+            test -f "/usr/aarch64-linux-gnu/include/$header"
+          done
+          aarch64_gcc_include="$(aarch64-linux-gnu-gcc -print-file-name=include)"
+          test -f "$aarch64_gcc_include/stdbool.h"
+          test -f "$aarch64_gcc_include/stddef.h"
+          test "$(docker version --format '{{.Server.Version}}')" = "$docker_engine_version"
+          scripts/build-gvisor-runtime-bundle.sh "$RUNNER_TEMP/gvisor"
+          sudo install -d -m 0755 /usr/libexec/heliopause/gvisor/gvisor-bin
+          jq -er '.gvisor.runtime_bundle.members[].path' "$runtime_lock" | while IFS= read -r member; do
+            sudo install -m 0755 "$RUNNER_TEMP/gvisor/$member" "/usr/libexec/heliopause/gvisor/$member"
+          done
+          sudo install -m 0644 "$RUNNER_TEMP/gvisor/gvisor-bundle.manifest.json" /usr/libexec/heliopause/gvisor/gvisor-bundle.manifest.json
+          test "$(jq -er '.members | length' "$RUNNER_TEMP/gvisor/gvisor-bundle.manifest.json")" = 6
+          while IFS=' ' read -r member sha512; do
+            test "$(sudo sha512sum "/usr/libexec/heliopause/gvisor/$member" | awk '{print $1}')" = "$sha512"
+          done <<EOF
+          $(jq -er '.members[] | "\(.path) \(.sha512)"' "$RUNNER_TEMP/gvisor/gvisor-bundle.manifest.json")
+          EOF
+          sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
+          sudo install -d -m 0755 /etc/heliopause
+          sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json
+          sudo /usr/libexec/heliopause/gvisor/runsc install --download-sidecars=NEVER --require-sidecars=ALWAYS --runtime=runsc-trace -- --sidecar-usage-policy=STRICT --pod-init-config=/etc/heliopause/pod-init.json
+          sudo python3 -c 'import json; from pathlib import Path; path = Path("/etc/docker/daemon.json"); config = json.loads(path.read_text()) if path.exists() else {}; config.update({"firewall-backend": "iptables", "iptables": True, "ip6tables": False}); path.write_text(json.dumps(config, sort_keys=True) + "\n")'
+          sudo systemctl restart docker || { sudo systemctl status docker --no-pager || true; sudo journalctl -u docker --no-pager -n 100 || true; exit 1; }
+          sudo iptables -S DOCKER-USER
+          docker pull "$node_image"
+          docker pull "$python_image"
+          docker pull "$go_image"
+          docker pull "$rust_image"
+          docker pull "$uv_image"
+          scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"
+          sudo install -m 0755 "$RUNNER_TEMP/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
+
+          source scripts/ci-integration-cleanup.sh
+          haa_ci_initialize
+          echo 'Building helox for gVisor integration'
+          go build -trimpath -o "$RUNNER_TEMP/helox" ./cmd/helox
+          echo 'Building network-policy helper for gVisor integration'
+          go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper
+          CGO_ENABLED=0 go build -trimpath -buildvcs=true -ldflags='-s -w' -o "$RUNNER_TEMP/haa-sandbox-responder" ./cmd/haa-sandbox-responder
+          source scripts/ci-responder-source.sh
+          haa_ci_prepare_responder_base
+          echo 'Installing network-policy helper and preparing its identity contract'
+          sudo install -m 0755 "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
+          sudo install -m 0755 "$RUNNER_TEMP/haa-network-policy-helper" /usr/libexec/heliopause/haa-network-policy-helper
+          sudo install -d -m 0755 -o root -g root /run/heliopause-network-policy
+          # The foreground helper runs without the service unit StateDirectory.
+          sudo mkdir -m 0700 -- /var/lib/heliopause-recovery
+          printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
+          # The ordinary client must read the root-owned, non-writable public
+          # identity contract; it contains no credential or secret.
+          sudo chmod 0644 /etc/heliopause/network-policy.json
+          haa_start_policy_helper
+          /usr/libexec/heliopause/gvisor/runsc --version
+          docker version --format '{{.Server.Version}}'
+          docker info --format '{{json (index .Runtimes "runsc-trace")}}'
+          if haa_ci_suite exec-py; then
+          go test -run='^$' -fuzz=FuzzDecodeHelperRecord -fuzztime=2s ./internal/sandbox
+          HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
+          HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'
+          fi # suite
+          # Both experiments use the observation resource service, which admits
+          # only the configured client inode; run them as that client, then restore.
+          go test -c -o "$RUNNER_TEMP/helox-lifecycle-test" ./internal/sandbox
+          haa_install_ci_client "$RUNNER_TEMP/helox-lifecycle-test"
+          haa_start_policy_helper
+          if haa_ci_suite exec-py; then
+          (
+            cd internal/sandbox
+            HELOX_GVISOR_INTEGRATION=1 /usr/libexec/heliopause/helox -test.timeout=5m -test.run '^TestLinuxGVisorLifecycleIntegration$'
+            HELOX_GITHUB_RELEASE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.timeout=5m -test.run '^TestLinuxGitHubReleaseELFDynamicIntegration$'
+          )
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox"
+          haa_start_policy_helper
+          # The typed-helper ordinary-user path is exercised for both npm and pip.
+          # npm installs is-number@7.0.0 with complete ALLOW inspection and atomic
+          # offline promotion (exit 0).
+          # pip installs packaging@25.0 into an initialized Python 3.14 venv fixture,
+          # proving complete ALLOW inspection and atomic offline promotion (exit 0).
+          if [ "$HELOX_CI_CUDA_ONLY" = false ]; then
+          if haa_ci_suite npm-core; then
+          mkdir -p "$RUNNER_TEMP/pypi-target"
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            -v "$RUNNER_TEMP/pypi-target:/target" \
+            "$python_image" python -m venv --without-pip /target
+          set +e
+          /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
+          npm_status=$?
+          /usr/libexec/heliopause/helox pip install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
+          pypi_status=$?
+          set -e
+          test "$npm_status" = 0
+          test -f "$RUNNER_TEMP/npm-target/node_modules/is-number/package.json"
+          jq -e '.name == "is-number" and .version == "7.0.0"' \
+            "$RUNNER_TEMP/npm-target/node_modules/is-number/package.json" >/dev/null
+          test "$pypi_status" = 0
+          test -d "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages/packaging"
+          HELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1 go test -v -timeout=3m ./internal/verification/terraformprovider -run '^TestPublicTerraformProviderSourceIntegration$'
+          fi # suite
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          if haa_ci_suite npm-core; then
+          bash scripts/ci-npm-project.sh native
+          fi # suite
+          if haa_ci_suite pnpm; then
+          bash scripts/ci-pnpm-runtime.sh
+          fi # suite
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pnpm-project-test" ./internal/bootstrap
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          if haa_ci_suite npm-core; then
+          bash scripts/ci-stimulus-corpus.sh
+          bash scripts/ci-npm-project.sh project
+          fi # suite
+          if haa_ci_suite pnpm; then
+          bash scripts/ci-pnpm-runtime.sh project
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          if haa_ci_suite bun; then
+          bash scripts/ci-bun-runtime.sh
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          if haa_ci_suite bun; then
+          bash scripts/ci-bun-runtime.sh project
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          if haa_ci_suite exec-py; then
+          HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
+          fi # suite
+          if haa_ci_suite uv; then
+          (
+            cd internal/sandbox
+            HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'
+          )
+          bash scripts/ci-uv-tools.sh
+          HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeUpdateResolverIntegration$'
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          if haa_ci_suite uv; then
+          bash scripts/ci-uv-tools.sh bootstrap
+          fi # suite
+          if haa_ci_suite requirements; then
+          bash scripts/ci-uv-tools.sh python-requirements
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          if haa_ci_suite go-cargo-tf; then
+          HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot|TidyProjectResolver)Integration$' | tee "$RUNNER_TEMP/haa-go-resolver.log"
+          awk 'BEGIN { expected["imports-tests-tags"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyProjectResolverIntegration \(/ { parents++ } /actual_go_tidy=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyProjectResolverIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-resolver.log"
+          # A compiled test binary keeps the caller's cwd; match go test's package cwd.
+          (
+            cd internal/sandbox
+            HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'
+          )
+          cargo_fetch_selection_log="$RUNNER_TEMP/haa-cargo-fetch-selection.log"
+          (
+            cd internal/sandbox || exit
+            HELOX_CARGO_FETCH_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=4m -test.run '^TestCargoPublicFetchOptionalSelectionIntegration$'
+          ) 2>&1 | tee "$cargo_fetch_selection_log"
+          awk '
+            /--- (FAIL|SKIP):|no tests to run/ { bad=1 }
+            /^--- PASS:/ { if ($3 != "TestCargoPublicFetchOptionalSelectionIntegration" || parent++) bad=1 }
+            /cargo_fetch_native / {
+              if ($0 !~ /^[[:space:]]+cargo_fetch_real_test\.go:[0-9]+: cargo_fetch_native inactive_optional=INCLUDED primary=NONE original_lock=ABSENT public_auth\/quarantine\/build=NOT_EXERCISED$/ || seen++) bad=1
+            }
+            END { exit (bad || parent != 1 || seen != 1) }
+          ' "$cargo_fetch_selection_log"
+          rm -- "$cargo_fetch_selection_log"
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          if haa_ci_suite go-cargo-tf; then
+          cargo_fetch_cli_log="$RUNNER_TEMP/haa-cargo-fetch-cli.log"
+          (
+            cd internal/bootstrap || exit
+            HELOX_CARGO_FETCH_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestCargoPublicFetchCLIIntegration$'
+          ) 2>&1 | tee "$cargo_fetch_cli_log"
+          awk '
+            BEGIN {
+              expected["cold-first-lock"]="crates=1 required_checks=2 Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=[0-9.]+"
+              expected["warm-existing-lock"]=expected["cold-first-lock"]
+              expected["cache-tamper"]="result=REFUSED original_controls/approval=PRESERVED"
+              expected["existing-build"]="approved_dependencies=CONSUMED output=APPROVED_ELF seconds=[0-9.]+"
+            }
+            /--- (FAIL|SKIP):|no tests to run/ { bad=1 }
+            /^--- PASS:/ { if ($3 != "TestCargoPublicFetchCLIIntegration" || parent++) bad=1 }
+            /cargo_fetch_cli case=/ {
+              id=$3; sub(/^case=/,"",id)
+              if (!(id in expected) || seen[id]++ || $0 !~ ("^[[:space:]]+cargo_fetch_integration_test\\.go:[0-9]+: cargo_fetch_cli case=" id " " expected[id] "$")) bad=1
+              cases++
+            }
+            END { exit (bad || parent != 1 || cases != 4) }
+          ' "$cargo_fetch_cli_log"
+          rm -- "$cargo_fetch_cli_log"
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          if haa_ci_suite go-cargo-tf; then
+          HELOX_TERRAFORM_PROVIDER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxTerraformProvider(Probe|Security)Integration$'
+          fi # suite
+          fi
+          go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
+          haa_install_ci_client "$RUNNER_TEMP/helox-bootstrap-test"
+          haa_start_policy_helper
+          if [ "$HELOX_CI_CUDA_ONLY" = false ]; then
+          if haa_ci_suite npm-core; then
+          HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'
+          fi # suite
+          if haa_ci_suite uv; then
+          HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'
+          (
+            cd internal/bootstrap
+            HELOX_UV_SYNC_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=12m -test.failfast -test.run '^TestLinuxUVSync(Complete|Closure)CLIIntegration$'
+          )
+          fi # suite
+          if haa_ci_suite go-cargo-tf; then
+          HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload|TidyCLI)Integration$' | tee "$RUNNER_TEMP/haa-go-cli.log"
+          awk 'BEGIN { expected["adopt"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyCLIIntegration \(/ { parents++ } /actual_go_tidy_cli=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyCLIIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-cli.log"
+          HELOX_GO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxGo(DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$'
+          HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'
+          HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'
+          HELOX_TERRAFORM_INIT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxTerraformInit(Integration|NegativeIntegration)$'
+          fi # suite
+          fi
+          if haa_ci_suite exec-py; then
+          selected_cuda_profiles=0
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "$selected_cuda_profiles" -gt 1 ]; then
+            echo "select at most one CUDA PyTorch qualification profile" >&2
+            exit 1
+          fi
+          if [ "$selected_cuda_profiles" -gt 0 ]; then
+            go run ./scripts/check qualification-freshness
+          fi
+          # Explicit qualification inputs only; never infer dependencies from artifact output.
+          HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='' HELOX_PYTORCH_NOT_ATTESTED_MODULE='' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxPyTorchFullIntegration$'
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then
+            HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
+          fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then
+            HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu130 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
+          fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}" = true ]; then
+            HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu132 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
+          fi
+          fi # suite
+          if [ "$HELOX_CI_CUDA_ONLY" = false ]; then
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          if haa_ci_suite exec-py; then
+          HELOX_PYPI_DYNAMIC_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$'
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          if haa_ci_suite pipx; then
+          bash scripts/ci-pipx-runtime.sh inspect
+          bash scripts/ci-pipx-runtime.sh tools-bootstrap
+          fi # suite
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          if haa_ci_suite pipx; then
+          bash scripts/ci-pipx-runtime.sh tools-native
+          fi # suite
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pipx-graph-test" ./internal/artifact/githubrelease
+          haa_install_ci_client "$RUNNER_TEMP/helox-pipx-graph-test"
+          haa_start_policy_helper
+          if haa_ci_suite pipx; then
+          bash scripts/ci-pipx-runtime.sh graph
+          fi # suite
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-releaseactivation-test" ./internal/releaseactivation
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-releaseinstall-test" ./internal/releaseinstall
+          if haa_ci_suite pipx; then
+          bash scripts/ci-pipx-runtime.sh namespace
+          fi # suite
+          # Restore the production client before leaving the integration step.
+          haa_install_ci_client "$RUNNER_TEMP/helox"
+          haa_start_policy_helper
+          if haa_ci_suite npm-core; then
+          HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
+          fi # suite
+          if haa_ci_suite exec-py; then
+          HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
+          fi # suite
+          fi

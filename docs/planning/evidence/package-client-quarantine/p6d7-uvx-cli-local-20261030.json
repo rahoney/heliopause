@@ -1,0 +1,524 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D7",
+  "status": "NAMED_UVX_NATIVE_TOOL_RUN_CLI_LOCAL_QUALIFIED",
+  "baseline": "d7a333bd2072b80199d16cd78c7cc23d95239fea",
+  "runtime_inputs": 1392,
+  "prior1387_except5_unchanged": true,
+  "modified_runtime_paths": [
+    "internal/cli/package_client.go",
+    "internal/cli/execution.go",
+    "internal/bootstrap/bootstrap.go",
+    "internal/artifact/pypi/uv_lock.go",
+    "internal/artifact/pypi/uv_lock_test.go"
+  ],
+  "new_paths": [
+    "internal/cli/python_execution.go",
+    "internal/cli/python_execution_test.go",
+    "internal/bootstrap/python_uv_run_cli.go",
+    "internal/bootstrap/python_uv_run_cli_test.go",
+    "internal/bootstrap/python_uv_run_cli_integration_test.go"
+  ],
+  "source_identity": [
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "sha256": "8ec8f65c6285c22e484c2477c5e8d506a1f9bac800283d11ed65b5979702d947",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock_test.go",
+      "sha256": "4bb421894c2f2d3d70e25de3673a7c2a3f65f371ea6243d498be95409c294197",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "4dfb5a11cb6a4804655edfc9acc8be2e8769952391fbb77eecad1447118378d6",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "b89fb53da3752c7f4d17e125585d30ba15ea0534b530b0459b65876a2fd78c9e",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/execution.go",
+      "sha256": "ddddc0d93fe8aef6a9054b8da1153977fc6d2da713d9bc641be44496d180f3bc",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/python_execution.go",
+      "sha256": "56b7bafc1c57e9e1a69ba5fb4ee8c81009056f97a510c6c78eee94a350c472ae",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/python_execution_test.go",
+      "sha256": "95e20aabc0f31d5e97c2117e3cdb81f86ee54ada5ef867378db2ef7fb7de2571",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_cli.go",
+      "sha256": "c2480da12009d48afe97a7a42dcc02582cf52efbf5d577563778f0f69e2dc767",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_cli_test.go",
+      "sha256": "b222ff5c5be960356eb0cd7e8b097444a86419ade072812b7d94ec09882ecc5a",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_cli_integration_test.go",
+      "sha256": "5ff362b73bb27a5c5ef0c31269498108c4dd03d51548c8febd5a5096dd00bd44",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.816
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "./internal/cli",
+        "./internal/bootstrap",
+        "./internal/artifact/pypi",
+        "-run",
+        "^Test(UVRun|ExecutionCLI|UVWheelBinding)",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 14.252
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/cli",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.826
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 0.917
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 273.554
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/cli",
+        "./internal/bootstrap",
+        "./internal/application",
+        "./internal/artifact/pypi",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 58.681
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/cli",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 4.526
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d7-v4-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.22
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.416
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 16.458
+    }
+  ],
+  "CPP_exact_input_reuse": {
+    "original": "/tmp/haa-p6-d4b2-v1-observer",
+    "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5",
+    "named_latches": 132,
+    "UV_cases": 195
+  },
+  "Go_original_binaries": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p6-d7-v4-bootstrap.test",
+      "bytes": 51924296,
+      "sha256": "93d26b0c5962ca1a68848c0323be572effe1ee193b5ed07aab5d4bdace02f1ae"
+    }
+  ],
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 193.698,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "700755269100b24d74859b8aee928be881c7646d2606628ff3ed6ac11ebd86d9",
+    "sources": [
+      {
+        "path": "/tmp/haa-p6-d7-cli-actual-v2/protected-client",
+        "sha256": "93d26b0c5962ca1a68848c0323be572effe1ee193b5ed07aab5d4bdace02f1ae"
+      },
+      {
+        "path": "/tmp/haa-p6-d7-cli-actual-v2/observer",
+        "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/cli/execution.go",
+        "sha256": "ddddc0d93fe8aef6a9054b8da1153977fc6d2da713d9bc641be44496d180f3bc"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/cli/python_execution.go",
+        "sha256": "56b7bafc1c57e9e1a69ba5fb4ee8c81009056f97a510c6c78eee94a350c472ae"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/bootstrap/python_uv_run_cli.go",
+        "sha256": "c2480da12009d48afe97a7a42dcc02582cf52efbf5d577563778f0f69e2dc767"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/bootstrap/python_uv_run_cli_integration_test.go",
+        "sha256": "5ff362b73bb27a5c5ef0c31269498108c4dd03d51548c8febd5a5096dd00bd44"
+      }
+    ],
+    "scope": "Actual current UV CLI5 after metadata adapter fix; old NPM4 earlier actual reused with unchanged CLI/application inputs; direct protected current Bootstrap binary, no unnecessary Python DATA exporter; aliases/privacy/typed exit/public two-node from/refusal; no hosted/final qualification",
+    "passed_named_tests": [
+      "TestLinuxUVRunExecutionCLIIntegration"
+    ],
+    "current_verification_inspection_Evidence_Policy": "ACTUAL fresh per request",
+    "native_solver": "ACTUAL isolated UV tool run and existing native NPM selection",
+    "named_pass": true,
+    "observer_directory_entries_after": [],
+    "observer_directory_empty_after": true,
+    "owned_cli_workspaces_absent": true,
+    "old_NPM_cases": [],
+    "new_UV_allowed_cases": [
+      [
+        "1",
+        "uvx",
+        "json",
+        "en",
+        "false",
+        "0",
+        "1"
+      ],
+      [
+        "2",
+        "run",
+        "json",
+        "ko",
+        "true",
+        "2",
+        "1"
+      ],
+      [
+        "3",
+        "uvx",
+        "human",
+        "ko",
+        "true",
+        "0",
+        "1"
+      ],
+      [
+        "4",
+        "run",
+        "json",
+        "en",
+        "true",
+        "0",
+        "2"
+      ]
+    ],
+    "new_UV_refusal": true,
+    "new_UV_source_facts": [
+      [
+        "1",
+        "cowsay",
+        "6.1",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a",
+        "4"
+      ],
+      [
+        "2",
+        "cowsay",
+        "6.1",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a",
+        "4"
+      ],
+      [
+        "3",
+        "cowsay",
+        "6.1",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a",
+        "4"
+      ],
+      [
+        "4",
+        "python-slugify",
+        "8.0.4",
+        "276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8",
+        "4"
+      ],
+      [
+        "4",
+        "text-unidecode",
+        "1.3",
+        "1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8",
+        "3"
+      ]
+    ],
+    "old_NPM_preserved": true,
+    "new_UV_allowed_expected": true,
+    "actual_public_from_two_node_bound": true,
+    "all_expected_cases": true
+  },
+  "first_actual_failure": {
+    "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v1-original-inventory.json",
+    "old_NPM4": "PASS; exact shared CLI/application inputs unchanged in final candidate; not replayed",
+    "UV_cases1_to3": "PASS at v3; final UV5 checked at v4",
+    "case4": "preparation RESOLUTION_FAILED; original wheel parenthesized active numeric requirement rejected by UV bounded adapter",
+    "case5": "NOT_REACHED at v3; final v4 checked"
+  },
+  "diagnostic": {
+    "qualification": false,
+    "source": "docs/github-logs/package-client-quarantine-20261021/p6-d7-from-diagnostic-originals.json",
+    "product_source_changed": false,
+    "temporary_test_removed": true
+  },
+  "regression": {
+    "before": "same whole authenticated BindWheels four parenthesized positive shapes FAILED",
+    "after": "same positives PASS; empty/nested/malformed/unknown marker/unsatisfied/missing node rejected; existing numeric parser reused",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-d7-metadata-red.log"
+  },
+  "actual_originals": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-original-inventory.json",
+  "human_review": "Existing descriptor/raw preflight/report/privacy/typed error/current inspection Policy/records/runtime bodies reused. UV package-only preflight is before runtime composition; guest arguments/help are literal. Request command is immutable per current service and rebound from approved original console. Single metadata specifier wrapper normalization is only in existing UV final constraint adapter; original candidate metadata and public request grammar remain unchanged. Native cache RECORD is unapproved DATA. No Core/CPP/authority/limits/runtime provisioning/Host target/network/TTY/export changes.",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (public aliases and current approval/readonly program)",
+    "QUALIFIED": "YES (named local current UV CLI5, earlier unchanged NPM4 and current canonical10)",
+    "ACCEPTANCE_CLOSED": "YES (bounded local CLI slice only)",
+    "MISSING": [
+      "new-source hosted native selector/current app/CLI wiring and result",
+      "generic native selection equivalence",
+      "pipx run and remaining P6/P7/final four profiles/signed release bundle"
+    ]
+  },
+  "new_CI_or_push": false,
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-namespace.py",
+      "bytes": 1601,
+      "sha256": "09677af10cd1a8c769b3b469eeac1d36ad0c375c8617c11ee32b34d6ca27ef9a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-helpers-after.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-ci-integration-cleanup.sh",
+      "bytes": 11165,
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-host-after.json",
+      "bytes": 2225,
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-host-before.json",
+      "bytes": 2225,
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-namespace-result.json",
+      "bytes": 216,
+      "sha256": "50ed582d7dc25e58f013cfae393f0bd8e7e4e2d70e26d557adf922799435fdb7"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-actual.log",
+      "bytes": 2338,
+      "sha256": "700755269100b24d74859b8aee928be881c7646d2606628ff3ed6ac11ebd86d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-result.json",
+      "bytes": 3535,
+      "sha256": "ab38f294b38bff520886f0be78a4aa543f9a9446d40f7bc61c3060bddcc499c4"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-lifecycle.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-helpers-before.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-inputs-before.json",
+      "bytes": 6949,
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-actual.sh",
+      "bytes": 636,
+      "sha256": "527d6252b46d8da92d3bc7e82a952876713ca6355ff62d2477a1f86abb9d861a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-inputs-after.json",
+      "bytes": 6949,
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-d7-cli-actual-v2-runtime-source-binding.json",
+      "bytes": 252168,
+      "sha256": "3ff4ce70db9676435fcec71f85cb4e5c79ffea1104b9fb3218f1d1c5f07eb8cf"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-checks.json",
+      "bytes": 2128,
+      "sha256": "0327803ba1d7e64f665f207504fbb12d568a0ee9e640e9be340b35cc495ec339"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-build-identity.json",
+      "bytes": 254686,
+      "sha256": "7a868a79c70e1e2a5aa8659e99b70cf21d20fc6b4d62dedc25e865be1933699a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-focused.log",
+      "bytes": 181,
+      "sha256": "8cf383d7ed499e7d114321c56c9e3b2d7ef2559df970da931fbd7e75b9995842"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-workflow.log",
+      "bytes": 1071,
+      "sha256": "9aa7466daf46045588efe719d90d344f27572c9f413cf3c1770da2dcdb216ed1"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-quick.log",
+      "bytes": 1354,
+      "sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-affected-race.log",
+      "bytes": 305,
+      "sha256": "bfcf061d8c80d1a05b53cf3ad6066013a2995f347388c042cf9b0c849fd91a2e"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-bootstrap-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v4-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-metadata-green-check.py",
+      "bytes": 3845,
+      "sha256": "07de7d145c112529418606dbfd6c7fe60e481ad498019c6672e3454575f3e8bf"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-metadata-red-producer.py",
+      "bytes": 1962,
+      "sha256": "e14c02a8c942655a88273898eb8d57ad4524be757ae185f8b33bf6597f662026"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-cli-actual-v2.py",
+      "bytes": 12318,
+      "sha256": "56224716ec75ccb6e6b645e2f4b7356b405a01adba2a448731a9ff5fda4a373d"
+    }
+  ]
+}

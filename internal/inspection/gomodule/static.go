@@ -17,6 +17,8 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+const checkProfileName = "go-module-static-v1"
+
 type StaticInspector struct{ intakeRoot string }
 
 // NewStaticInspector binds the exact controlled intake without accepting a project path.
@@ -38,6 +40,12 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 	mod, err := modfile.Parse("go.mod", bundle.Mod(), nil)
 	if err != nil || mod.Module == nil || mod.Module.Mod.Path != artifact.Identity().Name() {
 		return report(artifact, "M12_GO_MODULE_IDENTITY_MISMATCH")
+	}
+	for _, control := range bundle.RequiredMods() {
+		mod, err := modfile.Parse("go.mod", control.Body, nil)
+		if err != nil || mod.Module == nil || mod.Module.Mod.Path != artifact.Identity().Name() {
+			return report(artifact, "M12_GO_MODULE_IDENTITY_MISMATCH")
+		}
 	}
 	reader, err := bundle.ZipReader()
 	if err != nil {
@@ -92,7 +100,8 @@ func isTestData(relative string) bool {
 
 func report(artifact domain.AcquiredArtifact, code string) (domain.InspectionReport, error) {
 	checkID, _ := domain.NewCheckID("go-module-static")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	evidenceID, _ := domain.NewEvidenceID("go-module-static-result")
 	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "go-module-static", "Bounded controlled archive and Go source syntax inspected without execution. Testdata assets retain archive integrity checks; explicit selection requires compiler checks in the observed build.")
 	if err != nil {
@@ -107,4 +116,20 @@ func report(artifact domain.AcquiredArtifact, code string) (domain.InspectionRep
 		findings = append(findings, finding)
 	}
 	return domain.NewInspectionReport(check, findings, []domain.Evidence{evidence})
+}
+
+func (i *StaticInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || ctx == nil || kind != domain.CheckInspection || artifact.Identity().Source() != artifactgo.Source() {
+		return nil, errors.New("go static declaration is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID("go-module-static")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
 }

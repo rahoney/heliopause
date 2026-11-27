@@ -1,0 +1,73 @@
+{
+  "scope": "P4-L4A final-interpreter-bound offline materializer helper only",
+  "baseline": "72cacd1d4310b179b38c6bdcff6376c5af6fdefb",
+  "implemented": "YES (target-bound recipe, controlled sibling view and whole RECORD reuse)",
+  "wired": "YES (helper/tests); NO (tool approval/publication/backend/CLI)",
+  "qualified": "YES (named local Go profiles/full Promotion Race and separately scoped inert native recipe diagnostic)",
+  "acceptance_closed": "NO (persistent tool feature)",
+  "checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 166.975,
+      "raw_receipt": "p4l4a-interpreter-bound-v3-quick.json",
+      "log_sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 12.356,
+      "raw_receipt": "p4l4a-interpreter-bound-v3-security.json",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.292,
+      "raw_receipt": "p4l4a-interpreter-bound-v3-docs.json",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "full-affected-race",
+      "exit": 0,
+      "seconds": 161.117,
+      "raw_receipt": "p4l4a-interpreter-bound-v3-full-affected-race.json",
+      "log_sha256": "51e774d8164197c3d9f1da756b7a97ba083d707419818104a35ead659bc10860"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/promotion/pypi_promotion.go",
+      "sha256": "3a2565242d5626b3a2ce31c9ca51abee42ea674e89d944fdb05a56316ca1b37a"
+    },
+    {
+      "path": "internal/promotion/tool_python_materialize.go",
+      "sha256": "1c8a3f18039102d1ab03f80feec7b1e3337c39ffef7aa6f76e93c60fb1fe27c8"
+    },
+    {
+      "path": "internal/promotion/tool_python_materialize_test.go",
+      "sha256": "3d5add65639442996d01cfb8353a3a8c2ef23a7daa45efc3116a42a2ec8f9e38"
+    }
+  ],
+  "mechanical_reuse": "p4l4a-materializer-mechanical-reuse-v1.json",
+  "prior_inert_recipe_diagnostic": {
+    "raw_receipt": "p4l4-tool-materializer-diagnostic-v1-result.json",
+    "seconds": 6.276,
+    "queries_exit0": 4,
+    "scope": "pinned offline synthetic pip/UV diagnostic; no Artifact/Host interpreter execution; not actual Go helper/Host tool support"
+  },
+  "first_failure": {
+    "raw_receipt": "p4l4a-interpreter-bound-v2-quick.json",
+    "seconds": 160.897,
+    "cause": "controlled interpreter view was placed inside the strict installation output tree",
+    "correction": "separate random 0700 sibling; existing whole output whitelist unchanged"
+  },
+  "missing": [
+    "guarded target and external command-root binding",
+    "whole current inspection/Policy/Manifest/staging wiring",
+    "atomic receipt/external links plus venv publication and rollback",
+    "original native upgrade/pipx production/public CLI",
+    "grouped final affected CPU/CUDA/support qualification"
+  ],
+  "remote_ci": "NOT_RUN; helper-local checks only, CI413 already consumed and not reused for this source"
+}

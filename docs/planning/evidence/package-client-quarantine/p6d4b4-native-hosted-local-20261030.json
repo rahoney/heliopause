@@ -1,0 +1,397 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D4B4",
+  "status": "LOCAL_WIRING_QUALIFIED_HOSTED_PENDING",
+  "baseline": "dc029d9891e94a0d64a2255e24625b27fbd86512",
+  "runtime_inputs": 1379,
+  "existing1376_runtime_unchanged": true,
+  "modified_paths": [
+    "scripts/ci-uv-tools.sh",
+    "scripts/check/uv_tools_workflow.go",
+    "scripts/check/uv_tools_workflow_test.go",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source_identity": [
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "4c272f7b894f832b5b1c7961e1e4584721ae5f8f982c2d2298ed5e55552131f6",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow_test.go",
+      "sha256": "5089e72f146b92c56ce24c9b8bf1a25d16c56a19af643ad419cff1c1f1600d7a",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/ci-uv-tools.sh",
+      "sha256": "481840ac336659da814bf14670bd218dba7c99505fec945c8de717dd18c0727d",
+      "mode": "100644"
+    }
+  ],
+  "workflow_sha256": "6cbadc5b9e2dca6556d8fd32e9c63d1a05751b7e731e1aa2ec498833866de013",
+  "checks": [
+    {
+      "step": "bash",
+      "command": [
+        "bash",
+        "-n",
+        "scripts/ci-uv-tools.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.004
+    },
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.468
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 1.568
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "./scripts/check",
+        "-run",
+        "Test(UVTools|CurrentExecution|UVRunSourceHosted)",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 1.368
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 80.247
+    },
+    {
+      "step": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 61.829
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.366
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 10.597
+    }
+  ],
+  "saved_actual_DATA_guard": {
+    "kind": "INERT_DATA_ONLY; saved actual logs through exact current workflow shell; no native/CPP/CI rerun",
+    "workflow_sha256": "6cbadc5b9e2dca6556d8fd32e9c63d1a05751b7e731e1aa2ec498833866de013",
+    "block_sha256": "7d2e54ffedfa94713bc7018e19206141627e7706ee3c0bd99ee75a9a87a79ea4",
+    "source_logs": [
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/p6-d4a-public-binding-actual-v1-actual.log",
+        "sha256": "e6a1b64ffca8cce47c9be5951b84150f941d65d120d93801da93935aaef4b312"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/p6-d4b3-native-binding-actual-v1-actual.log",
+        "sha256": "447afd2dbf385f7bffb109bf158b62816eb70246a34349f1cc8a07a2b8c45886"
+      }
+    ],
+    "cases": [
+      {
+        "name": "complete",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "name": "empty",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "child-only",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "duplicate-parent",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "foreign-parent",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "skip",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "missing uv_public_query_binding phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "duplicate uv_public_query_binding phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "foreign-file uv_public_query_binding phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "missing uv_native_source_console phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "duplicate uv_native_source_console phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "foreign-file uv_native_source_console phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "missing uv_public_native_census phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "duplicate uv_public_native_census phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "foreign-file uv_public_native_census phase=",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed nodes=1 wheels=1",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed environments=1 facts=84",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed command=cowsay",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed native_record=UNAPPROVED_DATA",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed Policy=NOT_RUN",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed selection_equivalence=NOT_QUALIFIED",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed 274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "changed 780e250c9ff0a37fe32ec832874a5ebb6c9692915baf899a94e549b4c195262c",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "name": "command-error",
+        "exit": 11,
+        "expected": 11
+      },
+      {
+        "name": "command-before-cat",
+        "exit": 11,
+        "expected": 11
+      },
+      {
+        "name": "cat-error",
+        "exit": 23,
+        "expected": 23
+      }
+    ],
+    "all_pass": true
+  },
+  "native_CPP_actual_repeated": false,
+  "prior_actual_reuse": [
+    "p6d4a-public-native-binding-local-20261030.json",
+    "p6d4b2-exported-cache-query-local-20261030.json",
+    "p6d4b3-native-source-console-local-20261030.json"
+  ],
+  "human_review": "Existing current execution step, canonical helper stop/install/start and sandbox tagged client reused. Closed payload-free profile selects exactly two native public parents with explicit flags; three exact source/console/census markers remain DATA/Policy NOT_RUN. Parent uniqueness/noSKIP and command-before-cat failures enforced. No new job, permissions, runner, runtime, timeout, Required dependencies or existing coverage change. No local native/CPP/CPU rerun.",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (local wiring only)",
+    "ACCEPTANCE_CLOSED": "NO (new-source hosted pending)",
+    "MISSING": [
+      "grouped normal FF push/actual source and run/20min actual GET",
+      "new-source hosted all required/native macOS and current native2 qualification",
+      "production resolver/runtime adapter/generic equivalence/aliases/CLI/final remain separate"
+    ]
+  },
+  "grouped_CI": {
+    "expected_top_level_Linux_tests": 106,
+    "existing_tests_preserved": 104,
+    "new_native_public_parents": 2,
+    "CPP_named": 132,
+    "UV_CPP_cases": 195,
+    "Linux_timeout_minutes_unchanged": 120,
+    "Required_jobs_unchanged": 10,
+    "previous_CI434_elapsed_seconds": 6438,
+    "estimated_new_CI_minutes": 108,
+    "estimate_not_guarantee": true,
+    "macOS_prior120s_root_cause": "UNCONFIRMED; new changed candidate is not a same-input rerun",
+    "next_timer": "actual20min GET worker will be registered on real new run/start; none active now"
+  },
+  "cleanup": "No new ELF copies/caches generated by wiring. Existing cleanup241ELF+6completed caches/~10.73GiB Linux logical remains. Original failures/builds/raw/fixed inputs preserved.",
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-plan.py",
+      "bytes": 5184,
+      "sha256": "4ff0cccbf6e992a3d6ff7a639626ac4885f05a3bc66dfce122274fb4cc011911"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-edit.py",
+      "bytes": 9499,
+      "sha256": "2771e53fc5cbfa798ea308f75a247f2a604d58a8702601ddd6d14c2522187a7d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-edited.json",
+      "bytes": 557,
+      "sha256": "8507cf9cee303de73cf16c9f08b35eeafb926d518cb4f0d17cd076d426caa924"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-native-guard.sh",
+      "bytes": 2004,
+      "sha256": "2d501ff06d95f9079d56c58b18008e6e3234365203b3387742c24b233dbaa2af"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-check.py",
+      "bytes": 2425,
+      "sha256": "eef6b8490ec1c87b0fec3427127901d8f275c709ac135042105abf9e6bf16907"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-checks.json",
+      "bytes": 1386,
+      "sha256": "b09a9cb1ae5d2ffe5ac32521fd94c632863bfa11f0dd5cb0d419356a35933b9e"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-source-identity.json",
+      "bytes": 250869,
+      "sha256": "568a72435f0292fa87be6e737c9c07fc2e5d811f9f42d013ece11ec4d0d4f2c7"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-guards.py",
+      "bytes": 3557,
+      "sha256": "f934f12cc885b6e8e628697c430cb0d03d3300ce6813e2cfd8e02ec00f40ddb3"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-guards-v1.json",
+      "bytes": 3324,
+      "sha256": "92bb6056842a225a37f13ed102dc1caf9ff4706bab9840d14c91b6a3c026413e"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-current-native-step.sh",
+      "bytes": 1924,
+      "sha256": "7d2e54ffedfa94713bc7018e19206141627e7706ee3c0bd99ee75a9a87a79ea4"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-bash.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-workflow.log",
+      "bytes": 1071,
+      "sha256": "d0bc0b28fc17f147f2a6d46c330fc1ce7355b15065d24973d1d7f17ab8538212"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-focused.log",
+      "bytes": 56,
+      "sha256": "15d07a0597e77234957683892b6adb4d12821499188da7dad95e9312229d814c"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-quick.log",
+      "bytes": 1354,
+      "sha256": "dc70e9b4a67a29febda35cbf9f19c5c011b1ae845dd9e6cd55c66e8dc6704062"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-checker-race.log",
+      "bytes": 57,
+      "sha256": "a0f660e164f0bffeac31418d0b438ccda2c01f525b526e54ce879cf922e3073e"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-v1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ]
+}

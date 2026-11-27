@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ import (
 
 // Execute the actual workflow selection/input block with only its external
 // commands replaced. This catches local-only inputs absent from CI delivery.
-func qualificationInputs(contents, selected string) ([]string, error) {
+func qualificationInputs(contents string, selected ...string) ([]string, error) {
 	doc, err := parseWorkflow(contents)
 	if err != nil {
 		return nil, err
@@ -34,7 +35,7 @@ func qualificationInputs(contents, selected string) ([]string, error) {
 		if start < 0 {
 			continue
 		}
-		end := strings.Index(run[start:], `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`)
+		end := strings.Index(run[start:], ordinaryCILifecycleGuard)
 		if end < 0 {
 			return nil, fmt.Errorf("end missing")
 		}
@@ -43,15 +44,9 @@ func qualificationInputs(contents, selected string) ([]string, error) {
 	if body == "" {
 		return nil, fmt.Errorf("qualification commands missing")
 	}
-	for _, p := range []string{"cu126", "cu130", "cu132"} {
-		v := "false"
-		if p == selected {
-			v = "true"
-		}
-		body = strings.ReplaceAll(body, "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_"+p+"_qualification }}", v)
-	}
 	body = strings.ReplaceAll(body, "/usr/libexec/heliopause/helox", "record_client")
 	stub := `go() { test "$*" = 'run ./scripts/check qualification-freshness'; }
+haa_ci_prepare_cuda_swap() { printf '%s\n' cuda-swap; }
 record_client() {
  test "$HELOX_PYTORCH_FULL_INTEGRATION" = 1
  printf '%s\t%s\t%s\t%s\n' "$HELOX_PYTORCH_PROFILE" "${HELOX_PYTORCH_INSPECTION_PREREQUISITE-}" "${HELOX_PYTORCH_QUALIFICATION_PLAN-}" "${HELOX_PYTORCH_NOT_ATTESTED_MODULE-}"
@@ -60,6 +55,10 @@ record_client() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "bash", "--noprofile", "--norc", "-e", "-u", "-o", "pipefail", "-c", stub+body)
+	cmd.Env = os.Environ()
+	for _, profile := range []string{"cu126", "cu130", "cu132"} {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("HELOX_CI_%s=%t", strings.ToUpper(profile), slices.Contains(selected, profile)))
+	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("actual block: %w: %s", err, out)
@@ -74,7 +73,7 @@ func checkQualificationInputs(contents, selected string) error {
 	}
 	want := 1
 	if selected != "" {
-		want = 2
+		want = 3
 	}
 	if len(lines) != want {
 		return fmt.Errorf("invocations=%d", len(lines))
@@ -85,7 +84,10 @@ func checkQualificationInputs(contents, selected string) error {
 	if selected == "" {
 		return nil
 	}
-	fields := strings.Split(lines[1], "\t")
+	if lines[1] != "cuda-swap" {
+		return fmt.Errorf("runner swap was not prepared before CUDA: %q", lines)
+	}
+	fields := strings.Split(lines[2], "\t")
 	if len(fields) != 4 || fields[0] != selected || fields[1] != "" || fields[2] != "cuda-bindings-numpy" || fields[3] != "triton.profiler.viewer" {
 		return fmt.Errorf("CUDA scope missing: %q", lines[1])
 	}
@@ -99,10 +101,13 @@ func TestPyTorchQualificationUsesExplicitBoundedInputs(t *testing.T) {
 	}
 	for _, profile := range []string{"", "cu126", "cu130", "cu132"} {
 		t.Run("profile-"+profile, func(t *testing.T) {
-			if err := checkQualificationInputs(string(data), profile); err != nil {
+			if err := checkQualificationInputs(workflowWithoutSuiteGuards(string(data)), profile); err != nil {
 				t.Fatal(err)
 			}
 		})
+	}
+	if _, err := qualificationInputs(string(data), "cu126", "cu130"); err == nil || !strings.Contains(err.Error(), "select at most one CUDA PyTorch qualification profile") {
+		t.Fatalf("multiple CUDA profiles failed at the wrong boundary: %v", err)
 	}
 	for name, broken := range map[string]string{
 		"missing plan":             strings.ReplaceAll(string(data), "HELOX_PYTORCH_QUALIFICATION_PLAN=", "UNUSED_INPUT="),
@@ -114,5 +119,52 @@ func TestPyTorchQualificationUsesExplicitBoundedInputs(t *testing.T) {
 				t.Fatal("broken delivery accepted")
 			}
 		})
+	}
+}
+
+func TestCUDAOnlyQualificationPreservesOrdinaryAndCommonScopes(t *testing.T) {
+	data, err := os.ReadFile("../../" + workflowRelativePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(data)
+	if findings := validateCUDAQualificationScope(original); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for name, candidate := range map[string]string{
+		"missing-cuda-swap":       strings.Replace(original, "haa_ci_prepare_cuda_swap", "true", 1),
+		"ordinary-routed-away":    strings.Replace(original, cudaOnlyCIExpression, "true", 1),
+		"non-manual-routing":      strings.Replace(original, "github.event_name == 'workflow_dispatch' && (inputs.", "(inputs.", 1),
+		"step-override":           strings.Replace(original, "      - name: Qualify production Node execution preparation\n", "      - name: Qualify production Node execution preparation\n        env:\n          HELOX_CI_CUDA_ONLY: 'true'\n", 1),
+		"wrong-profile-input":     strings.Replace(original, fmt.Sprintf(cudaProfileCIExpression, "cu126"), fmt.Sprintf(cudaProfileCIExpression, "cu130"), 1),
+		"wrong-profile-consumer":  strings.Replace(original, `if [ "$HELOX_CI_CU126" = true ]; then`, `if [ "$HELOX_CI_CU130" = true ]; then`, 1),
+		"missing-ordinary-scope":  strings.Replace(original, ordinaryCILifecycleGuard, "if false; then", 1),
+		"reversed-ordinary-scope": strings.Replace(original, ordinaryCILifecycleGuard, `if [ "$HELOX_CI_CUDA_ONLY" = true ]; then`, 1),
+		"missing-execution-scope": strings.Replace(original, `if [ "$HELOX_CI_CUDA_ONLY" = true ]; then`, "if false; then", 1),
+		"missing-full-client":     strings.Replace(original, `go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap`, "echo omitted", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if len(validateCUDAQualificationScope(candidate)) == 0 {
+				t.Fatal("invalid qualification dispatch accepted")
+			}
+		})
+	}
+	blocks, _ := activeJobRunLines(original, "gvisor-integration", currentExecutionPreparationStep)
+	if len(blocks) != 1 {
+		t.Fatal("execution step missing")
+	}
+	// Execute the actual early routing before any helper lifecycle can run.
+	body := kernelQualificationLines(strings.Join(blocks[0], "\n"))
+	body, _, ok := strings.Cut(body, "\nsource scripts/ci-integration-cleanup.sh")
+	if !ok {
+		t.Fatal("cleanup boundary missing")
+	}
+	for _, mode := range []string{"false", "true"} {
+		command := exec.Command("bash", "--noprofile", "--norc", "-c", body+"\necho ordinary_continuation")
+		command.Env = append(os.Environ(), "HELOX_CI_CUDA_ONLY="+mode)
+		output, err := command.CombinedOutput()
+		if err != nil || strings.Contains(string(output), "ordinary_continuation") != (mode == "false") {
+			t.Fatal("incorrect ordinary/manual route", mode, string(output), err)
+		}
 	}
 }

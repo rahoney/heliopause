@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "baseline": "e25fd979e3baedf25fc79ad07d2de35ab3cf4cae",
+  "scope": "bounded diagnostic only; native deadline cause unresolved",
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.903,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 35.058,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.262,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.224,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.777,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "targeted": [
+    {
+      "check": "race",
+      "exit": 0,
+      "seconds": 14.967,
+      "args": [
+        "test",
+        "-race",
+        "-timeout=2m",
+        "./scripts/check"
+      ],
+      "environment_overrides": {}
+    },
+    {
+      "check": "darwin-compile",
+      "exit": 0,
+      "seconds": 3.455,
+      "args": [
+        "test",
+        "-c",
+        "-o",
+        "/tmp/haa-uv-runtime-0_e6zmn4/tmp/macos-progress-check.test",
+        "./scripts/check"
+      ],
+      "environment_overrides": {
+        "GOOS": "darwin",
+        "GOARCH": "amd64",
+        "CGO_ENABLED": "0"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "scripts/check/runner.go",
+      "sha256": "e40c6ce5c182370e8367ba11850792e22f0e70c64702e1ef514f969652fb189a"
+    },
+    {
+      "path": "scripts/check/go_test_capture.go",
+      "sha256": "53541f9a74393af9c35ebe6dd549c747630393fa3232e3ff7ef5251d51d15f8d"
+    },
+    {
+      "path": "scripts/check/go_test_capture_test.go",
+      "sha256": "7753931b6e8a9145f4ba35c54e1f92e542014858216452f907dab9a0f7cc6154"
+    },
+    {
+      "path": "scripts/check/runner_timeout_unix_test.go",
+      "sha256": "0b6f6b10ee5d38a14c5509a2786d85daeb636a17d7f2547bd931c9ddace7b682"
+    }
+  ],
+  "native_execution": "NOT_TESTED on new diagnostic candidate",
+  "preserved": {
+    "test_timeout_seconds": 300,
+    "command_timeout_seconds": 360,
+    "packages": "./...",
+    "raw_bytes": 1048576,
+    "process_exit_and_cause": "authoritative"
+  },
+  "offline_tool_probe": "docs/github-logs/package-client-quarantine-20261021/macos-progress-offline-tool.json",
+  "large_temporary_fixture": "removed after refs0/query_errors0; completed Darwin test binary12609600B and empty client directory removed",
+  "cleanup": "docs/github-logs/package-client-quarantine-20261021/macos-progress-completed-cleanup.json"
+}

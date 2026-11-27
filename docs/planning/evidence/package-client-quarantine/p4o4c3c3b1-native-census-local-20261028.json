@@ -1,0 +1,202 @@
+{
+  "scope": "M13-004/P4-O4-C3c3b1 complete native DATA census/source contract; diagnostic facts only",
+  "baseline": {
+    "source": "547aaaeff6c3e3564b4d5b90a333f87361f03a17",
+    "tree": "ce4e5a1311b8e35e0f25a2d6f1268f2a352ededd",
+    "files": 2832
+  },
+  "implemented": "YES (bounded diagnostic census)",
+  "wired": "YES (actual install/no-op diagnostic); NO (production native census/profile)",
+  "qualified": "YES (named local DATA capture)",
+  "acceptance_closed": "NO (whole native session/CLI)",
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.723,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 57.091,
+      "log_sha256": "23ddc07c482a032b3d081c9ba5af784ba47fb1afa1c2522f3206d23b84d5bb87"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 0.999,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 6.859,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.243,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 9.597,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "production_and_default_tests_identical_to_baseline": true,
+  "source": [
+    {
+      "path": "internal/sandbox/pipx_native_input.go",
+      "sha256": "e6d9e8a445f6d9dff1fde322bccf1074cf951b42b8abdb349c7d0943d3eacd3b"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_input_test.go",
+      "sha256": "70ed19226b19d9606a8a2b231830f02c6eb66195876229751e00bd5924a2ffde"
+    },
+    {
+      "path": "internal/sandbox/pipx_wheel_volume.go",
+      "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31"
+    },
+    {
+      "path": "internal/sandbox/pipx_wheel_volume_test.go",
+      "sha256": "52369892714bedf97c2bf438dcbe90ee91dfd90750bc3292cc3ba1976ec7d32a"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command.go",
+      "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_test.go",
+      "sha256": "9adf41996efef3c2655ebffef98d6fccec73bf2718fc02aa15d4d63f946ee129"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+      "sha256": "d8444a8c9b854c5d6817efa29c1d2b50d3f8b54446e4d9afbb4cef9296ea5845"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_query_wheels.go",
+      "sha256": "8fe57170b6c5292d10655bfe963f7b845306713875faa6b6e58734b8fd305a4d"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+      "sha256": "724b7332fc3950e967a72ae9ac709e36fae3b4946dac4b36c0a90f274a7e0e4d"
+    }
+  ],
+  "actual": {
+    "scope": "runc ordinary1000 complete native DATA census with immutable original/RO input; no gVisor/installed current/Policy/publication",
+    "seconds": 12.554,
+    "exit_code": 0,
+    "failure": null,
+    "top_level_passes": [
+      "TestPipxActualOfflineNativeProgram"
+    ],
+    "exact_parent_pass": true,
+    "no_skip": true,
+    "Host_Docker_input42_ZIP_identical": true,
+    "binary_sha256": "ecec2b618faa0e462d3ea650b5bbc9eba8a7c050c808585dbc2e9e04d1dacb67",
+    "binary_unchanged": true,
+    "source": [
+      {
+        "path": "internal/sandbox/pipx_native_input.go",
+        "sha256": "e6d9e8a445f6d9dff1fde322bccf1074cf951b42b8abdb349c7d0943d3eacd3b"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input_test.go",
+        "sha256": "70ed19226b19d9606a8a2b231830f02c6eb66195876229751e00bd5924a2ffde"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume.go",
+        "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume_test.go",
+        "sha256": "52369892714bedf97c2bf438dcbe90ee91dfd90750bc3292cc3ba1976ec7d32a"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_test.go",
+        "sha256": "9adf41996efef3c2655ebffef98d6fccec73bf2718fc02aa15d4d63f946ee129"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+        "sha256": "d8444a8c9b854c5d6817efa29c1d2b50d3f8b54446e4d9afbb4cef9296ea5845"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_query_wheels.go",
+        "sha256": "8fe57170b6c5292d10655bfe963f7b845306713875faa6b6e58734b8fd305a4d"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+        "sha256": "724b7332fc3950e967a72ae9ac709e36fae3b4946dac4b36c0a90f274a7e0e4d"
+      }
+    ],
+    "source_unchanged": true
+  },
+  "census": {
+    "install": {
+      "entries": 84,
+      "regular_payload_bytes": 508193
+    },
+    "noop_upgrade": {
+      "entries": 85,
+      "regular_payload_bytes": 510597
+    },
+    "changes": "one new cmd timestamp log; pipx_metadata.json changed after bare-project native upgrade; all other facts identical",
+    "raw": "p4o4c3c3b1-native-census.json",
+    "raw_sha256": "dcfe4a1f5777d4105d55ccca22202e89fc9724e9fc813bd96ddfefba8be094b3",
+    "members": "pipx home/.cache/py/logs/venvs lock, UV scaffold, exact root environment and original two distributions, separate tool-bin and empty tool-man",
+    "note": "no full payload body copies in evidence; facts are not an execution allowlist or completion authority"
+  },
+  "fixed_ZIP_members": [
+    {
+      "path": "pipx/paths.py",
+      "sha256": "3daf970e59facbef904e6198f6df475e7270a9a083617490351311b6d4169bd5"
+    },
+    {
+      "path": "pipx/main.py",
+      "sha256": "f05e79a233f96ee962edeaaeb0535d2d9ef3eff8ddbd1ea3061f3a7207100dc0"
+    },
+    {
+      "path": "pipx/venv.py",
+      "sha256": "1ae376f61157438423f54cef59ae6079e80357f31178908ba9616cf026aeda71"
+    },
+    {
+      "path": "pipx/backends/uv.py",
+      "sha256": "fec2296fa416c4ddcab6468c7422dc09041ac79e6236b10886b81daf9f59b777"
+    },
+    {
+      "path": "pipx/venv_inspect.py",
+      "sha256": "913aeff81ea6a12c5386da63dd184819f03867ec33553c33caf95eb5c7264b1d"
+    }
+  ],
+  "query_contract": "fetch_info_in_venv executes venv Python -c without -I/-S/-B; json/os/platform/sys are imported before empty sys.path removal. Treat as Artifact execution and freeze cwd/profile/provenance independently. UV query has its separate fixed -I/-B grammar; old direct UV CONTROL creator predicate does not cover this child chain.",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "production pipx complete native output reader with source/receipt/whole-wheel binding and negatives",
+    "dedicated offline observer/native session and installed supply factory",
+    "current inspection/Evidence/Policy/publication/CLI and hostedUID1001/signed/final profiles"
+  ]
+}

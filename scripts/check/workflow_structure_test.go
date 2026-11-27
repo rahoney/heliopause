@@ -81,6 +81,44 @@ func TestCIWorkflowStructureMutations(t *testing.T) {
 func indentWorkflow(s string, n int) string {
 	return strings.Repeat(" ", n) + strings.ReplaceAll(strings.TrimSuffix(s, "\n"), "\n", "\n"+strings.Repeat(" ", n)) + "\n"
 }
+
+func TestWorkflowRunExpressionLength(t *testing.T) {
+	exact := strings.Repeat("a", workflowExpressionMaxLength-len("format('{0}', inputs.profile)")) + "${{ inputs.profile }}"
+	cases := []struct {
+		name string
+		body string
+		want int
+	}{
+		{"plain shell", strings.Repeat("a", workflowExpressionMaxLength+1), 0},
+		{"at limit", exact, workflowExpressionMaxLength},
+		{"quote escaping", "'" + exact[1:], workflowExpressionMaxLength + 1},
+		{"brace escaping", "{" + exact[1:], workflowExpressionMaxLength + 1},
+		{"UTF-16", "😀" + exact[1:], workflowExpressionMaxLength + 1},
+		{"quoted terminator", "prefix ${{ 'it''s }}' }} suffix", len("format('prefix {0} suffix', 'it''s }}')")},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := workflowRunExpressionLength(tc.body); got != tc.want {
+				t.Fatalf("rendered expression length = %d, want %d", got, tc.want)
+			}
+			workflow := "on:\n  pull_request:\njobs:\n  ci:\n    runs-on: ubuntu-24.04\n    steps:\n      - name: run\n        run: |-\n          " + tc.body + "\n"
+			if got := validateWorkflowStructure(workflow, false); (len(got) != 0) != (tc.want > workflowExpressionMaxLength) {
+				t.Fatalf("invalid length verdict: %v", got)
+			}
+		})
+	}
+	t.Run("CI480 inline CUDA routing", func(t *testing.T) {
+		data, err := os.ReadFile(filepath.Join("testdata", "ci480-lifecycle.yml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		findings := validateWorkflowStructure(string(data), false)
+		if len(findings) != 1 || !strings.Contains(findings[0], "gvisor-integration step 3 run expression length 21482") {
+			t.Fatalf("CI480's failing expression was not detected: %v", findings)
+		}
+	})
+}
+
 func commentWorkflow(s string) string {
 	return "# " + strings.ReplaceAll(strings.TrimSuffix(s, "\n"), "\n", "\n# ") + "\n"
 }
@@ -100,13 +138,40 @@ func TestCorpusTargetRejectsEmptySelection(t *testing.T) {
 	}
 }
 
-func TestWorkflowParserIsToolOnlyDependency(t *testing.T) {
+func TestBunConstraintParserRequiresReviewedConsumer(t *testing.T) {
 	const module = "example.test/project"
+	const dependency = "github.com/Masterminds/semver/v3"
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/artifact/npm", Imports: []string{dependency}}}); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/application", "/internal/artifact/pypi", "/internal/inspection/npm"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{dependency}}}); len(findings) == 0 {
+			t.Fatal("constraint parser leaked into an unreviewed consumer", owner)
+		}
+	}
+}
+
+func TestYAMLParserRequiresReviewedConsumer(t *testing.T) {
+	const module = "example.test/project"
+	for _, owner := range []string{"/internal/artifact/npm", "/scripts/update-runtime"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) != 0 {
+			t.Fatal(findings)
+		}
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/application", "/internal/inspection/npm"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) == 0 {
+			t.Fatal("YAML leaked into unreviewed consumer", owner)
+		}
+	}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/artifact/npm", Imports: []string{module + "/internal/runtimeidentity"}}}); len(findings) == 0 {
+		t.Fatal("parser acquired a runtime owner dependency")
+	}
+
 	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/scripts/check", Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) != 0 {
 		t.Fatal(findings)
 	}
 	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/artifact/pypi", Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) == 0 {
-		t.Fatal("parser permitted in product path")
+		t.Fatal("parser permitted in unreviewed product path")
 	}
 }
 

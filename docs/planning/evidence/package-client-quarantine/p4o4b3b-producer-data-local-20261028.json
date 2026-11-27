@@ -1,0 +1,1573 @@
+{
+  "schema": "haa-local-qualification/v1",
+  "work_item": "M13-004",
+  "substep": "P4-O4-B3b",
+  "baseline_commit": "3eab830fde1d70264178654423dce9386e721f76",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (frozen fetch/offline materializer, v3 passive metadata, producer/package/bundle and existing build/attest/publish workflow)",
+    "QUALIFIED": "YES (named local producer/metadata/package checks; no hosted run)",
+    "ACCEPTANCE_CLOSED": "YES (named local producer scope only)",
+    "MISSING": [
+      "actual complete selected ZIP graph/current Evidence/Policy",
+      "new DATA root bootstrap/wire/recovery actual qualification",
+      "native pipx tool installation/upgrade/CLI",
+      "common hosted checkpoint awaits explicit push approval",
+      "final full CPU/three CUDA support matrix"
+    ]
+  },
+  "selected_supply": {
+    "inputs": 42,
+    "wheels": 11,
+    "versioned_documents": 31,
+    "provided_proofs": 9,
+    "proof_not_provided": [
+      "userpath",
+      "pygments"
+    ],
+    "zip_members": 657,
+    "encoded_limit": 8388608,
+    "zip": {
+      "sha256": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "bytes": 2455948
+    },
+    "notice": {
+      "sha256": "b5f0bb2d960461736a5d6910e6e135751ec6759f1e97e8ba90506e8b93214fd0",
+      "bytes": 44855
+    }
+  },
+  "metadata": "explicit runtime-image-manifest/v3 carries same5images + PNPM/Bun/pipx3tools; DATA role pipx-runtime/mode0444/pinned Python plus selected ZIP/NOTICE; historical v2 only without DATA pair; source runtime lock schema5 unchanged",
+  "producer": "same15assets/19bundle files; fixed source wheel names supply inventory metadata only; actual original ZIP ObservationPlan independently matched all11 SBOM distributions; original whole wheel/proof/closure validation remains in existing materializer",
+  "package": "actual DEB/RPM original ZIP/NOTICE root0444 payload and documentation bytes; existing inert service/runtime/caller boundaries retained; second generation byte-identical for both package formats; no installation",
+  "workflow": "existing build step uses fixed fetch then offline materialize before runtime metadata/package/manifest; ZIP/NOTICE included in assets and existing whole dist attestation; publish already uses exact verifier output, no new job or publication",
+  "checks": {
+    "B3b1": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 0.682
+      },
+      {
+        "step": "focused",
+        "command": [
+          "go",
+          "test",
+          "-count=1",
+          "./scripts/runtime-image-manifest",
+          "./scripts/release-manifest",
+          "./scripts/release-packages",
+          "./internal/releaseinstall",
+          "./internal/releaseactivation",
+          "./internal/releasebootstrap"
+        ],
+        "exit_code": 0,
+        "seconds": 44.418
+      },
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 229.165
+      },
+      {
+        "step": "race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "-count=1",
+          "./scripts/runtime-image-manifest",
+          "./scripts/release-manifest",
+          "./scripts/release-packages",
+          "./internal/releaseinstall",
+          "./internal/releaseactivation",
+          "./internal/releasebootstrap"
+        ],
+        "exit_code": 0,
+        "seconds": 47.233
+      },
+      {
+        "step": "compile",
+        "command": [
+          "go",
+          "test",
+          "-c",
+          "-o",
+          "/tmp/haa-p4o4b3b1-releaseinstall.test",
+          "./internal/releaseinstall"
+        ],
+        "exit_code": 0,
+        "seconds": 0.362
+      },
+      {
+        "step": "docs",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "docs"
+        ],
+        "exit_code": 0,
+        "seconds": 0.253
+      },
+      {
+        "step": "security",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "security"
+        ],
+        "exit_code": 0,
+        "seconds": 14.38
+      }
+    ],
+    "B3b2": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 1.377
+      },
+      {
+        "step": "focused",
+        "command": [
+          "go",
+          "test",
+          "-count=1",
+          "./scripts/update-runtime",
+          "./scripts/check"
+        ],
+        "exit_code": 0,
+        "seconds": 23.117
+      },
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 63.583
+      },
+      {
+        "step": "race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "-count=1",
+          "./scripts/update-runtime",
+          "./scripts/check"
+        ],
+        "exit_code": 0,
+        "seconds": 40.331
+      },
+      {
+        "step": "workflow",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "workflow"
+        ],
+        "exit_code": 0,
+        "seconds": 0.775
+      },
+      {
+        "step": "release-gate",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "release-gate"
+        ],
+        "exit_code": 0,
+        "seconds": 0.321
+      },
+      {
+        "step": "build",
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/tmp/haa-p4o4b3b2-update-runtime",
+          "./scripts/update-runtime"
+        ],
+        "exit_code": 0,
+        "seconds": 1.843
+      },
+      {
+        "step": "docs",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "docs"
+        ],
+        "exit_code": 0,
+        "seconds": 0.252
+      },
+      {
+        "step": "security",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "security"
+        ],
+        "exit_code": 0,
+        "seconds": 10.037
+      }
+    ],
+    "actual_preparation": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 0.727
+      },
+      {
+        "step": "compile-manifest",
+        "command": [
+          "go",
+          "test",
+          "-tags=realcorpus",
+          "-c",
+          "-o",
+          "/tmp/haa-p4o4b3b3-manifest.test",
+          "./scripts/release-manifest"
+        ],
+        "exit_code": 0,
+        "seconds": 0.866
+      },
+      {
+        "step": "compile-packages",
+        "command": [
+          "go",
+          "test",
+          "-tags=realcorpus",
+          "-c",
+          "-o",
+          "/tmp/haa-p4o4b3b3-packages.test",
+          "./scripts/release-packages"
+        ],
+        "exit_code": 0,
+        "seconds": 2.279
+      }
+    ],
+    "final": [
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 37.845
+      },
+      {
+        "step": "vet-realcorpus",
+        "command": [
+          "go",
+          "vet",
+          "-tags=realcorpus",
+          "./scripts/release-manifest",
+          "./scripts/release-packages"
+        ],
+        "exit_code": 0,
+        "seconds": 2.042
+      }
+    ]
+  },
+  "actual_build": {
+    "scope": "local unsigned build candidate; fixture version/commit/workflow labels are not publisher proof; no artifact execution/package installation/hosted/final qualification",
+    "steps": 19,
+    "inputs": 42,
+    "assets": 15,
+    "bundle_files": 19,
+    "package_reproducibility": true,
+    "host_docker_unchanged": true,
+    "no_skip": true,
+    "outputs": [
+      {
+        "name": "bun-NOTICE.txt",
+        "size": 14877,
+        "sha256": "a0f11e407b59d3441f1bc0319fc705f1df0284caf64070f6ddbdfc0add228980"
+      },
+      {
+        "name": "bun-linux-amd64",
+        "size": 107308936,
+        "sha256": "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235"
+      },
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "size": 8380623,
+        "sha256": "941d1b3162b06a720b95fa9f4c4a216557b3683d43b8a419518516bf2b2e1c2d"
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "size": 29261819,
+        "sha256": "b149bdcd5bf715bee0c2bd22100fd8d37041a95a728c2294c92363d91ecccd3e"
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "size": 3159696,
+        "sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45"
+      },
+      {
+        "name": "helox-darwin-amd64",
+        "size": 26125280,
+        "sha256": "3c7f5e68f7ad0df518df09f703a2ac46e12f0e52a120e0126f5685ebe4d741ee"
+      },
+      {
+        "name": "helox-darwin-arm64",
+        "size": 23974066,
+        "sha256": "9d0b4d93ebbff5c9776256140ab403ed7f64f8f4a3a3882210311f2648d4c89a"
+      },
+      {
+        "name": "helox-linux-amd64",
+        "size": 47475497,
+        "sha256": "c26795ca5c39ffe8b508fc5659598f2b132e22e8a584a96c40667d3e0aa699c6"
+      },
+      {
+        "name": "helox-linux-amd64.deb",
+        "size": 124774830,
+        "sha256": "2f4819fd76d98d1ccaf3a574dd9e1a7de3c260873a9fef3d203ef98f9743ecbf"
+      },
+      {
+        "name": "helox-linux-amd64.rpm",
+        "size": 124794607,
+        "sha256": "1b64f90571246e45d41c59a8be1bdaa5708dcf076d09fd49833c476475cfca2e"
+      },
+      {
+        "name": "helox-linux-arm64",
+        "size": 37502576,
+        "sha256": "036232a4a699ba2a2abd204edef2dc1552a8180225bbc933e3775f78828f88f7"
+      },
+      {
+        "name": "helox-release-checksums.txt",
+        "size": 1601,
+        "sha256": "7894093f021307ab8cc7f466bb75b054a08ce09538d15258886e1815955e3ea9"
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "size": 4077,
+        "sha256": "7d1c7b2605982a3916600bae0252e60b459c0121f118bb3c21b8515baf4ab1c9"
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "size": 11229,
+        "sha256": "04f10b77a7d2db3bdf3719d02ef05ef89fb825a2986711dbf896e6ab72d155c4"
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "size": 3424,
+        "sha256": "2fa4e89f873d0dbe93a186f83abaeb2ce8665f430fe08ee9bad28d6147d0188d"
+      },
+      {
+        "name": "pipx-NOTICE.txt",
+        "size": 44855,
+        "sha256": "b5f0bb2d960461736a5d6910e6e135751ec6759f1e97e8ba90506e8b93214fd0"
+      },
+      {
+        "name": "pipx-runtime-linux-amd64.zip",
+        "size": 2455948,
+        "sha256": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670"
+      },
+      {
+        "name": "pnpm-NOTICE.txt",
+        "size": 3152,
+        "sha256": "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2"
+      },
+      {
+        "name": "pnpm-linux-amd64",
+        "size": 57822504,
+        "sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942"
+      }
+    ]
+  },
+  "actual_build_steps": [
+    {
+      "step": "fetch",
+      "command": [
+        "/tmp/haa-p4o4b3b2-update-runtime",
+        "fetch-pipx-supply",
+        "--root",
+        "/tmp/haa-p4o1-20261027-source",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/supply"
+      ],
+      "exit_code": 0,
+      "seconds": 0.616,
+      "log_sha256": "39d8e546a7cf15879a431724551933f66b1a6df77a3043ae57bab2e21ecc1e77"
+    },
+    {
+      "step": "materialize-pipx",
+      "command": [
+        "/tmp/haa-p4o4b3b2-update-runtime",
+        "materialize-pipx",
+        "--root",
+        "/tmp/haa-p4o1-20261027-source",
+        "--input",
+        "/tmp/haa-p4o4b3b-build-actual-v1/supply",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pipx-runtime-linux-amd64.zip",
+        "--notices-output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pipx-NOTICE.txt"
+      ],
+      "exit_code": 0,
+      "seconds": 0.365,
+      "log_sha256": "03b67f85e7a01b76eec7416ff904e27366b04304433f1404cae98a8fcf437df7"
+    },
+    {
+      "step": "fetch-pnpm",
+      "command": [
+        "curl",
+        "-q",
+        "--fail",
+        "--show-error",
+        "--silent",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--noproxy",
+        "*",
+        "--connect-timeout",
+        "15",
+        "--max-time",
+        "180",
+        "--max-filesize",
+        "25369328",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/pnpm-archive.tar.gz",
+        "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz"
+      ],
+      "exit_code": 0,
+      "seconds": 3.625,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "materialize-pnpm",
+      "command": [
+        "/tmp/haa-p4o4b3b2-update-runtime",
+        "materialize-pnpm",
+        "--root",
+        "/tmp/haa-p4o1-20261027-source",
+        "--archive",
+        "/tmp/haa-p4o4b3b-build-actual-v1/pnpm-archive.tar.gz",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pnpm-linux-amd64",
+        "--notices-output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pnpm-NOTICE.txt"
+      ],
+      "exit_code": 0,
+      "seconds": 1.268,
+      "log_sha256": "5a3d89d5995941d02495b1c93f8a9d2c86cf302081ba4c3fbd36f9d1fa9c0e8e"
+    },
+    {
+      "step": "fetch-bun",
+      "command": [
+        "curl",
+        "-q",
+        "--fail",
+        "--show-error",
+        "--silent",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--noproxy",
+        "*",
+        "--connect-timeout",
+        "15",
+        "--max-time",
+        "180",
+        "--max-filesize",
+        "51794595",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/bun-archive.zip",
+        "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip"
+      ],
+      "exit_code": 0,
+      "seconds": 5.329,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "materialize-bun",
+      "command": [
+        "/tmp/haa-p4o4b3b2-update-runtime",
+        "materialize-bun",
+        "--root",
+        "/tmp/haa-p4o1-20261027-source",
+        "--archive",
+        "/tmp/haa-p4o4b3b-build-actual-v1/bun-archive.zip",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/bun-linux-amd64",
+        "--notices-output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/bun-NOTICE.txt"
+      ],
+      "exit_code": 0,
+      "seconds": 2.17,
+      "log_sha256": "6521925636e12a16c5487bf1ae658cd8563108a00d717571b5a77c4fc3279f86"
+    },
+    {
+      "step": "build-cli-linux-amd64",
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-buildvcs=true",
+        "-o",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-linux-amd64",
+        "./cmd/helox"
+      ],
+      "exit_code": 0,
+      "seconds": 9.09,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-cli-linux-arm64",
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-buildvcs=true",
+        "-o",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-linux-arm64",
+        "./cmd/helox"
+      ],
+      "exit_code": 0,
+      "seconds": 41.227,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-cli-darwin-amd64",
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-buildvcs=true",
+        "-o",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-darwin-amd64",
+        "./cmd/helox"
+      ],
+      "exit_code": 0,
+      "seconds": 25.284,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-cli-darwin-arm64",
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-buildvcs=true",
+        "-o",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-darwin-arm64",
+        "./cmd/helox"
+      ],
+      "exit_code": 0,
+      "seconds": 26.256,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-haa-network-policy-helper",
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-buildvcs=true",
+        "-o",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/haa-network-policy-helper-linux-amd64",
+        "./cmd/haa-network-policy-helper"
+      ],
+      "exit_code": 0,
+      "seconds": 0.566,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-haa-release-installer",
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-buildvcs=true",
+        "-o",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/haa-release-installer-linux-amd64",
+        "./cmd/haa-release-installer"
+      ],
+      "exit_code": 0,
+      "seconds": 1.267,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "runtime-images",
+      "command": [
+        "go",
+        "run",
+        "./scripts/runtime-image-manifest",
+        "--runtime-lock",
+        "scripts/runtimes.lock.json",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-runtime-images.json"
+      ],
+      "exit_code": 0,
+      "seconds": 0.265,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "packages",
+      "command": [
+        "go",
+        "run",
+        "./scripts/release-packages",
+        "--version",
+        "v1.2.3",
+        "--source-date-epoch",
+        "1792000000",
+        "--assets-dir",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets",
+        "--output-dir",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets",
+        "--runtime-lock",
+        "scripts/runtimes.lock.json",
+        "--license",
+        "LICENSE"
+      ],
+      "exit_code": 0,
+      "seconds": 27.64,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "manifest",
+      "command": [
+        "go",
+        "run",
+        "./scripts/release-manifest",
+        "--version",
+        "v1.2.3",
+        "--commit",
+        "3eab830fde1d70264178654423dce9386e721f76",
+        "--workflow-run",
+        "https://github.com/rahoney/heliopause/actions/runs/123",
+        "--runtime-lock",
+        "scripts/runtimes.lock.json",
+        "--sbom-output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-release-sbom.cdx.json",
+        "--runtime-images",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-runtime-images.json",
+        "--output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-release-manifest.json",
+        "--checksums-output",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-release-checksums.txt",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/bun-NOTICE.txt",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/bun-linux-amd64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/haa-network-policy-helper-linux-amd64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/haa-release-installer-linux-amd64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/haa_gvisor_observer-linux-amd64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-darwin-amd64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-darwin-arm64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-linux-amd64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-linux-amd64.deb",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-linux-amd64.rpm",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/helox-linux-arm64",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pipx-NOTICE.txt",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pipx-runtime-linux-amd64.zip",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pnpm-NOTICE.txt",
+        "--asset",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets/pnpm-linux-amd64"
+      ],
+      "exit_code": 0,
+      "seconds": 3.373,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "verify-bundle",
+      "command": [
+        "go",
+        "run",
+        "./scripts/release-manifest",
+        "--verify-bundle",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets",
+        "--version",
+        "v1.2.3",
+        "--commit",
+        "3eab830fde1d70264178654423dce9386e721f76",
+        "--workflow-run",
+        "https://github.com/rahoney/heliopause/actions/runs/123"
+      ],
+      "exit_code": 0,
+      "seconds": 1.669,
+      "log_sha256": "93c44791eec41129926223810014c8d884e167f7805cc57f42502c87609c8ca5"
+    },
+    {
+      "step": "actual-producer-test",
+      "command": [
+        "/tmp/haa-p4o4b3b3-manifest.test",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=3m",
+        "-test.run=^TestPipxActualProducerBundleAndOriginalZIPCensus$"
+      ],
+      "exit_code": 0,
+      "seconds": 1.669,
+      "log_sha256": "ae23adad13046239bb3a5d907019d87e8162742806630aae240e1e9b0bf23e28"
+    },
+    {
+      "step": "actual-packages-test",
+      "command": [
+        "/tmp/haa-p4o4b3b3-packages.test",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=3m",
+        "-test.run=^TestPipxActualPackagesPreserveSelectedData$"
+      ],
+      "exit_code": 0,
+      "seconds": 3.724,
+      "log_sha256": "97480bb7837e2496e64d1df0c43d5ed7c2d44f1cb38bca54ac1612af761d7325"
+    },
+    {
+      "step": "packages-reproduce",
+      "command": [
+        "go",
+        "run",
+        "./scripts/release-packages",
+        "--version",
+        "v1.2.3",
+        "--source-date-epoch",
+        "1792000000",
+        "--assets-dir",
+        "/tmp/haa-p4o4b3b-build-actual-v1/assets",
+        "--output-dir",
+        "/tmp/haa-p4o4b3b-build-actual-v1/second-packages",
+        "--runtime-lock",
+        "scripts/runtimes.lock.json",
+        "--license",
+        "LICENSE"
+      ],
+      "exit_code": 0,
+      "seconds": 26.834,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "actual_copy": {
+    "exit": 0,
+    "seconds": 0.235,
+    "command": [
+      "unshare",
+      "--mount",
+      "--net",
+      "--fork",
+      "/tmp/haa-p4o4b3b1-releaseinstall.test",
+      "-test.v",
+      "-test.failfast",
+      "-test.timeout=3m",
+      "-test.run=^TestPipxSystemDataInDisposableNamespace$"
+    ],
+    "named_pass": true,
+    "no_skip": true,
+    "host_unchanged": true,
+    "input_unchanged": true,
+    "source": [
+      {
+        "path": "/tmp/haa-p4o4b3b1-releaseinstall.test",
+        "sha256": "66b9af9bc490654fefa19b0cb1aa0e279535356000eac07f52873f9de5a745db"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseinstall/pipx_data_namespace_linux_test.go",
+        "sha256": "401aca8a030689486a32d9d2595db215ea7ca7118a1927329b4a5b1a8a07995f"
+      }
+    ],
+    "scope": "unsigned copy-only fixture in separate mount/network namespaces; ZIP/NOTICE actual selected bytes root single-link0444; no artifact execution/authenticity/full release qualification"
+  },
+  "source_inventory": [
+    {
+      "path": ".github/workflows/heliopause-release-build.yml",
+      "sha256": "88a673d8c461258b6d3071b07c996d7b85979050383ce8cbe6e118d2066f5f19"
+    },
+    {
+      "path": "internal/inspection/githubrelease/release_set.go",
+      "sha256": "5ce0346f894cd29949241960c0f8bf124c8c9a31db57583af893c6f2c3bfcf2f"
+    },
+    {
+      "path": "internal/releaseactivation/bootstrap_files_linux.go",
+      "sha256": "0677297c61fcd15b7912a7e0d422112dbb07eece89c806397e5db8a5f692d9cf"
+    },
+    {
+      "path": "internal/releaseactivation/installed_linux.go",
+      "sha256": "fbd30ac5d56d8a01df94235690ac10456e728a7bbd938bec6717eade5d4c66bf"
+    },
+    {
+      "path": "internal/releaseactivation/stage_linux.go",
+      "sha256": "e746b0d0ccb6cdc2885a2c7d4324e068720cb5d467f88542ff7cd8b46ea45454"
+    },
+    {
+      "path": "internal/releasebootstrap/preparation_linux.go",
+      "sha256": "d5398b71bccb1ecf427a3a841f6a945e0a06141f8fd3cbb0dd1a0a19c012b32e"
+    },
+    {
+      "path": "internal/releaseinstall/installer.go",
+      "sha256": "94ca7c10fb0f0692e8f8bd15a1409fd600f6192484b9ea8e95754cd96226ad45"
+    },
+    {
+      "path": "internal/releaseinstall/metadata.go",
+      "sha256": "1c425021ce29ab665a107be19070f3b8e3b3dffc89af1fadfe02b3dfe2fa0cfb"
+    },
+    {
+      "path": "internal/releaseinstall/pipx_data_namespace_linux_test.go",
+      "sha256": "401aca8a030689486a32d9d2595db215ea7ca7118a1927329b4a5b1a8a07995f"
+    },
+    {
+      "path": "internal/releaseinstall/pipx_runtime_metadata_test.go",
+      "sha256": "cb573ef85ad97a9ebae97545c7b8028d6e5f94f1edc06aef614a4db001e4801d"
+    },
+    {
+      "path": "internal/testutil/releasefixture/runtime.go",
+      "sha256": "7a09af647ab7c22f93288997c956830c7f04b835560bdd2873c4f03aa1e8e1b3"
+    },
+    {
+      "path": "scripts/check/pipx_release_workflow_test.go",
+      "sha256": "1e364b219c93db6df8b91ea1cd889d5983271936561b6b70b7cb879082f9cccd"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "952115afd7ab2e29f2a4ca3a737834a5433b4622620ae56a0c7161fe3d5bd29e"
+    },
+    {
+      "path": "scripts/release-manifest/bundle_test.go",
+      "sha256": "c3f8a8fd1c104cc503fbf0d299e1fdbce4747b47e7a10b13082580922eb134ae"
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "sha256": "949dd35b93bd18541984a04503953105cf5660fc6d848241d8fe5f3d6f7c15e1"
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "sha256": "5a871f5a2ee2e60150790b1328927004fb0d90534bae39300707b91ec22d513a"
+    },
+    {
+      "path": "scripts/release-manifest/pipx_data_realcorpus_test.go",
+      "sha256": "7f431c2e0a15ba43f85f40a1768661264da711f9de1d8f5f7da150543caaabd5"
+    },
+    {
+      "path": "scripts/release-packages/main.go",
+      "sha256": "99edc0ecd90924ffb1cc5d33c83c06a4502868d0af261c916e4340e3a6d41bc7"
+    },
+    {
+      "path": "scripts/release-packages/main_test.go",
+      "sha256": "7efa80c1bce8a9eefcd8627e7fb70beaa64a8b04fb316c2b8595b54b8c212de2"
+    },
+    {
+      "path": "scripts/release-packages/pipx_data_realcorpus_test.go",
+      "sha256": "60dfb8c6a05fa46211d6126e097b63db1dbdf6c8a4024be563e22d7a052ac530"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main.go",
+      "sha256": "6d0d8dd8934fb2333bd9e98443bcae796f2b2ded2dd56f6395b2d1e1e0824c9d"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main_test.go",
+      "sha256": "2aa1439bf16bb2f1f5b77fa367a9212d4f246d6df5b04c17565da06e17098163"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "48fbe172acefcf95771ed01ff7c2473826eed8efd8277b1466f40bd4d8d14ac1"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_fetch.go",
+      "sha256": "fa46a3382ef458fff81dc1c110bf45bb6bd77bf174ef6e08c7f4dd388d8231dc"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_fetch_test.go",
+      "sha256": "039c9dad37083711313c4d4fc6e9a6af90d5cda50206a6297347194864abea5f"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_supply.go",
+      "sha256": "91a20644ab095ef22ff65c00a9e2358f0636ee3ea06be26156fc9f5c08cda96e"
+    }
+  ],
+  "first_failures": [
+    {
+      "scope": "operator before test compilation",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-first-operator.json",
+      "cause": "relative cwd projected source onto itself; explicit absolute workspace root corrected; no product/runtime mutation"
+    },
+    {
+      "scope": "new realcorpus test compilation only",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-first-compile-manifest.log",
+      "cause": "test treated bounded ReleaseManifest methods as exported producer fields; test now separates decoded declared fixture from parsed consumer API; product API unchanged"
+    }
+  ],
+  "evidence_scope": "local unsigned v1.2.3 candidate; fixture commit/workflow labels are not publisher proof or hosted qualification; native binaries compile only; selected pipx ZIP is not executed in this build check; no package activation/publication; Host5files and Docker inventory identical",
+  "raw_inventory": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-actual-packages-test.log",
+      "bytes": 405,
+      "sha256": "97480bb7837e2496e64d1df0c43d5ed7c2d44f1cb38bca54ac1612af761d7325"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-actual-producer-test.log",
+      "bytes": 517,
+      "sha256": "ae23adad13046239bb3a5d907019d87e8162742806630aae240e1e9b0bf23e28"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-build-cli-darwin-amd64.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-build-cli-darwin-arm64.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-build-cli-linux-amd64.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-build-cli-linux-arm64.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-build-haa-network-policy-helper.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-build-haa-release-installer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-fetch-bun.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-fetch-pnpm.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-fetch.log",
+      "bytes": 55,
+      "sha256": "39d8e546a7cf15879a431724551933f66b1a6df77a3043ae57bab2e21ecc1e77"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-helox-release-checksums.txt",
+      "bytes": 1601,
+      "sha256": "7894093f021307ab8cc7f466bb75b054a08ce09538d15258886e1815955e3ea9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-helox-release-manifest.json",
+      "bytes": 4077,
+      "sha256": "7d1c7b2605982a3916600bae0252e60b459c0121f118bb3c21b8515baf4ab1c9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-helox-release-sbom.cdx.json",
+      "bytes": 11229,
+      "sha256": "04f10b77a7d2db3bdf3719d02ef05ef89fb825a2986711dbf896e6ab72d155c4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-helox-runtime-images.json",
+      "bytes": 3424,
+      "sha256": "2fa4e89f873d0dbe93a186f83abaeb2ce8665f430fe08ee9bad28d6147d0188d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-input-inventory.json",
+      "bytes": 6350,
+      "sha256": "fb346a9511964affda46aa4ab33ee3893fcc5e70e142d79d224aab94c518f4b6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-manifest.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-materialize-bun.log",
+      "bytes": 260,
+      "sha256": "6521925636e12a16c5487bf1ae658cd8563108a00d717571b5a77c4fc3279f86"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-materialize-pipx.log",
+      "bytes": 313,
+      "sha256": "03b67f85e7a01b76eec7416ff904e27366b04304433f1404cae98a8fcf437df7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-materialize-pnpm.log",
+      "bytes": 262,
+      "sha256": "5a3d89d5995941d02495b1c93f8a9d2c86cf302081ba4c3fbd36f9d1fa9c0e8e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-packages-reproduce.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-packages.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-result.json",
+      "bytes": 3377,
+      "sha256": "85cc4393d38ad93bbefca9b794c970d22148f76a5f129e18acc51610f8d160cb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-runtime-images.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-source.json",
+      "bytes": 3836,
+      "sha256": "894811737743e90321792d6c5536e1a9207d56c548e5d7a997548a5d92f20bce"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-steps.json",
+      "bytes": 10729,
+      "sha256": "fdbfac589e2dff8d6660fb0bd33166aa053bc87fa49475a7b0d4bf8a7e8d3f58"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual-v1-verify-bundle.log",
+      "bytes": 441,
+      "sha256": "93c44791eec41129926223810014c8d884e167f7805cc57f42502c87609c8ca5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-build-actual.py",
+      "bytes": 7559,
+      "sha256": "75da4120044cfe7adcaf8558d64a6afa3e1803fe5704815457ffab8152bc2b79"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-final-checks.json",
+      "bytes": 389,
+      "sha256": "561620222c68585e618aa88207f84bab199bb7b91861e7f0f41974b7c1d897d1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-final-quick.log",
+      "bytes": 1354,
+      "sha256": "a5efbe2e142a90caa406564279fd586d2e1a0bed82b0bb65c6e01ea595e4071c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-final-vet-realcorpus.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-hostsnap.py",
+      "bytes": 473,
+      "sha256": "cba80771bcff46e0c67b35b9f67c5acee06651dc2aa9251f8182c214f0308231"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--.github--workflows--heliopause-release-build.yml",
+      "bytes": 6776,
+      "sha256": "88a673d8c461258b6d3071b07c996d7b85979050383ce8cbe6e118d2066f5f19"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--inspection--githubrelease--release_set.go",
+      "bytes": 5650,
+      "sha256": "5ce0346f894cd29949241960c0f8bf124c8c9a31db57583af893c6f2c3bfcf2f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releaseactivation--bootstrap_files_linux.go",
+      "bytes": 18147,
+      "sha256": "0677297c61fcd15b7912a7e0d422112dbb07eece89c806397e5db8a5f692d9cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releaseactivation--installed_linux.go",
+      "bytes": 8891,
+      "sha256": "fbd30ac5d56d8a01df94235690ac10456e728a7bbd938bec6717eade5d4c66bf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releaseactivation--stage_linux.go",
+      "bytes": 8407,
+      "sha256": "e746b0d0ccb6cdc2885a2c7d4324e068720cb5d467f88542ff7cd8b46ea45454"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releasebootstrap--preparation_linux.go",
+      "bytes": 9656,
+      "sha256": "d5398b71bccb1ecf427a3a841f6a945e0a06141f8fd3cbb0dd1a0a19c012b32e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releaseinstall--installer.go",
+      "bytes": 23302,
+      "sha256": "94ca7c10fb0f0692e8f8bd15a1409fd600f6192484b9ea8e95754cd96226ad45"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releaseinstall--metadata.go",
+      "bytes": 10868,
+      "sha256": "1c425021ce29ab665a107be19070f3b8e3b3dffc89af1fadfe02b3dfe2fa0cfb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releaseinstall--pipx_data_namespace_linux_test.go",
+      "bytes": 3886,
+      "sha256": "401aca8a030689486a32d9d2595db215ea7ca7118a1927329b4a5b1a8a07995f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--releaseinstall--pipx_runtime_metadata_test.go",
+      "bytes": 3131,
+      "sha256": "cb573ef85ad97a9ebae97545c7b8028d6e5f94f1edc06aef614a4db001e4801d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--internal--testutil--releasefixture--runtime.go",
+      "bytes": 6805,
+      "sha256": "7a09af647ab7c22f93288997c956830c7f04b835560bdd2873c4f03aa1e8e1b3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--check--pipx_release_workflow_test.go",
+      "bytes": 2626,
+      "sha256": "1e364b219c93db6df8b91ea1cd889d5983271936561b6b70b7cb879082f9cccd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--check--workflow.go",
+      "bytes": 36859,
+      "sha256": "952115afd7ab2e29f2a4ca3a737834a5433b4622620ae56a0c7161fe3d5bd29e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--release-manifest--bundle_test.go",
+      "bytes": 5810,
+      "sha256": "c3f8a8fd1c104cc503fbf0d299e1fdbce4747b47e7a10b13082580922eb134ae"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--release-manifest--main.go",
+      "bytes": 16842,
+      "sha256": "949dd35b93bd18541984a04503953105cf5660fc6d848241d8fe5f3d6f7c15e1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--release-manifest--main_test.go",
+      "bytes": 11443,
+      "sha256": "5a871f5a2ee2e60150790b1328927004fb0d90534bae39300707b91ec22d513a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--release-manifest--pipx_data_realcorpus_test.go",
+      "bytes": 3181,
+      "sha256": "7f431c2e0a15ba43f85f40a1768661264da711f9de1d8f5f7da150543caaabd5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--release-packages--main.go",
+      "bytes": 8702,
+      "sha256": "99edc0ecd90924ffb1cc5d33c83c06a4502868d0af261c916e4340e3a6d41bc7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--release-packages--main_test.go",
+      "bytes": 10794,
+      "sha256": "7efa80c1bce8a9eefcd8627e7fb70beaa64a8b04fb316c2b8595b54b8c212de2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--release-packages--pipx_data_realcorpus_test.go",
+      "bytes": 1728,
+      "sha256": "60dfb8c6a05fa46211d6126e097b63db1dbdf6c8a4024be563e22d7a052ac530"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--runtime-image-manifest--main.go",
+      "bytes": 10894,
+      "sha256": "6d0d8dd8934fb2333bd9e98443bcae796f2b2ded2dd56f6395b2d1e1e0824c9d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--runtime-image-manifest--main_test.go",
+      "bytes": 13355,
+      "sha256": "2aa1439bf16bb2f1f5b77fa367a9212d4f246d6df5b04c17565da06e17098163"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--update-runtime--main.go",
+      "bytes": 20056,
+      "sha256": "48fbe172acefcf95771ed01ff7c2473826eed8efd8277b1466f40bd4d8d14ac1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--update-runtime--pipx_fetch.go",
+      "bytes": 6058,
+      "sha256": "fa46a3382ef458fff81dc1c110bf45bb6bd77bf174ef6e08c7f4dd388d8231dc"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--update-runtime--pipx_fetch_test.go",
+      "bytes": 5311,
+      "sha256": "039c9dad37083711313c4d4fc6e9a6af90d5cda50206a6297347194864abea5f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b-source--scripts--update-runtime--pipx_supply.go",
+      "bytes": 4812,
+      "sha256": "91a20644ab095ef22ff65c00a9e2358f0636ee3ea06be26156fc9f5c08cda96e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-bootstrap_files_linux.go",
+      "bytes": 18147,
+      "sha256": "0677297c61fcd15b7912a7e0d422112dbb07eece89c806397e5db8a5f692d9cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-bundle_test.go",
+      "bytes": 5810,
+      "sha256": "c3f8a8fd1c104cc503fbf0d299e1fdbce4747b47e7a10b13082580922eb134ae"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-checks.json",
+      "bytes": 1617,
+      "sha256": "badcbac39051605127f2382423f1725e6ed2b0ab93ee6a04721d27dddde7ee16"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-copy-actual-v1-actual.log",
+      "bytes": 302,
+      "sha256": "9e02094f9eea63e53db4226b568f62d5df9dbf0ab2c872e544f3f2247fc0d247"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-copy-actual-v1-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-copy-actual-v1-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-copy-actual-v1-inventory.json",
+      "bytes": 857,
+      "sha256": "b8c9360059cbabbb331b60e8f80a88e0504769f5f1eba53b6e334560ebde09e5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-copy-actual-v1-result.json",
+      "bytes": 937,
+      "sha256": "2fa04e2e63b3b5ce5e64339bdd3c2fe09171f74a890949daa9223508d5114393"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-focused.log",
+      "bytes": 411,
+      "sha256": "94d22de0542dfdb5a10666879056309d71ada4f4405c21b72d22c27e0cb3151f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-installed_linux.go",
+      "bytes": 8891,
+      "sha256": "fbd30ac5d56d8a01df94235690ac10456e728a7bbd938bec6717eade5d4c66bf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-installer.go",
+      "bytes": 23302,
+      "sha256": "94ca7c10fb0f0692e8f8bd15a1409fd600f6192484b9ea8e95754cd96226ad45"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-main.go",
+      "bytes": 8702,
+      "sha256": "99edc0ecd90924ffb1cc5d33c83c06a4502868d0af261c916e4340e3a6d41bc7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-main_test.go",
+      "bytes": 10794,
+      "sha256": "7efa80c1bce8a9eefcd8627e7fb70beaa64a8b04fb316c2b8595b54b8c212de2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-metadata.go",
+      "bytes": 10868,
+      "sha256": "1c425021ce29ab665a107be19070f3b8e3b3dffc89af1fadfe02b3dfe2fa0cfb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-pipx_data_namespace_linux_test.go",
+      "bytes": 3886,
+      "sha256": "401aca8a030689486a32d9d2595db215ea7ca7118a1927329b4a5b1a8a07995f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-pipx_runtime_metadata_test.go",
+      "bytes": 3131,
+      "sha256": "cb573ef85ad97a9ebae97545c7b8028d6e5f94f1edc06aef614a4db001e4801d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-preparation_linux.go",
+      "bytes": 9656,
+      "sha256": "d5398b71bccb1ecf427a3a841f6a945e0a06141f8fd3cbb0dd1a0a19c012b32e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-quick.log",
+      "bytes": 1354,
+      "sha256": "971ec1dfa6cc14ab99c5c7a4e3c06f155d6cb5ca259a2064b01f06278a023db5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-race.log",
+      "bytes": 411,
+      "sha256": "feb1765bc3f550d7c9b73ee117f08ec570a9d44810b775e77056d4d69b127270"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-release_set.go",
+      "bytes": 5650,
+      "sha256": "5ce0346f894cd29949241960c0f8bf124c8c9a31db57583af893c6f2c3bfcf2f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-runtime.go",
+      "bytes": 6805,
+      "sha256": "7a09af647ab7c22f93288997c956830c7f04b835560bdd2873c4f03aa1e8e1b3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--inspection--githubrelease--release_set.go",
+      "bytes": 5650,
+      "sha256": "5ce0346f894cd29949241960c0f8bf124c8c9a31db57583af893c6f2c3bfcf2f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releaseactivation--bootstrap_files_linux.go",
+      "bytes": 18147,
+      "sha256": "0677297c61fcd15b7912a7e0d422112dbb07eece89c806397e5db8a5f692d9cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releaseactivation--installed_linux.go",
+      "bytes": 8891,
+      "sha256": "fbd30ac5d56d8a01df94235690ac10456e728a7bbd938bec6717eade5d4c66bf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releaseactivation--stage_linux.go",
+      "bytes": 8407,
+      "sha256": "e746b0d0ccb6cdc2885a2c7d4324e068720cb5d467f88542ff7cd8b46ea45454"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releasebootstrap--preparation_linux.go",
+      "bytes": 9656,
+      "sha256": "d5398b71bccb1ecf427a3a841f6a945e0a06141f8fd3cbb0dd1a0a19c012b32e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releaseinstall--installer.go",
+      "bytes": 23302,
+      "sha256": "94ca7c10fb0f0692e8f8bd15a1409fd600f6192484b9ea8e95754cd96226ad45"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releaseinstall--metadata.go",
+      "bytes": 10868,
+      "sha256": "1c425021ce29ab665a107be19070f3b8e3b3dffc89af1fadfe02b3dfe2fa0cfb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releaseinstall--pipx_data_namespace_linux_test.go",
+      "bytes": 3886,
+      "sha256": "401aca8a030689486a32d9d2595db215ea7ca7118a1927329b4a5b1a8a07995f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--releaseinstall--pipx_runtime_metadata_test.go",
+      "bytes": 3131,
+      "sha256": "cb573ef85ad97a9ebae97545c7b8028d6e5f94f1edc06aef614a4db001e4801d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--internal--testutil--releasefixture--runtime.go",
+      "bytes": 6805,
+      "sha256": "7a09af647ab7c22f93288997c956830c7f04b835560bdd2873c4f03aa1e8e1b3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--scripts--release-manifest--bundle_test.go",
+      "bytes": 5810,
+      "sha256": "c3f8a8fd1c104cc503fbf0d299e1fdbce4747b47e7a10b13082580922eb134ae"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--scripts--release-manifest--main.go",
+      "bytes": 16842,
+      "sha256": "949dd35b93bd18541984a04503953105cf5660fc6d848241d8fe5f3d6f7c15e1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--scripts--release-manifest--main_test.go",
+      "bytes": 11443,
+      "sha256": "5a871f5a2ee2e60150790b1328927004fb0d90534bae39300707b91ec22d513a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--scripts--release-packages--main.go",
+      "bytes": 8702,
+      "sha256": "99edc0ecd90924ffb1cc5d33c83c06a4502868d0af261c916e4340e3a6d41bc7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--scripts--release-packages--main_test.go",
+      "bytes": 10794,
+      "sha256": "7efa80c1bce8a9eefcd8627e7fb70beaa64a8b04fb316c2b8595b54b8c212de2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--scripts--runtime-image-manifest--main.go",
+      "bytes": 10894,
+      "sha256": "6d0d8dd8934fb2333bd9e98443bcae796f2b2ded2dd56f6395b2d1e1e0824c9d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source--scripts--runtime-image-manifest--main_test.go",
+      "bytes": 13355,
+      "sha256": "2aa1439bf16bb2f1f5b77fa367a9212d4f246d6df5b04c17565da06e17098163"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-source.json",
+      "bytes": 2518,
+      "sha256": "1dce7970ac38add19c436b8fc45abf14a2560543b7ec17956110c449bcf7488d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b1-stage_linux.go",
+      "bytes": 8407,
+      "sha256": "e746b0d0ccb6cdc2885a2c7d4324e068720cb5d467f88542ff7cd8b46ea45454"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-checks.json",
+      "bytes": 1606,
+      "sha256": "a9ffcb363e16d6d3fdaff787a82f0640bd02998b456ae6bf4688cd6d0b1e68af"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-focused.log",
+      "bytes": 122,
+      "sha256": "07fe165ab228ad5d5c1a8b2b79b391826b58142b8fd6a16c04d7b706a503b2df"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-quick.log",
+      "bytes": 1354,
+      "sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-race.log",
+      "bytes": 123,
+      "sha256": "91994343c964cf491e89093dc98855fe23289a41b77f79db4de1e89b53d28ce0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-release-gate.log",
+      "bytes": 21,
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-source.json",
+      "bytes": 851,
+      "sha256": "3b2a7afdd56a407c479578edc35566c4fa5ab003848c99498b1eceb290a67ea3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b2-workflow.log",
+      "bytes": 1071,
+      "sha256": "ac4413a13f3f9c7a9f0536666d1b613ed7ed5c43903b586095da1b7c87f9035d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-compile-manifest.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-compile-packages.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-first-compile-manifest.log",
+      "bytes": 1403,
+      "sha256": "e34df9e9aa06c382be4fe7655917e43551e6b9f988326d1e65182356345ba458"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-first-compile-prepare.json",
+      "bytes": 421,
+      "sha256": "843828cad49f73a0e697cc66279c8922c81b1f4a709c10aadf1f7995c065d0d0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-first-operator.json",
+      "bytes": 310,
+      "sha256": "9ff7795d3e017bd916c1fc76a21c62d30974b076f6e40303a8bfcfea8cd37759"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-first-prepare.json",
+      "bytes": 164,
+      "sha256": "080e4d4d21a9c6c18d180dbdb79f596615e037d8e8703eb64eb3b256fd4fdbd8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-first-producer-test.go",
+      "bytes": 3076,
+      "sha256": "57c88dff9d0ed7724ad66d4fc38d484a07ce2bb36f09cebeae09395749531d0a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-prepare.json",
+      "bytes": 680,
+      "sha256": "06dc99975a8e5322c77e1cedfa9ab111431d250a707dc29e26a018557c69cbc9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3b3-source.json",
+      "bytes": 321,
+      "sha256": "cb6a3154b1cbd8683802434048a03f8df7f36f456a239267d2cb1b658eef65cf"
+    }
+  ]
+}

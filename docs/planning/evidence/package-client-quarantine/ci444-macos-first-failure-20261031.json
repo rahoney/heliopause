@@ -1,0 +1,42 @@
+{
+  "work_item": "M13-004/P7 cu130 first failure",
+  "run_id": 41129501671,
+  "run_number": 444,
+  "attempt": 1,
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "job_id": 124316524494,
+  "status": "CANCELLED_WHOLE_JOB15MIN_DEADLINE_CONFIRMED_COMMAND_PHASE_UNKNOWN",
+  "started_at": "2026-10-30T21:14:25Z",
+  "completed_at": "2026-10-30T21:34:25Z",
+  "official_annotation": "The job has exceeded the maximum execution time of 15m0s",
+  "annotation_path": "docs/github-logs/package-client-quarantine-20261021/ci444-macos-check-annotations.json",
+  "job_log": {
+    "status": "UNAVAILABLE",
+    "fetch_attempts": 2,
+    "error": "HTTP404 BlobNotFound",
+    "whole_source_checkout_from_log": "NOT_VERIFIED",
+    "second_error": "HTTP404 BlobNotFound after run terminal22:14:33UTC"
+  },
+  "prior_same_source_macOS_success": [
+    "CI442 whole tree84e70a9e production77.614s/default PASS",
+    "CI443 attempt2 exactec1 production83.851s/default PASS"
+  ],
+  "not_claimed": [
+    "exact failing command/phase",
+    "2min production or6min default test cause",
+    "source regression or resource root cause",
+    "macOS limit adjustment approved"
+  ],
+  "next": "same-source cu132 after current all10/source proof; no Mac/GPU retry",
+  "linux_cu130": "ci444-cu130-linux-qualification-20261031.json",
+  "requalification": {
+    "attempt": 2,
+    "job_id": 124341431750,
+    "status": "success",
+    "production_build_seconds": 59.56073,
+    "default_tests": "PASS",
+    "Linux_result_retained": true,
+    "source_or_limits_changed": false,
+    "historical_command_phase_and_lower_cause": "UNKNOWN"
+  }
+}

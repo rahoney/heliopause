@@ -20,6 +20,9 @@ const observerReadinessTimeout = 5 * time.Second
 
 var gVisorObserverCommit = runtimeidentity.GVisorCommit
 
+// ErrObserverNotSpawned confirms that a launch failed before a runtime child existed.
+var ErrObserverNotSpawned = errors.New("observer runtime child was not started")
+
 // ObserverProcess is the bounded lifecycle capability returned after the
 // helper has explicitly confirmed that its remote endpoint is ready.
 type ObserverProcess interface {
@@ -70,25 +73,38 @@ func NewObserverLauncher(path string) (ObserverLauncher, error) {
 // a running PID or a socket pathname alone is never treated as ready.
 func (l *Launcher) StartObserver(ctx context.Context, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
 	if l == nil || ctx == nil || !canonicalAbsolutePath(remoteEndpoint) || !canonicalAbsolutePath(outputEndpoint) {
-		return nil, errors.New("observer helper start request is invalid")
+		return nil, errors.Join(ErrObserverNotSpawned, errors.New("observer helper start request is invalid"))
 	}
 	current, err := verifyExecutable(l.helper.path, l.helper.digest)
 	if err != nil || !os.SameFile(l.helper.info, current.info) {
-		return nil, errors.New("observer helper identity changed after validation")
+		return nil, errors.Join(ErrObserverNotSpawned, errors.New("observer helper identity changed after validation"))
 	}
 	if err := verifyObserverBuildIdentity(ctx, current.path); err != nil {
-		return nil, err
+		return nil, errors.Join(ErrObserverNotSpawned, err)
+	}
+	return startObserverProcess(ctx, current.path, remoteEndpoint, outputEndpoint)
+}
+
+func startObserverProcess(ctx context.Context, path, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, errors.Join(ErrObserverNotSpawned, err)
 	}
 	readinessRead, readinessWrite, err := os.Pipe()
 	if err != nil {
-		return nil, errors.New("create observer readiness channel")
+		return nil, errors.Join(ErrObserverNotSpawned, errors.New("create observer readiness channel"))
 	}
-	command := exec.CommandContext(ctx, current.path, remoteEndpoint, outputEndpoint, "/run/heliopause-observer/haa-control.sock", "--ready-fd=3")
+	// The supervisor owns this long-lived child. Operation cancellation must
+	// reach its bounded Stop, rather than exec killing the receiver before it
+	// can retire its endpoints. Readiness still uses the operation context.
+	command := exec.Command(path, remoteEndpoint, outputEndpoint, "/run/heliopause-observer/haa-control.sock", "--ready-fd=3")
 	command.Env = []string{"LANG=C", "LC_ALL=C"}
 	command.ExtraFiles = []*os.File{readinessWrite}
 	if err := command.Start(); err != nil {
 		_ = readinessRead.Close()
 		_ = readinessWrite.Close()
+		if command.Process == nil {
+			return nil, errors.Join(ErrObserverNotSpawned, errors.New("start trusted observer helper"))
+		}
 		return nil, errors.New("start trusted observer helper")
 	}
 	if err := readinessWrite.Close(); err != nil {
@@ -112,7 +128,7 @@ func verifyObserverBuildIdentity(ctx context.Context, path string) error {
 	command := exec.CommandContext(ctx, path, "--identity")
 	command.Env = []string{"LANG=C", "LC_ALL=C"}
 	output, err := command.Output()
-	if err != nil || strings.TrimSpace(string(output)) != "gvisor-commit="+gVisorObserverCommit {
+	if err != nil || strings.TrimSpace(string(output)) != "gvisor-commit="+gVisorObserverCommit+"\nfilesystem-mutation=v1" {
 		return errors.New("observer helper build identity is unavailable or mismatched")
 	}
 	return nil

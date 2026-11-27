@@ -1,0 +1,116 @@
+{
+  "scope": "existing PNPM publication with actual SIGINT/SIGKILL/ENOSPC process and filesystem boundaries; structural source/SRI fixture, not public native selection",
+  "status": {
+    "IMPLEMENTED": "YES (existing transaction unchanged)",
+    "WIRED": "YES (qualification consumers)",
+    "QUALIFIED": "YES (named direct failure acceptance)",
+    "ACCEPTANCE_CLOSED": "YES (B5e only)",
+    "MISSING": [
+      "whole P2 still needs successful final macOS/Required candidate qualification after CI411 timeout"
+    ]
+  },
+  "process": {
+    "command": [
+      "/home/winamp/.local/go/bin/go",
+      "test",
+      "-race",
+      "-tags",
+      "realcorpus",
+      "./internal/promotion",
+      "-run",
+      "^TestPNPMTransactionSignalAndCrashQualification$",
+      "-count=1",
+      "-v",
+      "-timeout",
+      "1m"
+    ],
+    "exit": 0,
+    "seconds": 15.162,
+    "source": "/tmp/hpr-bx53162k/source",
+    "log_sha256": "94271acca5971b6d4d7a4f6894f11a16a38f828a15509b1297e814b8607f34a5",
+    "scope": "actual SIGINT/SIGKILL at synchronized transaction phase; synthetic source/SRI with actual local records/cache/transaction; not public native selection or ENOSPC"
+  },
+  "actual_enospc": {
+    "scope": "actual ENOSPC on isolated bounded1MiB tmpfs, structural source/SRI, no Host/native tool invocation",
+    "command": [
+      "/usr/bin/unshare",
+      "--mount",
+      "--net",
+      "--propagation",
+      "private",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "TMPDIR=/tmp/pe-d4uzrpl8/tmp",
+      "HELOX_PNPM_ENOSPC_NAMESPACE=1",
+      "/tmp/pe-d4uzrpl8/promotion.test",
+      "-test.v",
+      "-test.timeout=1m",
+      "-test.run",
+      "^TestPNPMActualENOSPCInDisposableNamespace$"
+    ],
+    "exit": 0,
+    "seconds": 0.173,
+    "work": "/tmp/pe-d4uzrpl8",
+    "source": "/tmp/hpr-bx53162k/source",
+    "binary": {
+      "path": "/tmp/hpr-bx53162k/pnpm-failure-namespace-build/promotion.test",
+      "size": 40772002,
+      "sha256": "5d55a5b238cabcf821b4d7da54a64fcbeba936131d636a24b32eb4612c7b17cd"
+    },
+    "log_sha256": "4614734a9e4b2d314a94a9578367c21cf8f0805dde7a6c3258e24c9c75855dfa",
+    "cleanup": "namespace process exits; retained exact owned copies pending reference audit"
+  },
+  "verified": [
+    "SIGINT after partial lock publication preserves context.Canceled and restores original manifest bytes/mode/inode; no state/records/journal/uncommitted payload",
+    "SIGKILL at exact partial publication retains original backup and exclusive ownership lock; new Begin refuses before selected cache access, no automatic recovery claimed",
+    "actual1MiB tmpfs fill returns ENOSPC; actual independent approval write preserves that cause, originals restored, partial approval/temp absent, target/state FDs0 and no published records"
+  ],
+  "production_source_unchanged_from_remote": {
+    "source": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+    "inventory": [
+      {
+        "path": "internal/promotion/pnpm_transaction.go",
+        "sha256": "8192fc644cf7c09efa64990c15053e73fe6ac578b7b60fd4179a18344267c90a"
+      },
+      {
+        "path": "internal/promotion/pnpm_transaction_profile.go",
+        "sha256": "507f76e5e6dadc42ba8406aa0fbf0c93eca7df5b04fce7d420edb7ecc92cf554"
+      },
+      {
+        "path": "internal/promotion/pnpm_approved_transaction.go",
+        "sha256": "7d5de9bd820ac50cf7c3854e9e8907e1d5fd8708aad6de9982f45dcd7667c433"
+      },
+      {
+        "path": "internal/promotion/pnpm_materialize.go",
+        "sha256": "e232ac45ea11ca031ee84517327149d3bd74cb2ad32fa04457ce4f6ce6f4152e"
+      },
+      {
+        "path": "internal/promotion/npm_transaction.go",
+        "sha256": "f65f51989c13edb6420ff8d717b2d63fddd8784a1e364d5285e906ff8aa9497d"
+      },
+      {
+        "path": "internal/promotion/npm_transaction_member.go",
+        "sha256": "7701af875a1db15ed3e5fb41718c45a89bc41de7bcf63092f222f73f7ae8a6dc"
+      },
+      {
+        "path": "internal/promotion/go_transaction.go",
+        "sha256": "466ff2083f36165fa9a865d0996f4f7abb1045ec7a11805dfb887347e5316578"
+      }
+    ]
+  },
+  "test_sources": [
+    {
+      "path": "internal/promotion/pnpm_failure_process_real_test.go",
+      "sha256": "66c676732af6ff596b60c5a5401298be53db32743525119123d1a264ce7353ed"
+    },
+    {
+      "path": "internal/promotion/pnpm_enospc_namespace_real_test.go",
+      "sha256": "bd0a68c0ce48139b53e06bb65285d722c47d81da3ed9c997346c6c3d9d0c9326"
+    }
+  ],
+  "default_profile_scope": "new test files are linux&&realcorpus; default Go input unchanged. Canonical format and tagged compile/actual tests performed; final staged docs/security and typed vet follow.",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021/",
+  "ci": "no new push/dispatch; source9410 CI411 Linux/cu132 pass but macOS6m default test timeout means Required FAILURE, not overall success",
+  "cleanup": "all owned child processes exited; namespace mount gone, actual tmpfs filler removed before unmount and task FDs0; exact binary copies pending reference audit; source/sdk/archives/cache preserved"
+}

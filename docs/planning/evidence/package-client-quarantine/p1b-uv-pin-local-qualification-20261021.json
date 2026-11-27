@@ -1,0 +1,237 @@
+{
+  "baseline": "b89cb0a6eaa455dd33cb7383c3fb5abf2619b89c",
+  "scope": "UV lock schema2, generated identity/support drift, exact-five release image manifest and offline maintenance only; runtime/CLI not wired",
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.383,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 41.902,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.416,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.249,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "workflow": {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.784,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "release-gate": {
+      "profile": "release-gate",
+      "exit": 0,
+      "seconds": 0.294,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "qualification-freshness": {
+      "profile": "qualification-freshness",
+      "exit": 0,
+      "seconds": 0.114,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "actual_supply_and_negatives": {
+    "args": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-count=1",
+      "-tags=realcorpus",
+      "-run=^TestUVActualFrozenSupplyAndTamperRefusals$",
+      "-v",
+      "./scripts/update-runtime"
+    ],
+    "exit": 0,
+    "seconds": 7.319,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "network": false,
+    "host_uv_execution": false
+  },
+  "actual_maintenance": {
+    "scope": "actual offline developer plan/apply/verify from synthetic prior pin to signed official UV supply; no native UV execution or runtime compatibility claim",
+    "plan_id": "5c3966f879b7dc48b484d7a400bfb17708988c9876905345e868a567ad0fc658",
+    "source_head": "fae07e9d16defa030e3a53c9fc57df1bb3e7c6ac",
+    "changed_paths": [
+      "internal/runtimeidentity/runtime_lock_gen.go",
+      "scripts/runtimes.lock.json",
+      "scripts/version-support.lock.json"
+    ],
+    "verification": {
+      "plan_id": "5c3966f879b7dc48b484d7a400bfb17708988c9876905345e868a567ad0fc658",
+      "attempt": "verification-3697226247",
+      "configuration": "PASS",
+      "go": "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "checked_source": "/tmp/haa-uv-runtime-0_e6zmn4/uv-plan-state/verification-3697226247/source",
+      "results": [
+        {
+          "profile": "bootstrap",
+          "status": "PASS",
+          "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+        },
+        {
+          "profile": "quick",
+          "status": "PASS",
+          "log_sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+        },
+        {
+          "profile": "security",
+          "status": "PASS",
+          "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+        },
+        {
+          "profile": "workflow",
+          "status": "PASS",
+          "log_sha256": "2d76b9294616b05a1547e8720029dd799c591bc5bf80670cd89dbeacf6476727"
+        },
+        {
+          "profile": "release-gate",
+          "status": "PASS",
+          "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+        },
+        {
+          "profile": "docs",
+          "status": "PASS",
+          "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+        },
+        {
+          "profile": "qualification-freshness",
+          "status": "PASS",
+          "log_sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+        }
+      ],
+      "required_qualification": [
+        "signed upstream supply/native bytes",
+        "uv pip resolve/install/upgrade/sync",
+        "observer exact admission and pip/npm regression",
+        "PyTorch CPU/CUDA common-runtime impact review",
+        "fresh Required/platform evidence",
+        "verified activation"
+      ],
+      "migration_complete": false
+    },
+    "synthetic_previous_version": "0.0.1",
+    "target_version": "0.13.4",
+    "network_uv_acquisition": false,
+    "host_uv_execution": false
+  },
+  "actual_maintenance_seconds": 297.281,
+  "source": [
+    {
+      "path": "internal/releaseinstall/metadata.go",
+      "sha256": "aa8c546481cc1034f1cc2ff2f0ed9a85289cded995387a3a7c6f8d0bb46a5cb1"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "f49aaf32899f1622ac172e20a12a4b992ce5fd197c667e2277a0803182f361e8"
+    },
+    {
+      "path": "internal/testutil/releasefixture/runtime.go",
+      "sha256": "33cf07d7463d59350b06c1badb0871e417aab0182d24c7b1bbb5090154421ddb"
+    },
+    {
+      "path": "scripts/check/runtime_versions.go",
+      "sha256": "88596c12ffa78056488bee7186a8356a6cdb24c513b18cdfee8c1399859a3937"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "8ad5b72787c51cd3d28cd67cdb958b7bcbdff03a5957e384bab226c7642fc9a2"
+    },
+    {
+      "path": "scripts/generate-runtime-lock.go",
+      "sha256": "70900c0c77265d314eb24ff78544038af03c05134d284cd6670193791010608b"
+    },
+    {
+      "path": "scripts/generate-runtime-lock_test.go",
+      "sha256": "5f9ef1fbbf9a0cd935d2011c89eee3832dd4d29b48abbe3829f181cbdfffc931"
+    },
+    {
+      "path": "scripts/release-manifest/bundle_test.go",
+      "sha256": "504d05de5f4789ad7a95ebd0c76651899c171721d896bedae533bf1f8d2264f2"
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "sha256": "d3980f979c5c1b69916881594bb9b4118c1c4d5bc16aff2bcbbec92619a2af38"
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "sha256": "d950fca62dd6399b4700c671891b2624015cd4cb4cde03bc04a258fbfb46642e"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main.go",
+      "sha256": "f7b7f029f0d0484c5185c9cca645ef1e3f7aab6a4b6a59b463e5000678f65c82"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main_test.go",
+      "sha256": "5d696721bd9650e91c5213a0f3490bd337b687bb59781e367632a0d1756edbd8"
+    },
+    {
+      "path": "scripts/update-runtime/gvisor.go",
+      "sha256": "e725ce4be316359a10041670892ca85f867c702fb3e379d78e07ea6c52b12326"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "0978fc71afc955fb1acde629afcf2e0c0ded4943957c8109c7bc22a02d53b946"
+    },
+    {
+      "path": "scripts/update-runtime/metadata.go",
+      "sha256": "1a853ad10533de6c263da8012f33d138423ab62672ed6f3f7559b4af3b9a7758"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "4adb54c9b2441eaf86e5a97cc8c37c52bd3b0737d81d0c6eff08c304ff98313e"
+    },
+    {
+      "path": "scripts/update-runtime/update_test.go",
+      "sha256": "47ad794e0a1fedce5138fc0572ed10f2223e80d212fc0fb8f604160adbb37652"
+    },
+    {
+      "path": "scripts/update-runtime/uv_image.go",
+      "sha256": "1e74e4d04a091484ec2dda908b5f035a208704ce217d8f007515510e09b397bc"
+    },
+    {
+      "path": "scripts/update-runtime/uv_supply.go",
+      "sha256": "ff8e6c0af7fa028138568dd85b853c31cd6881173d49729d2337bd8f4fd135a9"
+    },
+    {
+      "path": "scripts/update-runtime/uv_supply_test.go",
+      "sha256": "727f229773fc8ff192965974670244445b9bf928b25ba93d04459855b101494c"
+    },
+    {
+      "path": "scripts/update-runtime/uv_supply_real_test.go",
+      "sha256": "f14a3faa5a016383995ec83a55eb77459bfdf3b6c10ad58aac0449f17f274ccc"
+    },
+    {
+      "path": "scripts/update-runtime/apply.go",
+      "sha256": "84e7879dc9deaccebe21aaf2cb478711520dabf46d03efedc830586bdb1196d2"
+    }
+  ],
+  "remaining": [
+    "UV exact sandbox provision/admission",
+    "UV install/upgrade/sync production wiring and actual qualification",
+    "new source remote CI",
+    "Go1.26.10 cu126 latency investigation and supported CUDA qualification"
+  ],
+  "completed_duplicate_cleanup": {
+    "path": "/tmp/haa-uv-runtime-0_e6zmn4/upstream/uv",
+    "bytes_deleted": 42544544,
+    "sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+    "references": 0,
+    "query_errors": 0,
+    "removed": true,
+    "retained": "two authenticated layer inputs for frozen plan/runtime consumers"
+  }
+}

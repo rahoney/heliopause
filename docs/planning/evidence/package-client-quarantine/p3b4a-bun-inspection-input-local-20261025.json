@@ -1,0 +1,145 @@
+{
+  "work_item": "M13-004/P3-B4a",
+  "baseline": "cc062c58099169736d0dad246984641e2582f2b8",
+  "status": {
+    "IMPLEMENTED": "YES (frozen Bun inspection context and complete acquired binding)",
+    "WIRED": "YES (native source API, source/static actual consumer; production layout/inspector not wired)",
+    "QUALIFIED": "YES (named local context/source/static subset)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4/Bun)",
+    "MISSING": [
+      "production bounded offline cache/native hoisted layout and exact full binder",
+      "Bun lifecycle/runtime identity and full per-instance dynamic inspection/Policy",
+      "approved cache/transaction/CLI and affected-profile remote qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/artifact/npm/npm_project_acquired.go",
+      "sha256": "d8b58344da034abb47dc4625a6e9da6a6229187aa2c07ed46dcbbf2ec5cda69c"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_context.go",
+      "sha256": "fdb939a4b19c15bf4431d957091c619681edd77a4689224caeccfaf176972f75"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_context_test.go",
+      "sha256": "a69cd5427e43e22bfff585f300095b821001c665e8e08d2394f783d4a356ecda"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_context.go",
+      "sha256": "34e064544e2e7673316eac6831f0ad8d4b54b6ac0f2e6e3fd33e2042d09b63a0"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_context_test.go",
+      "sha256": "e0edc718df46ce8e4cb8733ef3177eec0522362b61385079e872a6d46df29938"
+    },
+    {
+      "path": "internal/sandbox/bun_resolver.go",
+      "sha256": "daef5c608b3f78cf30b4edfb415e12f89250ec8ebf8d8d9f2729ffa16ed1c7ca"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_source_real_test.go",
+      "sha256": "dc760ae1528a839fea23ead128d1e9ac3e01e80070198d8497aa214f428aebd0"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4a-context-first-quick.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 188.402,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "receipt": "p3b4a-context-actual-format.json",
+      "command": null,
+      "exit": 0,
+      "seconds": 0.638,
+      "log_sha256": null
+    },
+    {
+      "receipt": "p3b4a-bun-full-related-race.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 48.704,
+      "log_sha256": "2b1bd9dccb77a5a11e7d5950f98ea1b4107af3deca5a2227666f0e72ac780731"
+    },
+    {
+      "receipt": "p3b4a-bun-inspection-tagged-vet.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 1.072,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b4a-bun-inspection-source-real-compile.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/hpr-bx53162k/bun-inspection-source/sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 6.887,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b4a-bun-inspection-source-real.json",
+      "command": [
+        "/tmp/hpr-bx53162k/bun-inspection-source/sandbox.test",
+        "-test.v",
+        "-test.timeout=3m",
+        "-test.run",
+        "^TestBunPublicInspectionSourceInputs$"
+      ],
+      "exit": 0,
+      "seconds": 1.423,
+      "log_sha256": "3495ff2f0ea4a55fe4de797b49c140b2bcf2976f05842155f8a20c4c5ec9977e"
+    }
+  ],
+  "quick_scope": "all current default-selected Go sources/tests unchanged since first Quick; only new realcorpus source consumer and docs added afterward, separately compiled/vetted/executed",
+  "mechanical_reuse": "p3b4a-acquired-mechanical-reuse.json",
+  "actual_source_static": {
+    "receipt": "p3b4a-bun-inspection-source-real.json",
+    "cases": 4,
+    "archives_by_case": [
+      0,
+      1,
+      2,
+      4
+    ],
+    "instances_by_case": [
+      0,
+      1,
+      2,
+      4
+    ],
+    "all_archives_acquired_SRI_verified_static_completed": true,
+    "skipped": false,
+    "native_dynamic_Policy_Host_install": "NOT_EXERCISED"
+  },
+  "native_primitive": "p3b4a-offline-primitive-interpretation.json",
+  "remote": "NO new push/CI; next meaningful integrated candidate must close macOS/Required; use active clock timer"
+}

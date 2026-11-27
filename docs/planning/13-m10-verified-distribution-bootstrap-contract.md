@@ -67,6 +67,19 @@ ownership, rotation, recovery와 offline trust-root contract를 먼저 추가한
 - SBOM은 release asset와 image에 대해 생성하며, SBOM이 없거나 artifact
   digest와 binding되지 않으면 release를 publish하지 않는다.
 
+PyTorch 해석에는 공식 Python에서 사전 컴파일한 바이트코드 레이어 하나를 덧붙인
+선택적 Linux/amd64 로컬 이미지가 있다. 릴리스 build는 공식 베이스를 digest로 받아
+무네트워크에서 재현하고 베이스 config·추가 레이어·파생 config digest가 lock과 모두
+일치하는지 확인한다. 서명된 릴리스 manifest가 이 값을 담은 runtime 이미지 metadata를
+묶는다. 파생 이미지는 레지스트리에 게시하지 않는다.
+
+런타임 준비 시 검증한 같은 릴리스의 `scripts/runtimes.lock.json`과 다음 절차를 사용한다.
+먼저 lock에 고정된 공식 Python 이미지를 로컬 Docker에 준비한다. 전용 임시 폴더에서
+`python3 -I -B scripts/build-python-resolver-image.py --runtime-lock scripts/runtimes.lock.json --output <임시-이미지.tar>`를
+실행한 뒤 `docker image load --input <임시-이미지.tar>`로 적재하고 임시 archive를 정리한다.
+PyTorch 해석기는 고정 파생 config ID가 조회되면 같은 읽기 전용 gVisor 경로에서 사용한다.
+공식 이미지도 단독으로 해석을 지원한다. 설치와 동적 관찰에는 기존 공식 이미지를 사용한다.
+
 ## 4. Installer and doctor boundary
 
 M10 installer는 native `helox`가 소유하는 narrow bootstrap operation이다.

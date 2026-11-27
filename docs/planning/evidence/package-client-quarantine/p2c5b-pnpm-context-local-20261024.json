@@ -1,0 +1,81 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B1",
+  "baseline": "54362e01d41a2e1740e0b48d00232b9d069b6fb7",
+  "status": "LOCAL_VERIFIED_FROZEN_INPUT_AND_PRODUCER_ONLY",
+  "implemented": "YES",
+  "wired": "YES_PRODUCER",
+  "qualified": "NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_context.go",
+      "sha256": "ef3095a255c446594202727b08efa4106af68a544a2eee9e7473cdaf5351eba4"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_context_test.go",
+      "sha256": "417adf76336d9585e4dab28d42674b25e445cfb5995e4ed609aed051e0111ace"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_lock_test.go",
+      "sha256": "3ad9a74c6bc46da2a0ee96c0b1921c6f05b84158acc764881558c5be96f8e937"
+    },
+    {
+      "path": "internal/sandbox/pnpm_resolver.go",
+      "sha256": "f3815c2f07410cc486deb7bfa3886eb757e4f441d6e11de84a1948f8c9ef0080"
+    },
+    {
+      "path": "internal/sandbox/pnpm_project_snapshot_test.go",
+      "sha256": "6098c797f398995661cbe5091211640f499ca830391eba73d0bb8417bc565bf5"
+    }
+  ],
+  "checks": {
+    "quick_seconds": 53.953,
+    "security_seconds": 6.966,
+    "docs_seconds": 0.273,
+    "npm_sandbox_full_race_seconds": 22.133
+  },
+  "verified": [
+    "complete normalized snapshot rejects copied-digest foreign target/mode/controls/URL/SRI/source/dependency list",
+    "exact acquired count/node/identity/variant/declared and observed SRI/size/canonical unique run binding",
+    "zero and foreign exact acquired subject rejection",
+    "caller input/map/getter immutability",
+    "synthetic six archives/seven instances retain two contexts of one archive; structural test double only",
+    "explicit empty and cancellation; generated runtime producer wrapper reuses original source binding"
+  ],
+  "unchanged": [
+    "Domain/Policy invariants",
+    "legacy npm single backend and exact observer admission",
+    "CLI and Host installation permission"
+  ],
+  "missing": [
+    "target lifecycle command/admission primitive",
+    "production static-all and metadata/layout prepare owner",
+    "per-instance independent execution and coverage aggregate",
+    "verified layout/records/Host transaction/CLI",
+    "full P2 qualification"
+  ],
+  "evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-context-final-format.json",
+      "sha256": "073423206379fc081ac277ebfa83adf11971ae36b423b59cb0d95e01f9528836"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-context-final-quick.json",
+      "sha256": "31287f8a02597143143093d13c597b0429171e9b9c38db5f5e0eba9c285ff49e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-context-final-security.json",
+      "sha256": "461292fb643570d677ff7fc6cc03102f8263a0d4ddacc66df5849aeeb85f3e4d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-context-final-docs.json",
+      "sha256": "2a2b1240a996c0d16c72d6f4d2040e20f806ee8b93499c358c76fb9a0bd4a256"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-context-full-race.json",
+      "sha256": "d1bb0c97a8faa887ab283115763ee55ea342858c6e8e0baef1045a785037581c"
+    }
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

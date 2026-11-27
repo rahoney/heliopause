@@ -1,0 +1,103 @@
+{
+  "work_item": "M13-004/P4-E",
+  "baseline": "ee89471ca147ea5d933d3f6a463c25a89a356167",
+  "status": {
+    "IMPLEMENTED": "YES (native add/manifest conservation/version-changing selection)",
+    "WIRED": "YES (existing typed port/session/export/census/independent source binder); NO (Host transaction/CLI)",
+    "QUALIFIED": "YES (named local exact/bare/retained/two roots and actual version-changing upgrade)",
+    "ACCEPTANCE_CLOSED": "YES (named native selection scope); NO (whole P4)",
+    "MISSING": [
+      "project/venv atomic ownership/transaction, approved cache/records and CLI",
+      "broader supported dependency-format/negative matrix at corresponding feature checkpoint",
+      "persistent UV tool/pipx"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4e-project-add-first-format.json",
+      "seconds": 1.532,
+      "sha256": "f491e0b11373eb79f191bb3e567bf34305c22e79d2042d452ab998acf2638d91"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4e-project-add-first-quick.json",
+      "seconds": 222.363,
+      "sha256": "5c6d8014ccfab73b9f97eb3aa7e67545b3b3e9b2ce3e37505b18654f27e257b3"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4e-project-add-first-security.json",
+      "seconds": 14.467,
+      "sha256": "e0174661caf04564b47bfdb5475f0d5866b6725c126aba6f9be1d5330cb817a7"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4e-project-add-first-docs.json",
+      "seconds": 0.282,
+      "sha256": "08b00076dfad6aa7cbc363589746eeda12ca7906bdebb11d7f54b7c3b720a3e6"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4e-project-add-full-affected-race.json",
+      "seconds": 26.492,
+      "sha256": "44942ecfcf4ccc23ce9ba95fbe7cd0cb606affc99c1941b270037d761f5800fe"
+    }
+  ],
+  "actual": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4e-project-add-native-v1-result.json",
+    "seconds": 121.396,
+    "add_delta_seconds": 86.48,
+    "existing_sync_seconds": 32.31,
+    "observed": [
+      "fresh exact add packaging24.2 then requested existing change to25.0",
+      "bare existing preserves exact25.0 constraint",
+      "fresh bare idna3.20 lower bound bound to actual version; second direct packaging25.0 retains idna and independently binds two roots",
+      "initial root constraint seed is synthetic native-readable data; actual native sync revalidates and retains24.2, then actual lock-upgrade selects25.0 without changing manifest",
+      "existing explicit empty/single sync+lock-upgrade4 operations"
+    ],
+    "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+    "host_before_after_identical": true,
+    "no_skips": true,
+    "not_claimed": "Policy ALLOW, Host install/adoption, persisted approved state or remote P4 qualification",
+    "selection_requests": 11
+  },
+  "unchanged_owners": [
+    "internal/artifact/pypi/uv_lock.go",
+    "internal/artifact/pypi/uv_project_lock.go",
+    "internal/artifact/pypi/uv_native_project_lock.go",
+    "internal/artifact/pypi/uv_project_export.go",
+    "internal/sandbox/uv_resolver.go",
+    "internal/sandbox/uv_sync_resolver.go",
+    "internal/sandbox/uv_project_output.go",
+    "internal/sandbox/uv_native_output.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/uv_project_input.go",
+      "sha256": "d430c75fc96e92ed760adcfaa1697a9bfc803fa3e3077ba6882a7446b77d780c"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_mutation_test.go",
+      "sha256": "042c7c9e8aac76cc4ce37634bea2535284e0e6d119b5b1d1246f1caa8c98f37b"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver.go",
+      "sha256": "4437415491ce5541c8d95dcea4abeb67e2202f83dec03d6eac4ec5a71046160f"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver_test.go",
+      "sha256": "46ae9c150687535257dadf98e5d6b042bfc30299b75e865f7bd50c7e7ed9151d"
+    },
+    {
+      "path": "internal/sandbox/uv_project_add_integration_linux_test.go",
+      "sha256": "7db4501dc35a52a3b46fb298491cf151a28db5490ff447e227e0c39700c84be8"
+    }
+  ],
+  "invariants": [
+    "requested dependency only; other requirement and project metadata conservation",
+    "sync/lock-upgrade manifest bytes frozen; original controls never mutated",
+    "explicit requested version and bare native lower bound match actual selected package",
+    "same pinned runtime/source/observer/namespace/limits; existing source/archive validation retained"
+  ],
+  "ci": "CI413 fully consumed and recorded for frozen50fd; this P4 source outside run; no helper push/dispatch",
+  "lessons_review": "No new failure/cause; existing lessons unchanged"
+}

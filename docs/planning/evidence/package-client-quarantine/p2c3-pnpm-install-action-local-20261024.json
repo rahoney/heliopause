@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "940d8e47c2a4639f3cbc158aeb92c12de43a50cb",
+  "scope": "P2c3 structured archive Host install action facts; local only",
+  "implemented": "YES",
+  "wired": "YES",
+  "local_verified": true,
+  "p2_acceptance_closed": false,
+  "baseline_red": {
+    "record": "p2c3-install-action-valid-before.json",
+    "exit": 1,
+    "seconds": 0.788,
+    "observed": "rootless npm returned ALLOW for unknown archive action; legacy graph action review PASS",
+    "prior_fixture_only_failure": "p2c3-install-action-before.json lacks required verification; not a product RED"
+  },
+  "checks": [
+    {
+      "record": "p2c3-install-action-final-quick.json",
+      "exit": 0,
+      "seconds": 33.846,
+      "sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "record": "p2c3-install-action-final-security.json",
+      "exit": 0,
+      "seconds": 4.77,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "record": "p2c3-install-action-final-docs.json",
+      "exit": 0,
+      "seconds": 0.21,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "record": "p2c3-install-action-full-race.json",
+      "exit": 0,
+      "seconds": 5.283,
+      "sha256": "c1f4fc255d13ce7a8a63b98703b0188fa65bd9e3bd047d00fd623de4cccc5fb8"
+    },
+    {
+      "record": "p2c3-install-action-public-first.json",
+      "exit": 0,
+      "seconds": 0.936,
+      "sha256": "4791b114a5536dbbae65df95fe6dc415d3e8983647d8f34a2e2c9c4848c392e9"
+    }
+  ],
+  "public_archives": [
+    {
+      "identity": "is-number@7.0.0",
+      "bytes": 3730,
+      "sha256": "7b75c1057198cf97696909a9bee176c9c5e9bcb5b03bf3ecef2f484defadd51e",
+      "kind": "host-install-action-not-required"
+    },
+    {
+      "identity": "node-sass@9.0.0",
+      "bytes": 390705,
+      "sha256": "5d28db5f71284fb2ef2ec8e1fa66de7ff5e3d62bad4a514141d3a660cd1a159d",
+      "kind": "host-install-action-required"
+    }
+  ],
+  "actual_scope": "public Acquire/SRI/static/real Evidence Store/exact record only; dynamic and installation NOT_EXECUTED",
+  "cleanup": "both public archive and Evidence roots were owned Go t.TempDir inputs; PASS includes their automatic cleanup; no private runtime or standalone executable created",
+  "upstream": {
+    "upstream_commit": "91774e72a04d52ce61db06339696a433d383c764",
+    "path": "pnpm/crates/executor/src/lifecycle.rs",
+    "git_blob": "977a71dfb126e56dc9b2e68419923b4d5816d400",
+    "sha256": "1564fcd4c9e6e6aa091204bf16bee8f4e718f710909912514eec4ef019d5140d",
+    "bytes": 21395
+  },
+  "source_inventory": [
+    {
+      "path": "internal/application/acquired_install_action_test.go",
+      "sha256": "c2717f869bdd0a681a8e441fde39f8cfab141c38bd111b48ef8a974e2d0919aa"
+    },
+    {
+      "path": "internal/application/dependency_batch_inspect.go",
+      "sha256": "f064ccd127c419d6d3eb8fbb824d4590cc3faa8ad264e0e92ff5848afffc17df"
+    },
+    {
+      "path": "internal/application/install_inspect.go",
+      "sha256": "7e5e04314c38f4b0c71112a8ba1eeb7740fafd42d4d7bbe27f48f4fd30bdfcdb"
+    },
+    {
+      "path": "internal/application/project_inspect_test.go",
+      "sha256": "b607874a13f30ccb784bfeeded16c1164bfa950594bf1dc773b22a0f084967b0"
+    },
+    {
+      "path": "internal/application/project_install_action_test.go",
+      "sha256": "d9ad7b9fa46ee693e38ecaceff4c82db20c7a574e3452993bb3ed6127ffd73b6"
+    },
+    {
+      "path": "internal/cli/human_report.go",
+      "sha256": "14f4bc9e4b6beae51f4542754141e6d61ea27479a40c358cd0a72fd80ca7e383"
+    },
+    {
+      "path": "internal/core/domain/evidence.go",
+      "sha256": "6c2335fac7c29e3579f48b2d069bc497e95c96f86a9c724c8d21212ab19ecd50"
+    },
+    {
+      "path": "internal/core/domain/install_action_evidence_test.go",
+      "sha256": "9ad21d2da1e0a23fc7845070edfdde3f6fa409c274592baf9c27cede62fca372"
+    },
+    {
+      "path": "internal/core/domain/verified_set.go",
+      "sha256": "56c3062884e6940be7f57ad7b4628715c13de3303076718e31de31b5fc536c5d"
+    },
+    {
+      "path": "internal/inspection/npm/install_action_real_test.go",
+      "sha256": "eba8a9567df41202607aa71b03337bbd6f551043eee0cf747420b64768cce69a"
+    },
+    {
+      "path": "internal/inspection/npm/install_action_test.go",
+      "sha256": "978afb2f8c2989f0b807f242708329b6c30827d13c110156c46f446591564ecd"
+    },
+    {
+      "path": "internal/inspection/npm/static.go",
+      "sha256": "b2d989891dde59c5d8f5e885458c84684967cac8640915abf0036147ffb68c0a"
+    },
+    {
+      "path": "internal/policy/m4.go",
+      "sha256": "e78821781e9ff4de453c50d27c7b7964324894d719ab17c1b2d01f80b58efa81"
+    },
+    {
+      "path": "internal/policy/project_install_action_test.go",
+      "sha256": "77ba34e9b5b827b7e57dd48bdd695e1eb4bfdd61bc205823aeffd2f3d8073409"
+    },
+    {
+      "path": "internal/policy/project_set_test.go",
+      "sha256": "a4acc2aed9ec1ce487042ffd82d81bfc3998c73dd075cfdaf4199323c7da46d3"
+    }
+  ],
+  "remote": {
+    "run": 402,
+    "head": "940d8e47c2a4639f3cbc158aeb92c12de43a50cb",
+    "status": "PENDING; does not qualify this later local source",
+    "first_check_kst": "2026-10-24 14:57:13 KST"
+  },
+  "missing": [
+    "PNPM complete project snapshot and full peer wiring digest",
+    "offline layout/guarded transaction/CLI",
+    "native5 signed whole-update and final actual qualification"
+  ]
+}

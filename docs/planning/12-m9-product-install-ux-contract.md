@@ -81,3 +81,20 @@ target discovery → exclusive mutation guard → plan freeze → inspect/policy
 | 6 | M9-006 | transaction hostile-boundary regression and qualification |
 
 M10 distribution/bootstrap과 M11 detection depth는 M9 completion 이후의 별도 범위다.
+
+## SEC-UPD-001 explicit native-update adoption extension
+
+The2026-10-18 user-authorized update work addresses the deferred full-graph
+requalification/adoption backlog for its explicitly qualified subset. Existing
+default install adoption rules above remain unchanged. Only the new npm update
+--adopt flow may enroll a supported native project: guard and snapshot original
+controls/payload before resolution, validate the supported public graph and
+existing package namespace, inspect the entire newly selected set with required
+checks and Policy, then stage and atomically replace through the existing
+transaction. No prior native files are trusted as HAA approval. Foreign files,
+unlisted packages, ambiguous/corrupt HAA metadata and unsupported sources/graphs
+are rejected without replacement. Explicit intent alone never grants ownership.
+
+The active [update contract](../user-journey-cli-ia/06-update-quarantine.md) owns
+exact forms/limits/acceptance; implementation is IN_PROGRESS and not yet qualified.
+Do not infer default-install or all-native-environment adoption from this extension.

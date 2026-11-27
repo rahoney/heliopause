@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -52,6 +53,10 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 			}
 			inputs = append(inputs, a)
 		}
+		requirement, err := pep517BuildRequirement(ctx)
+		if err != nil {
+			return nil, err
+		}
 		built, result, err := d.builder.Build(ctx, source.Artifact(), recipe, inputs)
 		if err != nil || result.Status() != domain.SandboxCompleted || built.SourceDigest != source.Artifact().Digest() || len(built.BuildRequirementDigests) != len(inputs) {
 			return nil, errors.Join(errors.New("PyPI sdist build is incomplete"), err)
@@ -76,11 +81,9 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 		if err != nil {
 			return nil, err
 		}
-		checkID, err := domain.NewCheckID("pypi-pep517-build")
-		if err != nil {
-			return nil, err
-		}
-		check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		checkID := requirement.ID()
+
+		check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", requirement.ProfileDigest())
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +95,7 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 		if err != nil {
 			return nil, err
 		}
-		item, err := domain.NewDerivedDependency(source.Node(), node, built.Artifact, binding, check, evidence)
+		item, err := domain.NewDerivedDependency(source.Node(), node, built.Artifact, binding, check, evidence, requirement)
 		if err != nil {
 			return nil, err
 		}
@@ -111,4 +114,10 @@ func allowComplete(inspection domain.DependencyInspection) bool {
 		}
 	}
 	return true
+}
+
+func pep517BuildRequirement(ctx context.Context) (domain.CheckRequirement, error) {
+	id, _ := domain.NewCheckID("pypi-pep517-build")
+	profile, _ := domain.CheckProfileDigest("pypi-pep517-build-v1", runtimeidentity.PythonImageReference+"|"+pythonInspectionProfileDescriptor(ctx))
+	return domain.NewCheckRequirement(id, domain.CheckInspection, true, profile)
 }

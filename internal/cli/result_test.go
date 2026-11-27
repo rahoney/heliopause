@@ -129,3 +129,94 @@ func cliInspectFixture(t *testing.T, scenario fakeworkflow.Scenario) (*applicati
 	}
 	return service, request
 }
+
+func TestHumanAndMachineKeepDeclaredCoverageOnMissingResult(t *testing.T) {
+	for _, missing := range []bool{false, true} {
+		service, request := cliInspectFixture(t, fakeworkflow.Safe)
+		original, err := service.Inspect(context.Background(), request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		run, _ := original.RunID()
+		identity, _ := original.ResolvedIdentity()
+		digest, _ := original.Digest()
+		artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:"+run.String()+":tarball", 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		profile, _ := domain.CheckProfileDigest("cli-coverage-fixture-v1", "")
+		var requirements []domain.CheckRequirement
+		for index, name := range []string{"fixture-integrity", "fixture-static"} {
+			id, _ := domain.NewCheckID(name)
+			kind := domain.CheckInspection
+			if index == 0 {
+				kind = domain.CheckVerification
+			}
+			requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			requirements = append(requirements, requirement)
+		}
+		plan, err := domain.NewCheckPlan(run, artifact, requirements)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var checks []domain.CheckExecution
+		for _, check := range original.Checks() {
+			bound, err := domain.NewCheckExecution(check.ID(), check.Kind(), check.Required(), check.Capability(), check.Status(), "", profile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			checks = append(checks, bound)
+		}
+		decision, _ := original.PolicyDecision()
+		data := domain.OperationResultData{OperationID: original.OperationID(), Status: domain.OperationCompleted, Reference: original.Reference(), ResolvedIdentity: identity, Digest: digest, RunID: run, RunOutcome: domain.RunCompleted, Checks: checks, CheckPlan: plan, Evidence: original.Evidence(), PolicyDecision: decision}
+		if missing {
+			failure, _ := domain.NewOperationError("POLICY_INPUT_INVALID", "Required check result missing.")
+			data.Status = domain.OperationFailed
+			data.RunOutcome = domain.RunFailed
+			data.Checks = data.Checks[:1]
+			data.PolicyDecision = domain.PolicyDecision{}
+			data.OperationalError = failure
+		}
+		result, err := domain.NewInspectOperationResult(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var machine, human bytes.Buffer
+		if err := cli.WriteJSONResult(&machine, result); err != nil {
+			t.Fatal(err)
+		}
+		if err := cli.WriteHumanResult(&human, result); err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("S09_SCHEMA_FIXTURE=%s", machine.Bytes())
+		var value struct {
+			SchemaVersion string `json:"schema_version"`
+			Checks        []struct {
+				Profile string `json:"profile_sha256"`
+			} `json:"checks"`
+			Plan struct {
+				Run          string `json:"run_id"`
+				SHA256       string `json:"sha256"`
+				Requirements []struct {
+					ID       string `json:"id"`
+					Required bool   `json:"required"`
+					Profile  string `json:"profile_sha256"`
+				} `json:"requirements"`
+			} `json:"check_plan"`
+		}
+		if err := json.Unmarshal(machine.Bytes(), &value); err != nil {
+			t.Fatal(err)
+		}
+		if value.SchemaVersion != "helox.operation-result/v2" || value.Plan.Run != run.String() || value.Plan.SHA256 != digest.String() || len(value.Plan.Requirements) != 2 || len(value.Checks) != len(data.Checks) {
+			t.Fatal("declared and actual coverage collapsed")
+		}
+		for _, requirement := range value.Plan.Requirements {
+			if !requirement.Required || requirement.Profile != profile.String() || !strings.Contains(human.String(), requirement.ID) || !strings.Contains(human.String(), requirement.Profile) {
+				t.Fatal("human/JSON coverage facts differ")
+			}
+		}
+	}
+}

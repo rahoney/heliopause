@@ -1,0 +1,658 @@
+{
+  "schema": "p2-pnpm-ci410-cu130-qualification/v1",
+  "status": "NAMED_REMOTE_QUALIFIED ordinary/cu126/cu130; whole P2 acceptance remains OPEN until cu132 and final support/matrix",
+  "run_id": 40150614641,
+  "number": 410,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40150614641",
+  "profile": "cu130",
+  "source": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+  "tree": "e4ea86ceba92445ccb4de99078a6aac1c363b5df",
+  "files": 2280,
+  "actual_checkouts": [
+    {
+      "job_id": 121041226116,
+      "name": "macOS",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226165,
+      "name": "gVisor Linux Integration",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226193,
+      "name": "Quick",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226200,
+      "name": "gVisor Observer Helper",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226230,
+      "name": "Security",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226233,
+      "name": "Minimum Go",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226248,
+      "name": "Representative Wheel Corpus",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226282,
+      "name": "Vulnerability",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121041226287,
+      "name": "Docs",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    },
+    {
+      "job_id": 121056444415,
+      "name": "Required",
+      "checkout_sha": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+    }
+  ],
+  "created_at": "2026-10-25T01:26:10Z",
+  "updated_at": "2026-10-25T02:45:58Z",
+  "elapsed_seconds": 4788,
+  "jobs": [
+    {
+      "id": 121041226116,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Bootstrap product modules",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run canonical platform profile offline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    },
+    {
+      "id": 121041226165,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Install pinned runtime and run lifecycle integration",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ]
+    },
+    {
+      "id": 121041226193,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Bootstrap pinned dependencies and tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run canonical Quick profile offline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    },
+    {
+      "id": 121041226200,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Build exact gVisor observer helper with Bazel",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        }
+      ]
+    },
+    {
+      "id": 121041226230,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Bootstrap pinned dependencies and tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run canonical Security profile offline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    },
+    {
+      "id": 121041226233,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Bootstrap product modules",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run canonical platform profile offline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Set up minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    },
+    {
+      "id": 121041226248,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Prepare pinned module dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Acquire authenticated representative wheels as data",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Validate representative corpus offline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13
+        }
+      ]
+    },
+    {
+      "id": 121041226282,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Bootstrap pinned dependencies and tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run canonical Vulnerability profile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    },
+    {
+      "id": 121041226287,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Run canonical Docs profile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ]
+    },
+    {
+      "id": 121056444415,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40150614641,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Aggregate required job results",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Post Set up Go",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ]
+    }
+  ],
+  "evidence": {
+    "log_inventory": "docs/github-logs/package-client-quarantine-20261021/ci410-log-capture-inventory.json",
+    "capture": "All10 decoded MCP texts encoded UTF8/BOM, every20k-codepoint readback matched; complete size/SHA inventory, not HTTP zipped log bytes",
+    "total_bytes": 1826969
+  },
+  "actual": {
+    "linux_top_level_pass": 65,
+    "observer_linux": 112,
+    "observer_helper": 112,
+    "pnpm_approved_cache_seconds": 34.24,
+    "pnpm_transaction_seconds": 113.98,
+    "pnpm_cli_seconds": 141.27,
+    "pnpm_cli_fresh_operations": 9,
+    "pnpm_native_original_seconds": 98.92,
+    "pnpm_native_original_cases": [
+      "explicit single add6→7",
+      "native exact6 update retains6",
+      "peer4 install"
+    ],
+    "cpu_full_seconds": 286.74,
+    "cu130_full_seconds": 1094.44,
+    "macos_native_go": "1.27.3 darwin/amd64",
+    "helper_reaped_wait0": 7,
+    "final_cleanup": "original0/CONFIRMED_STOPPED/helper_stop0/client_error0/client_restore0"
+  },
+  "timers": {
+    "first": "docs/github-logs/package-client-quarantine-20261021/ci410-first-timer-consumed-20261025.json",
+    "final": "docs/github-logs/package-client-quarantine-20261021/ci410-cu130-timer-20261025.json",
+    "rule": "first65min timer consumed: eight success/Linux pending, next15min timer consumed at02:46:28UTC after whole success; active turn continued local Bun work"
+  },
+  "next": {
+    "run_id": 40155809883,
+    "number": 411,
+    "profile": "cu132",
+    "source": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+    "timer": "docs/github-logs/package-client-quarantine-20261021/ci411-cu132-timer-20261025.json",
+    "first_check_at": "2026-10-25T04:22:46Z",
+    "scope": "last necessary frozen-source affected profile; no extra push/CI for local Bun units"
+  },
+  "excluded": "Local Bun commits378d1e1/2e85c92/6e927b4/b51290c are not in remote source9410; not qualified by this PNPM run."
+}

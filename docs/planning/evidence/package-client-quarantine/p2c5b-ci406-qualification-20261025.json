@@ -1,0 +1,260 @@
+{
+  "schema": "helox.pnpm-ci406-qualification/v1",
+  "run_id": 40117566240,
+  "run_number": 406,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40117566240",
+  "source": "fd3506b2d43fe80357795443a1e38de75e23e9fe",
+  "checkout": "af56a507771ee99302107f067a68c7922760c5f2",
+  "tree": "6307df7976c427324bca0a053234db6718339ee7",
+  "whole_tree_equal": true,
+  "source_files": 2241,
+  "status": {
+    "IMPLEMENTED": "YES (named B3/B4 consumers and B5a source)",
+    "WIRED": "YES (actual B4 project/controlled/public Policy CI)",
+    "QUALIFIED": "YES (named remote scope)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "created_at": "2026-10-24T17:45:25Z",
+  "completed_snapshot_updated_at": "2026-10-24T18:39:57Z",
+  "elapsed_seconds": 3272,
+  "first_check": {
+    "delay_minutes": 55,
+    "due": {
+      "run_id": 40117566240,
+      "due_utc": "2026-10-24T18:40:25+00:00",
+      "actual_due_utc": "2026-10-24T18:40:25.000154+00:00"
+    },
+    "query_after_actual_due": true,
+    "basis": "prior full ordinary CI404 elapsed53m16; early CI405 failure is not full-run timing"
+  },
+  "jobs": [
+    {
+      "id": 120941955130,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955266,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955287,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955338,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955339,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955340,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955392,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955419,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120941955453,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120954468980,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "runtime_scope": {
+    "pnpm_native_startup_tests": 4,
+    "pnpm_project_frozen_archives": [
+      2,
+      4
+    ],
+    "pnpm_project_fresh_instances": 6,
+    "pnpm_project_seconds": 36.57,
+    "controlled_cases": 3,
+    "controlled_seconds": 14.04,
+    "controlled_script_shells": [
+      3,
+      2,
+      3
+    ],
+    "original_exit37_and_trace_preserved": true,
+    "public_native_selections": 8,
+    "public_native_seconds": 87.67,
+    "public_Policy_cases": 4,
+    "public_Policy_entries": 8,
+    "public_Policy": "ALLOW with actual recorded Evidence",
+    "linux_top_level_tests": 60,
+    "observer_latches_per_job": 112,
+    "cpu_full_seconds": 290.84,
+    "native_macOS": "Go1.27.3 darwin/amd64 production build and default tests PASS",
+    "linux_helpers_reaped": 5,
+    "helper_wait_values": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "final_cleanup": {
+      "original": 0,
+      "helper_state": "CONFIRMED_STOPPED",
+      "helper_stop": 0,
+      "client_error": 0,
+      "client_restore": 0,
+      "restore_result": "NOT_REQUIRED"
+    }
+  },
+  "capture_scope": "decoded UTF8 tool text exactly compared; normalized API JSON is separate, not original HTTP bytes",
+  "logs": [
+    {
+      "job": "Minimum Go",
+      "id": 120941955130,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-minimum.log",
+      "decoded_characters": 21499,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 21501,
+      "sha256": "88b6fcc77835ee6f2794681495aedb34ed70cd1ba8608b482988db19600e03e6"
+    },
+    {
+      "job": "Representative Wheel Corpus",
+      "id": 120941955266,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-corpus.log",
+      "decoded_characters": 35357,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 35359,
+      "sha256": "64628d24e99452fbed8c5fc013bd82810f46709f4265051649eb5a7e560bb669"
+    },
+    {
+      "job": "Docs",
+      "id": 120941955287,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-docs.log",
+      "decoded_characters": 20516,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 20518,
+      "sha256": "eff6bd7bc7e9789022210a2866890e5181abed3a971f5b8ff96111dfb88616c7"
+    },
+    {
+      "job": "macOS",
+      "id": 120941955338,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-macos.log",
+      "decoded_characters": 26418,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 26420,
+      "sha256": "c50e1735f85460825f3f6e073864e91123588ae712e4ae8244763db6ede09ce1"
+    },
+    {
+      "job": "gVisor Observer Helper",
+      "id": 120941955339,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-observer.log",
+      "decoded_characters": 267658,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 267660,
+      "sha256": "24470fac539a870967a4187fbb64496da068e073c5dafc7b055bc98691b24eed"
+    },
+    {
+      "job": "Quick",
+      "id": 120941955340,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-quick.log",
+      "decoded_characters": 23835,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 23837,
+      "sha256": "e341277b8c276cdca08ec1d1e9812766852cfd2113f6efb3004582a4b5503373"
+    },
+    {
+      "job": "Vulnerability",
+      "id": 120941955392,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-vulnerability.log",
+      "decoded_characters": 21695,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 21697,
+      "sha256": "23ad488ae76b2828b84b6ad856d857f0d315dcd22e28786bfd749afc87ff7e06"
+    },
+    {
+      "job": "Security",
+      "id": 120941955419,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-security.log",
+      "decoded_characters": 21849,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 21851,
+      "sha256": "c89ada02e18cc6456fa827a151c0f78a76a3aecd9b2cb385bf3f5bc144793325"
+    },
+    {
+      "job": "gVisor Linux Integration",
+      "id": 120941955453,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-linux.log",
+      "decoded_characters": 679635,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 679637,
+      "sha256": "96932c01135813f2324a48b3e08e984e23c65c6b3ab2a9df3bce992a7d8f63cb"
+    },
+    {
+      "job": "Required",
+      "id": 120954468980,
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-required.log",
+      "decoded_characters": 22301,
+      "exact_tool_decoded_text_compared": true,
+      "bytes": 22303,
+      "sha256": "010128c3c291574e3aa37c24307bb1a5a49395e9c9c1f7eed315d7b9cf4a030f"
+    }
+  ],
+  "api": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-run.json",
+      "bytes": 14408,
+      "sha256": "2e802624b80f77f4c9eb0e9f4b7f1c656c98c3d98d03367dfd1faa99be94af10"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-jobs.json",
+      "bytes": 13513,
+      "sha256": "13142d67d0f2187d15d2c2d503cddd35000a8fa611d9ed7cca0dd23227430efe"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-source-commit.json",
+      "bytes": 1598,
+      "sha256": "fa47f0118076728a46eea9aa6389afcd5ef586220fd790a5c7d1d3e40cd5ae3e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-checkout-commit.json",
+      "bytes": 2850,
+      "sha256": "8eae60efbb7f0b6b3fd72b442b60ae9f1c0c02e58fbc6832e0543eceaad2e22d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci406-log-capture.json",
+      "bytes": 3783,
+      "sha256": "73317d1954da0fd65f200079930d8275a4cae9787e65eaadb92de2fc79908dd9"
+    }
+  ],
+  "not_qualified": [
+    "B5a gated actual cache consumer was not invoked in this CI; named local proof remains separate",
+    "later aa204f2 operation records source",
+    "later bcc316b private Host materialization source",
+    "target transaction/adoption/rollback/CLI and whole P2 acceptance"
+  ]
+}

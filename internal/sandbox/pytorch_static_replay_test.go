@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 // TestPyTorchStaticReplayAllProfiles deterministically replays the production
@@ -211,7 +212,7 @@ func (r *pyTorchReplayRunner) report() string {
 	if project == "torch" {
 		requiresPython = ">=3.10"
 	}
-	report := `{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"` + url + `","archive_info":{"hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"` + project + `","version":"` + version + `","requires_python":"` + requiresPython + `","requires_dist":` + quotedRequirements(requirements) + `}}]`
+	report := "{\"version\":\"1\",\"pip_version\":\"" + runtimeidentity.PipVersion + "\",\"environment\":{\"implementation_name\":\"cpython\",\"implementation_version\":\"" + runtimeidentity.PythonVersion + "\",\"python_full_version\":\"" + runtimeidentity.PythonVersion + "\",\"platform_machine\":\"x86_64\",\"sys_platform\":\"linux\"},\"install\":[{\"download_info\":{\"url\":\"" + url + `","archive_info":{"hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"` + project + `","version":"` + version + `","requires_python":"` + requiresPython + `","requires_dist":` + quotedRequirements(requirements) + `}}]`
 	if r.paddingBytes > 0 {
 		report += `,"padding":"` + strings.Repeat("x", r.paddingBytes) + `"`
 	}

@@ -7,7 +7,8 @@ Requires=docker.service
 Type=simple
 User=root
 Group=root
-ExecStart=/usr/libexec/heliopause/haa-network-policy-helper
+ExecStart=/usr/libexec/heliopause/haa-network-policy-helper serve
+ExecStopPost=/usr/libexec/heliopause/haa-network-policy-helper recover
 Restart=on-failure
 RestartSec=2s
 NoNewPrivileges=true
@@ -19,6 +20,8 @@ ProtectSystem=strict
 ReadWritePaths=/run/heliopause-network-policy
 RuntimeDirectory=heliopause-network-policy
 RuntimeDirectoryMode=0755
+StateDirectory=heliopause-recovery
+StateDirectoryMode=0700
 
 [Install]
 WantedBy=multi-user.target

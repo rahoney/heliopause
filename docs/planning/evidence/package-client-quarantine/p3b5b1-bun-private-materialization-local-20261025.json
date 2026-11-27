@@ -1,0 +1,93 @@
+{
+  "work_item": "M13-004/P3-B5b1",
+  "baseline": "7939092",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (typed approved Bun cache to private sibling/Verify/Close)",
+    "QUALIFIED": "YES (named local scope)",
+    "ACCEPTANCE_CLOSED": "YES (private materialization only); NO (whole P3)",
+    "MISSING": [
+      "retained ownership/target transaction and CLI/native handoff",
+      "explicit Bun runtime",
+      "whole affected-profile/remote qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/promotion/pnpm_materialize.go",
+      "sha256": "18ba0dbae16eda167b130878ccc9fa7affc73cfb191cf5f796463a28a557482f",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_cache.go",
+      "sha256": "791b355a36c61208e18c000dadd2ae6f14e725a059fe6152af1e0d233d0770a3",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_materialize.go",
+      "sha256": "b0736b1d3c8d83f4e40db33842e2ff58974f2f847655ebc184330bde1d8e63d6",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_materialize_test.go",
+      "sha256": "237144fdf710b2de024b32be8aac4657e84f1f2a9beaeb9f35d4a1316c592296",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_cache_integration_test.go",
+      "sha256": "21235e2975b90663bb3dd6a37c401eefd0a74198bb04ffa28f5e91d64447f80c",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b5b1-first-quick.json",
+      "exit": 0,
+      "seconds": 147.243,
+      "receipt_sha256": "45886f0f3e76a32ad3067aa85580b2868220b73cfbb65421b8d76f83a4aeb0e8"
+    },
+    {
+      "receipt": "p3b5b1-qualified-security.json",
+      "exit": 0,
+      "seconds": 10.552,
+      "receipt_sha256": "9e5371cdfa4418609b91441744129867a3189074046ae9efb1753ebb302e31f5"
+    },
+    {
+      "receipt": "p3b5b1-qualified-docs.json",
+      "exit": 0,
+      "seconds": 0.254,
+      "receipt_sha256": "575849a1c24e6f7e9ee474be333e1ebc5380f2dd38b85aad1c068056a2bf2b07"
+    },
+    {
+      "receipt": "p3b5b1-materialization-full-race.json",
+      "exit": 0,
+      "seconds": 144.801,
+      "receipt_sha256": "e78639fb828ba77e8b60b5a28a9531286d3ddc8cb4ed69513e40f899551e9921"
+    },
+    {
+      "receipt": "p3b5b1-bun-private-v1-result.json",
+      "exit": 0,
+      "seconds": 85.368,
+      "receipt_sha256": "5bdcddc2cd90fb4715d037f398b1fcc21bbfa4ed9b17c9c77b24f43c1db3ac8b"
+    }
+  ],
+  "mechanical_reuse": {
+    "receipt": "p3b5b1-materialization-mechanical-reuse.json",
+    "full_Host_entry_body_and_Prepare_body_normalized_identical": true,
+    "create_verify_census_cleanup_unchanged": true
+  },
+  "actual": {
+    "Bun": "public peer4 and explicit empty0 through native selection/quarantine/Evidence/Policy/cache/private preparation/Verify/Close, absent lock stays absent",
+    "PNPM": "same existing public peer4/empty0 cache/private preparation/Verify/Close",
+    "seconds": 85.368,
+    "helper": "CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "IDENTICAL",
+    "Host_target_publication": "NOT_RUN"
+  },
+  "unchanged": [
+    "PNPM public prepared type/methods and current source/approval guards",
+    "per-entry inode/owner/mode/digest/single-link checks and unknown-data-preserving cleanup",
+    "observer/Policy/runtime pins/budgets/FS/network grants"
+  ],
+  "remote": "local commit only; CI412 stays frozen7544a09 without cancellation/push"
+}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"net"
 	"os"
 	"path/filepath"
@@ -21,7 +22,7 @@ func makePypiVenvFixture(t *testing.T) (string, pypiVenvPlan) {
 		t.Skip("production venv transaction is Linux amd64 only")
 	}
 	root := realPromotionRoot(t)
-	if err := os.WriteFile(filepath.Join(root, "pyvenv.cfg"), []byte("version = 3.14.7\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "pyvenv.cfg"), []byte("version = "+runtimeidentity.PythonVersion+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	site := filepath.Join(root, "lib", "python3.14", "site-packages")
@@ -161,6 +162,65 @@ func TestVenvManagedReplacementRemovesObsoleteOutputs(t *testing.T) {
 	state, _, err := p.readState()
 	if err != nil || len(state.Files) != 2 {
 		t.Fatalf("replacement metadata: %v %v", state, err)
+	}
+}
+
+func TestVenvPublishJournalPairsCompletionWithNextIntent(t *testing.T) {
+	_, plan := makePypiVenvFixture(t)
+	destinations := venvDestinations(t, map[string]string{"site/a.py": "first", "site/b.py": "second"}, "demo")
+	tx, err := beginPyPIVenvTransaction(plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.close()
+	checked := 0
+	tx.fault = func(step string) error {
+		name := ""
+		switch {
+		case step == "after-publish:site" && len(tx.published) == 1:
+			name = "a.py"
+		case step == "after-publish-intent:site/b.py":
+			name = "b.py"
+		default:
+			return nil
+		}
+		body, err := os.ReadFile(filepath.Join(tx.backup, "ledger.json"))
+		if err != nil {
+			return err
+		}
+		lines := bytes.Split(bytes.TrimSuffix(body, []byte("\n")), []byte("\n"))
+		var intent struct {
+			Action, Path string
+			Output       pypiFileSnapshot
+		}
+		if err := json.Unmarshal(lines[len(lines)-1], &intent); err != nil {
+			return err
+		}
+		final := filepath.Join(plan.site, name)
+		want := tx.outputs[final]
+		got := intent.Output
+		if intent.Action != "publish" || intent.Path != final ||
+			got.Digest != want.Digest || got.Size != want.Size || got.Mode != want.Mode ||
+			got.Device != want.Device || got.Inode != want.Inode {
+			return errors.New("durable intent does not identify the exact output")
+		}
+		if name == "b.py" {
+			var completion struct{ Published pypiDestination }
+			if err := json.Unmarshal(lines[len(lines)-2], &completion); err != nil {
+				return err
+			}
+			if completion.Published.key() != "site/a.py" {
+				return errors.New("next intent did not follow the prior completion")
+			}
+		}
+		checked++
+		return nil
+	}
+	if err := tx.commit(destinations); err != nil {
+		t.Fatal(err)
+	}
+	if checked != 2 {
+		t.Fatalf("checked %d publication boundaries, want 2", checked)
 	}
 }
 
@@ -341,7 +401,7 @@ func TestVenvRejectsConfigAndSchemeIdentity(t *testing.T) {
 					t.Fatal(err)
 				}
 			default:
-				body := map[string]string{"malformed": "invalid", "wrong-version": "version = 3.13.7\n", "version-substring": "note = version = 3.14.7\n", "duplicate": "version = 3.14.7\nversion = 3.14.7\n"}[kind]
+				body := map[string]string{"malformed": "invalid", "wrong-version": "version = 3.13.7\n", "version-substring": "note = version = " + runtimeidentity.PythonVersion + "\n", "duplicate": "version = " + runtimeidentity.PythonVersion + "\nversion = " + runtimeidentity.PythonVersion + "\n"}[kind]
 				if err := os.WriteFile(cfg, []byte(body), 0o600); err != nil {
 					t.Fatal(err)
 				}

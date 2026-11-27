@@ -1,0 +1,312 @@
+{
+  "schema": "p2c5b5d-pnpm-native-ownership-local/v1",
+  "baseline": "0fe14bbc32ecc148d587ef378a67de27959472fe",
+  "scope": "P2 bounded native original safe single-link isolated copy ownership, independent old public archives and full closure before fresh current quarantine; production CLI and existing CI actual consumer; named local only",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (production CLI and fixed existing CI project consumer)",
+    "QUALIFIED": "YES (named local scopes below)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2 remote and affected-profile matrix pending)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/artifact/npm/pnpm_layout_archive.go",
+      "bytes": 8726,
+      "sha256": "e34c960550b4a1581e5e43f96ebc1c32c37a0610f075e044334dbf3365f86753"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_layout_metadata.go",
+      "bytes": 6678,
+      "sha256": "bec42d0d84e2e327c6c21f7e9d4a6d7de9533a18e123e038661568dd71cd437c"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_layout.go",
+      "bytes": 14277,
+      "sha256": "e0c34e060b4637ede20a83d7d67954e0365dfa93d03af9cc1aaab0c6f0cce72e"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_original_layout.go",
+      "bytes": 3650,
+      "sha256": "3b757fdb36e7302f982dfc425ad188ea042f1e0a1fed238d63e89010e40d09f7"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_original_layout_test.go",
+      "bytes": 4628,
+      "sha256": "b3a0c1c460f36e16135f2b05a6982faebedfcd1f40c0a9038c275d235ac2ac8a"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction.go",
+      "bytes": 12506,
+      "sha256": "8192fc644cf7c09efa64990c15053e73fe6ac578b7b60fd4179a18344267c90a"
+    },
+    {
+      "path": "internal/promotion/pnpm_original.go",
+      "bytes": 4456,
+      "sha256": "8d5995b29a08c13aac2142d216d01da75d68a43d3d6acfb7fed896ff65a34dd8"
+    },
+    {
+      "path": "internal/promotion/pnpm_approved_transaction.go",
+      "bytes": 4957,
+      "sha256": "7d5de9bd820ac50cf7c3854e9e8907e1d5fd8708aad6de9982f45dcd7667c433"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_project.go",
+      "bytes": 6305,
+      "sha256": "e2c562fab90fd31ebe32473e26613b723ebaee2cc8183db80ccd804e0022a56c"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_original.go",
+      "bytes": 4222,
+      "sha256": "ad00a08b152678927d860f1093d85563520bb54d11d040d27eadbc06a70b8782"
+    },
+    {
+      "path": "internal/promotion/pnpm_original_test.go",
+      "bytes": 9095,
+      "sha256": "311f029d33999f562de5f8f9de581781d81b9860e72806a175bfd1190896b8bd"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_original_test.go",
+      "bytes": 7395,
+      "sha256": "d8476b855d2d6e36a6d589713ede4dbcb0e3a07b45a343568d192f5c0f06f86e"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_original_integration_test.go",
+      "bytes": 13394,
+      "sha256": "7539d16c5bf7fe9ce4883dd02cc34ac2aeeeaf0775c5c0df14ed16933adae980"
+    },
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "bytes": 4162,
+      "sha256": "f6e11a736845e6e5e64dcae37ddcfd9b30f696303aa55b9fc7b745b0c39e714c"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "bytes": 6764,
+      "sha256": "e266efa7a4e90383e76b91e0192057af3a1a77180e8b3a6781b39454b696db75"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "bytes": 10386,
+      "sha256": "1ad8b55d98ddd51e0e352a2efecd60eb5d864e1566acc8d72eeae0fc44f77607"
+    },
+    {
+      "path": "internal/cli/pnpm_project.go",
+      "bytes": 11192,
+      "sha256": "653d02255e79568dd8b8bbde3166fadf22c53b25b971defb5f89044a074e4127"
+    }
+  ],
+  "checks": {
+    "p2c5b5d-product-final-format": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-product-final-format.json",
+        "bytes": 1180,
+        "sha256": "d0673142f05e419bf9d4ab92ce5834149ee1086c7839083d817f38b5cb3ae601"
+      },
+      "seconds": 0.618,
+      "exit": 0
+    },
+    "p2c5b5d-product-final-quick": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-product-final-quick.json",
+        "bytes": 307,
+        "sha256": "616e0603a921b10d376606d4f03f01f06913bf0037f68b219e093a45f3deeaf6"
+      },
+      "seconds": 56.273,
+      "exit": 0
+    },
+    "p2c5b5d-product-final-security": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-product-final-security.json",
+        "bytes": 312,
+        "sha256": "1fab033c7c55378df9780e8ff9a72b1f6eea5311fef4be929079a8dbf3c2c719"
+      },
+      "seconds": 8.953,
+      "exit": 0
+    },
+    "p2c5b5d-product-final-docs": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-product-final-docs.json",
+        "bytes": 304,
+        "sha256": "f3d2880325484136601c8d2697f85801eee96914e9b1341870984c4217925176"
+      },
+      "seconds": 0.228,
+      "exit": 0
+    },
+    "p2c5b5d-product-final-workflow": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-product-final-workflow.json",
+        "bytes": 310,
+        "sha256": "876f8aee4768cd19f3e7a8504680da80798e302ffc303341139d76fcf42b54aa"
+      },
+      "seconds": 0.7,
+      "exit": 0
+    },
+    "p2c5b5d-native-candidate-race-new": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-native-candidate-race-new.json",
+        "bytes": 529,
+        "sha256": "dee6c48df1a532f2e27031628db9832a128d4dc2dda1baaec481cf4f8d5871e5"
+      },
+      "seconds": 157.139,
+      "exit": 0
+    },
+    "p2c5b5d-native-checker-race": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-native-checker-race.json",
+        "bytes": 349,
+        "sha256": "ee01a09f47eec650a05a79775797d940b5e57c0f6db5193cb79870b5b0489077"
+      },
+      "seconds": 29.742,
+      "exit": 0
+    },
+    "p2c5b5d-v3-final-actual-compile": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-v3-final-actual-compile.json",
+        "bytes": 684,
+        "sha256": "b3be40f340cddecfc899ae27c9bbe32961c2e6d76783a44cddad8d9b4e4a3e04"
+      },
+      "seconds": 3.126,
+      "exit": 0
+    },
+    "p2c5b5d-cli-regression-final-actual-compile": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-cli-regression-final-actual-compile.json",
+        "bytes": 682,
+        "sha256": "b6d771364821a9eb26ce4b91fdc31273269ba27850d060db1e3d1e9401b79e82"
+      },
+      "seconds": 2.43,
+      "exit": 0
+    },
+    "p2c5b5d-npm-final-actual-compile": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-npm-final-actual-compile.json",
+        "bytes": 720,
+        "sha256": "b0f64472afe799278f27a7d6b2f3fe0687fcdb4ad127479d0ec3eed5b6c9bded"
+      },
+      "seconds": 1.973,
+      "exit": 0
+    },
+    "p2c5b5d-darwin-compile": {
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-darwin-compile.json",
+        "bytes": 574,
+        "sha256": "77bba4dc1ded24d2d632c9d3a120b4d1d5fd8015a858bc02bca7cda870eaa7ce"
+      },
+      "seconds": 6.383,
+      "exit": 0
+    }
+  },
+  "actual": {
+    "native_original": {
+      "result": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-v3-pnpm-cli-result.json",
+        "bytes": 1530,
+        "sha256": "6f8125352dc5e9d57fc608655b3a67d3212235d73c0a6b89bfb333372fd647f5"
+      },
+      "log": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-v3-pnpm-cli-actual.log",
+        "bytes": 2149,
+        "sha256": "ba76d3a5eaa463fa90c67ddb5a313511f2ec958f97ad4541f690b96151186d0f"
+      },
+      "seconds": 128.739,
+      "helper": "wait0/CONFIRMED_STOPPED; original0, helper_stop0, client_error0, client_restore0",
+      "host_before_after_identical": true
+    },
+    "complete_pnpm_cli_regression": {
+      "result": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-cli-regression-pnpm-cli-result.json",
+        "bytes": 1447,
+        "sha256": "ad38b9105ddee7b81192e1333e9bfa64e5c6269e9b799856e15c7321beb90345"
+      },
+      "log": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-cli-regression-pnpm-cli-actual.log",
+        "bytes": 1511,
+        "sha256": "1bab932c90ed78fa9b9cc4bae883096a3fa4e771cbd8bd8d8b2ea6d63dce8e3d"
+      },
+      "seconds": 182.73,
+      "helper": "wait0/CONFIRMED_STOPPED; original0, helper_stop0, client_error0, client_restore0",
+      "host_before_after_identical": true
+    },
+    "existing_npm_inspect": {
+      "result": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-npm-pnpm-cli-result.json",
+        "bytes": 1394,
+        "sha256": "c729c8de095b9bf0fa180028e654a2a74b74d0e658bf3d477699dfd7269044cb"
+      },
+      "log": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-npm-pnpm-cli-actual.log",
+        "bytes": 1910,
+        "sha256": "cf1515d0a9aee41beda45b16f31bb48d148e22688dc928854258fb63fc838258"
+      },
+      "seconds": 9.378,
+      "helper": "wait0/CONFIRMED_STOPPED; original0, helper_stop0, client_error0, client_restore0",
+      "host_before_after_identical": true
+    }
+  },
+  "native_cases": [
+    "original6 -> explicit add7, old source verified before retired payload deletion",
+    "original exact6 -> native update retains declared6, fresh whole quarantine and clean publication",
+    "native peer4 -> install, full old archive/instance/link/bin/file proof and clean publication"
+  ],
+  "negative_scopes": {
+    "default_and_race": [
+      "actual Host UID/GID different from guest1000; guest parser and caller-owned store binding unchanged",
+      "whole peer/source inventories; extra/missing/altered code, bin, metadata, links, cache, ownership and safe mode",
+      "independent exact registry response and acquired SHA512 SRI; missing original lock and cancellation",
+      "implicit adoption, missing/failed/zero proof, guard drift, foreign namespace, corrupt retained state, shared hardlink and escape",
+      "native commit rollback at publication/metadata/state; uncertain conflict preserves original backup, foreign output and journal and rejects reentry"
+    ],
+    "actual_intended_cause": [
+      "implicit native adoption refused for all3",
+      "old code tamper, forged root-lock SRI, extra native file refused at exact intended source/coverage cause (single)"
+    ]
+  },
+  "authority_boundaries": [
+    "Unverified PNPMOriginalLayout cannot yield a current PNPMInspectionLayout",
+    "Actual Host census owner/mode/bytes preserved; guest public parsers remain UID/GID1000",
+    "Original storeDir is format metadata only and never opened or passed as guest expected-store authority",
+    "All old unique archives including retired sources are independently acquired and statically measured under the existing128MiB compressed/expanded/peer workspace budget",
+    "Original proof digest is independent-state provenance, never current Policy, cache, Session or execution approval",
+    "Corrupt prior state cannot fall back to native adoption; unknown HAA namespace is refused",
+    "First native adoption always publishes the new clean current-inspected payload; existing managed noop optimization is unchanged"
+  ],
+  "actual_source_boundary": "Native V3 used the same executable ownership/resolver/transaction logic; subsequent production delta is CLI English/Korean help/flag literals only. Final complete CLI9operation/npm regressions use final product source. Default-source seven-package/checker Race precedes that inert help change; final Quick/security/workflow cover final product. Remote whole-source qualification remains pending.",
+  "fixture_boundary": "Native original positive fixtures are safe single-link copies of real isolated guest PNPM output. No Host native PNPM execution or unsupported unsafe/foreign/shared-link native layout is claimed. Native empty original metadata is outside this first lane; fresh/managed empty remains tested.",
+  "first_failures": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-engine-first-quick.json",
+      "bytes": 306,
+      "sha256": "f1b75b74260bdcb000881e499eaaf8ba11abba5e6cb8bf37d2e486c4a08bb1c9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-first-actual-failure-assessment.json",
+      "bytes": 4270,
+      "sha256": "e42cb8d2de71958ce7d191d5a0dabc13fb37575576ef896248cd39493d2cb8d3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-v2-failure-assessment.json",
+      "bytes": 1010,
+      "sha256": "c7485de9b9944a5193db6b3a73e2a3d902bf6f8194cddd9e751001efcfae6c42"
+    }
+  ],
+  "ci_command_binding": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-v3-ci-original-command-binding.json",
+    "bytes": 567,
+    "sha256": "5e1de72ac4d4d31e57a2000ab42a243a385e1f3d3b6975af5955706230090916"
+  },
+  "cleanup": {
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5d-completed-runtime-cleanup.json",
+      "bytes": 1278,
+      "sha256": "a017f78303a512f8904080a014a3cbe6936df9e836bddf84728e7097ca0cde98"
+    },
+    "regular_bytes_removed": 1217464713,
+    "roots_removed": 6,
+    "memory_claim": "completed task-owned disk data retired; no process RSS repair claim"
+  },
+  "missing": [
+    "new exact-source remote Required/native macOS/whole CI project sequence including B5c and B5d",
+    "affected existing CPU/cu126/cu130/cu132 source-bound qualification and final P2 support/acceptance closure"
+  ],
+  "whole_candidate": "Raw p2c5b5d-final-whole-candidate-20261025.json checks all Root/private index blobs/modes, disk bytes, outside-delta baseline and whole tree before commit."
+}

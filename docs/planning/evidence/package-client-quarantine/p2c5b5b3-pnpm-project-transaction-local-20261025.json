@@ -1,0 +1,212 @@
+{
+  "schema": "helox.pnpm-project-transaction-local/v1",
+  "baseline": "daf254748bd5e512132de5962045a2bd4daaf6aa",
+  "scope": "existing single-project PNPM request-local selection/inspection/cache -> existing npm transaction fixed PNPM profile -> target publication and independent retained approval; no CLI/native payload adoption",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (actual bootstrap guarded application consumer)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/bootstrap/pnpm_project_test.go",
+      "bytes": 1356,
+      "sha256": "270475f4fdf96a4fdacc2b4d34f404d397d1f999877934a090d9e38aacbfc3bb"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_project.go",
+      "bytes": 5885,
+      "sha256": "98e77c6b24579ffad19c911c3655a57c89bda9bb039dcb3fba499cb86a3aa74a"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_project_integration_test.go",
+      "bytes": 7487,
+      "sha256": "6ed16a6250f1bb1fce6fbaa88c5af8719c62f6bbc19e218659e18aeebf304cc4"
+    },
+    {
+      "path": "internal/promotion/pnpm_materialize.go",
+      "bytes": 14729,
+      "sha256": "e232ac45ea11ca031ee84517327149d3bd74cb2ad32fa04457ce4f6ce6f4152e"
+    },
+    {
+      "path": "internal/promotion/pnpm_owned_member.go",
+      "bytes": 8620,
+      "sha256": "5dc0d326ddc73d59b68d8bd2bae38da1815107a6c4c1e29994024d35a03311f1"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache.go",
+      "bytes": 12743,
+      "sha256": "8855c78d35f1cbaea50da2ae7a6b53ee131e3f3f6642cc5d58aa0338d63b3c2e"
+    },
+    {
+      "path": "internal/promotion/pnpm_retained.go",
+      "bytes": 2507,
+      "sha256": "dc391fc61bc51a99cf1ff63cccbbf6c45e5b1804e466917abf50cb3778ec4bdd"
+    },
+    {
+      "path": "internal/promotion/npm_transaction.go",
+      "bytes": 18848,
+      "sha256": "f65f51989c13edb6420ff8d717b2d63fddd8784a1e364d5285e906ff8aa9497d"
+    },
+    {
+      "path": "internal/promotion/npm_transaction_member.go",
+      "bytes": 5580,
+      "sha256": "7701af875a1db15ed3e5fb41718c45a89bc41de7bcf63092f222f73f7ae8a6dc"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction.go",
+      "bytes": 11179,
+      "sha256": "042ce3dbd5e6cf907826b7d0cc8349cde0444f60f8533002d4a7004de8e63a02"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction_profile.go",
+      "bytes": 7478,
+      "sha256": "507f76e5e6dadc42ba8406aa0fbf0c93eca7df5b04fce7d420edb7ecc92cf554"
+    },
+    {
+      "path": "internal/promotion/pnpm_approved_transaction.go",
+      "bytes": 4739,
+      "sha256": "1cdb3ba6ae8920165fabb7e2c88432e791c907aef03a1430fa053b1770773865"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction_test.go",
+      "bytes": 14868,
+      "sha256": "e1571332d9ef0d291742efdfb624e1a666b5f03cc77215879399649374412444"
+    },
+    {
+      "path": "internal/application/pnpm_project.go",
+      "bytes": 1810,
+      "sha256": "af63980e09ef2484e52ff4b6b31ac86639aa53ff4485ea88c9bb58f9a688625e"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "quick",
+      "seconds": 129.955,
+      "scope": "final production/default tests; before realcorpus-only native-update assertion and two diagnostic strings",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-guarded-quick.json",
+        "bytes": 308,
+        "sha256": "a5dfd78ffe85bd7ae6e0f52564d96c9900973f9f4f55d5ab1aeeb359075c1c10"
+      }
+    },
+    {
+      "profile": "security",
+      "seconds": 10.486,
+      "scope": "final production/default tests; before realcorpus-only native-update assertion and two diagnostic strings",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-guarded-security.json",
+        "bytes": 313,
+        "sha256": "902d3f4b16339f2ced16068ea63f1dc2c75a879ec68f44f30f6eee2ae09522fa"
+      }
+    },
+    {
+      "profile": "docs",
+      "seconds": 0.235,
+      "scope": "final production/default tests; before realcorpus-only native-update assertion and two diagnostic strings",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-guarded-docs.json",
+        "bytes": 304,
+        "sha256": "cbc12001aec296a5543c12764bc9fb8070833220fd7087cf44cbb5749c0182b6"
+      }
+    },
+    {
+      "profile": "race",
+      "seconds": 135.126,
+      "scope": "final production/default tests; before realcorpus-only native-update assertion and two diagnostic strings",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-guarded-race.json",
+        "bytes": 440,
+        "sha256": "e6ca4bc9dd72513e2392936946db4d2ca0196d8045737458802194b004c33bc8"
+      }
+    }
+  ],
+  "actual": [
+    {
+      "scope": "public single 3 commands, peer 2, explicit empty 2; full guarded application",
+      "seconds": 134.084,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-project-transaction-result.json",
+        "bytes": 1394,
+        "sha256": "d5f6a1bad4ef9d904b3a56d4363bdf1d85fd27a5d57eb88727092a566d0cf6c0"
+      },
+      "helper_wait": 0,
+      "host_unchanged": true
+    },
+    {
+      "scope": "existing npm new target and first/retained project commits",
+      "seconds": 6.243,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-npm-project-transaction-result.json",
+        "bytes": 1381,
+        "sha256": "f9ee93ea00836ed31099a7c7cad1eb084d2eb0ae7410e9199126566eb8b4b0ba"
+      },
+      "helper_wait": 0,
+      "host_unchanged": true
+    },
+    {
+      "scope": "final native-update assertion: single install/repeat/add/update 4 commands; before two diagnostic-string-only corrections",
+      "seconds": 71.767,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-update-project-transaction-result.json",
+        "bytes": 1380,
+        "sha256": "0f01a136b0ef778d3cc871a3d09d3f65c69e33c6784849e689ac7d0ac3e7d645"
+      },
+      "helper_wait": 0,
+      "host_unchanged": true
+    }
+  ],
+  "final_realcorpus_fixture": {
+    "scope": "two diagnostic strings only after native-update assertions passed; no production/default/actual assertion changes",
+    "format": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-final-fixture-format.json",
+      "bytes": 961,
+      "sha256": "35942d87547f7c7efa1bbb5cce86db5ae45fdeabe00456cc0cd2c10467041fba"
+    },
+    "compile": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-fixture-final-final-actual-compile.json",
+      "bytes": 709,
+      "sha256": "a9268668e045623cb536a40055899600409cc729650bb07a53c740282196b02b"
+    },
+    "log_scope_correction": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-update-log-scope-correction.json",
+      "bytes": 724,
+      "sha256": "1541add23401baa717b41d95f5934d91ce6d7244136ab7d1578622b681620f8f"
+    }
+  },
+  "darwin_compile": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-darwin-compile.json",
+    "bytes": 566,
+    "sha256": "9b72bd811596296c3b92c9a0971357177c3183bd5fe2090b7a24927469e0f81a"
+  },
+  "first_bootstrap_check": {
+    "status": "FAIL U1000 before actual",
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-bootstrap-first-quick.json",
+      "bytes": 307,
+      "sha256": "8527df5d3fb18ebeae3d85458c13145b15c5d34e8b188e8655dbf249d43865d6"
+    },
+    "preserved_source_inventory": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b3-bootstrap-first-source/inventory.json",
+      "bytes": 2243,
+      "sha256": "8383e107145129e52c7632d09d3f91b0b39e63abdb0413436c8f8a06e0fc3504"
+    },
+    "correction": "default tests exercise actual binding requirement, missing selected context and one-selection request boundary; no suppress/export rename"
+  },
+  "mechanical_negatives": [
+    "selection before cache getter; original drift/absent lock/foreign payload/cancellation",
+    "other actual operation cache",
+    "retained payload/metadata/hardlink/escape/state/cache/real stored Evidence/journal, including adopt bypass refusal",
+    "explicit changed-control enrollment over independently approved payload",
+    "11 backup/publish/metadata/state forward faults and full-copy managed rollback",
+    "rollback conflict preserves foreign bytes and recovery journal; new mutation refused",
+    "shared npm target lock and retained inode/mode on same content"
+  ],
+  "not_qualified": [
+    "native unmanaged-payload adoption/source proof",
+    "CLI/help/examples and user facing end-to-end",
+    "new target/global/workspace variants",
+    "whole P2 and this source remote qualification"
+  ]
+}

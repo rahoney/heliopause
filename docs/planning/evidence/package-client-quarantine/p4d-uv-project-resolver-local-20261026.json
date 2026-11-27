@@ -1,0 +1,115 @@
+{
+  "work_item": "M13-004/P4-D",
+  "baseline": "dc777a16eef63607e6106aca5b216b5a7ad44352",
+  "status": {
+    "IMPLEMENTED": "YES (isolated virtual-project sync/lock-upgrade selection adapter)",
+    "WIRED": "YES (existing typed update port/session/independent binder); NO (CLI/Host mutation)",
+    "QUALIFIED": "YES (named local empty/single fixed public selection and existing UV pip complete consumers)",
+    "ACCEPTANCE_CLOSED": "YES (named selection boundary only); NO (whole P4)",
+    "MISSING": [
+      "native add/manifest mutation",
+      "actual version-changing lock-upgrade delta and broader dependency cases",
+      "project/venv atomic ownership/transaction/CLI",
+      "persistent UV tool/pipx"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4d-project-public-index-v6-format.json",
+      "seconds": 0.636,
+      "sha256": "91b42565e2d99b429b643aae05e12da12d66985ec5ab7ac1e2534b890f3e0b46"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4d-project-public-index-v6-quick.json",
+      "seconds": 112.172,
+      "sha256": "5a7e7582ea07e9c49b6d354daba562285128af4772ac6cbd03bae471e257445b"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4d-project-public-index-v6-security.json",
+      "seconds": 14.172,
+      "sha256": "3aaf39d097dac69f5c611003aa47f48ec41e6cdf991d67b64637ce3792fb8796"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4d-project-public-index-v6-docs.json",
+      "seconds": 0.236,
+      "sha256": "adb570db4a500429ce15f3e353127adcb44256c64d56bb7bb65e56151189f3f8"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4d-project-resolver-public-index-v6-full-affected-race.json",
+      "seconds": 27.681,
+      "sha256": "904b52ab465e76899a4bbcc1b933aba3b2bd59657c3a5929d865e15cec589cad"
+    }
+  ],
+  "actual": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4d-project-native-v6-result.json",
+    "seconds": 116.337,
+    "project_seconds": 34.61,
+    "legacy_uv_pip_seconds": 79.18,
+    "cases": [
+      "explicit empty sync and lock-upgrade",
+      "packaging25.0 exact sync and lock-upgrade (same-version, not version-changing delta)",
+      "existing idna1/requests5 public graph; complete two roots/closure5/missing-dependency rejection/explicit empty requirements+pylock"
+    ],
+    "observer": "same unmodified canonical121-latch observer from B6b",
+    "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+    "host_before_after_identical": true,
+    "not_claimed": "Policy ALLOW, inspected artifact lifecycle, Host install or remote P4 qualification"
+  },
+  "unchanged_owners": [
+    "internal/artifact/pypi/uv_lock.go",
+    "internal/artifact/pypi/uv_project_lock.go",
+    "internal/artifact/pypi/uv_project_input.go",
+    "internal/sandbox/uv_resolver.go",
+    "internal/sandbox/uv_sync_resolver.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/sandbox/uv_native_output.go",
+      "sha256": "6afa8f5b1ccae2c4ebd9e4493d1c01c8cf15cf06bfc0cd59a5948d7ac5752d99"
+    },
+    {
+      "path": "internal/sandbox/uv_project_output.go",
+      "sha256": "37981bdf2b5708084f160dd3f0fd8030be02b105716b2b364f0d81df9f632741"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver.go",
+      "sha256": "740d6958456cf59d1c034f5b65ec301d6559aea16dfc553ef4e04cee77a33126"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver_test.go",
+      "sha256": "f9ad3b6160a49fe04ef4f6dff5364f5163faa9bb89301dc58a8ad1580d364a6a"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver_integration_linux_test.go",
+      "sha256": "263876421e9e153d565f21f4682141a06bc4c39d3beb23c40b3acb0d20e42e50"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_native_project_lock.go",
+      "sha256": "c3de090b169f249ac07ae54cfbe9fa43d0b066c9b4d7474592f98aa546f388e3"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_export.go",
+      "sha256": "b93029da4a044c7e1f9f6d967eadc7589f6f2010e6f77634bd032bd6ea9271e3"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_export_test.go",
+      "sha256": "caf834e1ee9913c506bcf3f2b97140fd08809407f5c7e61c84bde37a293285df"
+    }
+  ],
+  "first_failures": [
+    "p4d-first-export-arguments-assessment-20261026.json",
+    "p4d-second-export-filename-assessment-20261026.json",
+    "p4d-public-index-first-assessment-20261026.json"
+  ],
+  "corrections": [
+    "no-sources stays on native lock producer, frozen export excludes conflicting option",
+    "opaque control remains unchanged; physical native project/pylock.toml separate from derived root pylock",
+    "only existing public index plus one no-trailing-slash representation; unknown/foreign/ambiguous URLs still refuse",
+    "temporary bounded native-format wrapper/readout removed; original evidence preserved"
+  ],
+  "ci": "CI413 frozen50fd Required10SUCCESS consumed at actual due17:20:16UTC; P4 source outside run, no helper push/dispatch; separate CI receipt follows",
+  "lessons_review": "artifact L15 records exact native argument/filename/index input causes and named correction scope; no observer/permission/budget change"
+}

@@ -1,0 +1,127 @@
+{
+  "scope": "P5-B2b Node proof composition and non-install execution records only",
+  "source_base": "49e3245751c7fff600497d930859e22c83ab7520",
+  "source_files_each": 1291,
+  "prior1287_unchanged_each": true,
+  "new_source": [
+    {
+      "path": "internal/bootstrap/node_execution_context.go",
+      "sha256": "df79dc3027a181ab42e83060db655a8baeeb308026f1ba0b5ab6b0662a44ced9",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_context_test.go",
+      "sha256": "bd43c41ddf0a211a788115f659a863ff3951155481cb7f9528244798b4ec0b46",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/evidence/execution_manifest.go",
+      "sha256": "5d9393b616a138c0836e53a1f88ce84559da2e86094968425b67ca721cecd230",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/evidence/execution_manifest_test.go",
+      "sha256": "e14be50102339295645252001bbdd58373a31d341e6e449295fcdb2bd76a2883",
+      "mode": "100644"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "NO (actual P5 application/backend/CLI absent)",
+    "QUALIFIED": "YES (named local composition/records)",
+    "ACCEPTANCE_CLOSED": "YES (B2b narrow scope); NO (whole P5)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.86
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 220.145
+    },
+    {
+      "step": "composition-records-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/bootstrap",
+        "./internal/evidence"
+      ],
+      "exit_code": 0,
+      "seconds": 26.899
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.328
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 11.739
+    }
+  ],
+  "first_quick": {
+    "seconds": 44.49,
+    "exit_code": 1,
+    "causes": [
+      "ST1005 capitalized new error text",
+      "SA1012 direct nil Context literal in negative test"
+    ],
+    "correction": "lowercase error text; explicit missing-input test table; no rule suppression or policy/authority change",
+    "raw_prefix": "p5-execution-records-first-"
+  },
+  "reused": [
+    "NodeExecutionEntry immutable byte proof",
+    "domain.NewExecutionContext exact graph/primary acquisition and argv preflight",
+    "runtimeidentity.NodeImageReference fixed composition only",
+    "VerifiedBundle",
+    "manifestEntries",
+    "canonicalManifestObject",
+    "buildSBOM"
+  ],
+  "record_schema": "helox.verified-execution-manifest/v1",
+  "private_data": "no raw argv, argv hash or program output; manifest identity is storage identity only",
+  "bindings": [
+    "operation and full graph/current Evidence/Policy",
+    "resolver runtime and source lock fingerprint",
+    "exact command/member path/SHA256/size",
+    "required runtime and actual Policy fingerprint"
+  ],
+  "no_install_target": true,
+  "missing": [
+    "fresh complete execution inspection/application path",
+    "execution records/staging handoff actual",
+    "introduction-time rehash and separate backend request/output/exit/cancel/cleanup",
+    "CLI and real hostile qualification"
+  ],
+  "ci423_source_6dd_excludes_this_code": true
+}

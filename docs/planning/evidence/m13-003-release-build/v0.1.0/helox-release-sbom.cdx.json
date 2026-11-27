@@ -1,0 +1,94 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.7",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "helox",
+      "version": "v0.1.0",
+      "properties": [
+        {
+          "name": "heliopause:source-commit",
+          "value": "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9"
+        },
+        {
+          "name": "heliopause:go-version",
+          "value": "go1.26.9"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "github.com/ProtonMail/go-crypto",
+      "version": "v1.5.2"
+    },
+    {
+      "type": "library",
+      "name": "github.com/agext/levenshtein",
+      "version": "v1.2.1"
+    },
+    {
+      "type": "library",
+      "name": "github.com/apparentlymart/go-textseg/v15",
+      "version": "v15.0.0"
+    },
+    {
+      "type": "library",
+      "name": "github.com/cloudflare/circl",
+      "version": "v1.6.3"
+    },
+    {
+      "type": "library",
+      "name": "github.com/hashicorp/hcl/v2",
+      "version": "v2.24.0"
+    },
+    {
+      "type": "library",
+      "name": "github.com/mitchellh/go-wordwrap",
+      "version": "v1.0.1"
+    },
+    {
+      "type": "library",
+      "name": "github.com/pelletier/go-toml/v2",
+      "version": "v2.4.3"
+    },
+    {
+      "type": "library",
+      "name": "github.com/spf13/cobra",
+      "version": "v1.10.2"
+    },
+    {
+      "type": "library",
+      "name": "github.com/spf13/pflag",
+      "version": "v1.0.10"
+    },
+    {
+      "type": "library",
+      "name": "github.com/zclconf/go-cty",
+      "version": "v1.16.3"
+    },
+    {
+      "type": "library",
+      "name": "golang.org/x/crypto",
+      "version": "v0.55.0"
+    },
+    {
+      "type": "library",
+      "name": "golang.org/x/mod",
+      "version": "v0.40.0"
+    },
+    {
+      "type": "library",
+      "name": "golang.org/x/sys",
+      "version": "v0.47.0"
+    },
+    {
+      "type": "library",
+      "name": "golang.org/x/text",
+      "version": "v0.41.0"
+    }
+  ]
+}

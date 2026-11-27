@@ -1,0 +1,129 @@
+{
+  "scope": "P5-C1 registered Host-process separated bounded output; no guest completion authority",
+  "source_base": "98047dfe09732b3942e77bb33385762cb14b9666",
+  "runtime_source_files": 1303,
+  "prior1301_unchanged": true,
+  "new_sources": [
+    {
+      "path": "internal/hosttool/execution_output.go",
+      "sha256": "e1d968d67604efb576fe362d2e1600af7445be31ca71edebc9f00a226093d7de",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/hosttool/execution_output_test.go",
+      "sha256": "035555b8bfdb304bb44151c11e0af680290d2f61512b3e0fc7a96abc667db66d",
+      "mode": "100644"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (Host transport)",
+    "WIRED": "YES (existing trusted command boundary); NO (P5 sandbox command flow)",
+    "QUALIFIED": "YES (named local Host transport)",
+    "ACCEPTANCE_CLOSED": "YES (transport only); NO (user-run/whole P5)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.507
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 277.844
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/hosttool"
+      ],
+      "exit_code": 0,
+      "seconds": 8.416
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.291
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 12.047
+    },
+    {
+      "step": "host-capture-no-skip",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/hosttool",
+        "-run",
+        "^TestRunCaptured"
+      ],
+      "exit_code": 0,
+      "seconds": 2.54,
+      "skip_count": 0
+    }
+  ],
+  "stream_limit_bytes_each": 1048576,
+  "pipe_wait_delay_seconds": 2,
+  "preserved": [
+    "separate raw binary stdout/stderr prefixes",
+    "original Host ExitError/nonzero/signal",
+    "caller cancellation/deadline/custom cause",
+    "original trusted identity/minimal environment/closed stdin",
+    "old diagnostic/stream methods unchanged"
+  ],
+  "overflow": "explicit incomplete error and Host command cancellation; no silent success",
+  "privacy": [
+    "copied getters",
+    "default formatter redacted",
+    "JSON refused",
+    "no raw output in logs/Evidence/Manifest"
+  ],
+  "negative_and_positive": [
+    "exact limit and overflow each stream",
+    "separate binary output and original exit17",
+    "signal and partial output",
+    "deadline/custom cancellation and preflight canceled",
+    "inherited pipe wait error and test-owned surviving child explicitly terminated",
+    "unregistered/changed/unavailable identity",
+    "closed stdin and ambient proxy exclusion",
+    "getter mutation and JSON/format protection"
+  ],
+  "limits": [
+    "Host process status is not guest program exit/signal authority",
+    "WaitDelay is not child/container/helper cleanup proof",
+    "P5 fresh sandbox graph/observer/admission/backend/CLI/terminal rendering and final profiles remain missing",
+    "CI424 source4ec excludes this source"
+  ],
+  "raw_prefix": "p5-c1-* under existing package-client-quarantine-20261021 raw directory"
+}

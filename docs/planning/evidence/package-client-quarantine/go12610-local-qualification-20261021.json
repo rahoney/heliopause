@@ -1,0 +1,227 @@
+{
+  "baseline": "5994732c9363c014af2b69ecb5285637b68f3ba6",
+  "plan_id": "e64de5ec4385c56e5f70b4f184dd9e1f753cad22adf401458463b0f383432e2a",
+  "status": "LOCAL_SOURCE_AND_COMPONENT_PASS; remote installed CPU/CUDA qualification pending",
+  "go": "1.26.10",
+  "source_files": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "4a78b52b6d5bf5138ef23b58002954a8298a52f34779113472d5991da7c0fd10"
+    },
+    {
+      "path": ".github/workflows/heliopause-release-build.yml",
+      "sha256": "f34406dd40536db2ffcad96bbc430b569e80ab550b3b6d0145ea1b71dd4d67e8"
+    },
+    {
+      "path": ".github/workflows/heliopause-release-publish.yml",
+      "sha256": "9e354f880148419b39fa115f54d6cec1a330e1f7ced9d20a76fd987a7cd76380"
+    },
+    {
+      "path": ".github/workflows/heliopause-security.yml",
+      "sha256": "757e58dc497320b5fd373b115a1f1492b51f51838639b24d3731da92f8c1e9e1"
+    },
+    {
+      "path": "go.mod",
+      "sha256": "feef89870ed9ee6bfbd07779a354d32c9ef586434bd2890b065382b4d5d9a2b3"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "46e64ffa2966e1e1b4947463ab5947aa32e43edb6b7c027f57567a5b0f61afe8"
+    },
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "12534181b6687240876979d504be46a8c40288ac52d617831c89d3a9a432cff6"
+    },
+    {
+      "path": "scripts/tools.lock.json",
+      "sha256": "54bd9cf15a79f6eef8aab8b9122fe66e2055222bb24d2ec528c68fe7470e56a7"
+    },
+    {
+      "path": "scripts/version-support.lock.json",
+      "sha256": "5f2664033827d64baefcc40de5e9843729eafd696c29d6234c9c41a8150aa790"
+    }
+  ],
+  "configuration": {
+    "seconds": 292.982,
+    "profiles": [
+      {
+        "profile": "bootstrap",
+        "status": "PASS",
+        "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+      },
+      {
+        "profile": "quick",
+        "status": "PASS",
+        "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+      },
+      {
+        "profile": "security",
+        "status": "PASS",
+        "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "workflow",
+        "status": "PASS",
+        "log_sha256": "1129e9bbd945751fe1cc786fb7ae53d200c41d1ce77819a446eb333adfe614ee"
+      },
+      {
+        "profile": "release-gate",
+        "status": "PASS",
+        "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+      },
+      {
+        "profile": "docs",
+        "status": "PASS",
+        "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "qualification-freshness",
+        "status": "PASS",
+        "log_sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+      }
+    ]
+  },
+  "vulnerability": {
+    "exit": 0,
+    "seconds": 14.15
+  },
+  "fuzz": {
+    "exit": 0,
+    "seconds": 77.97
+  },
+  "runtime_components": {
+    "go": "1.26.10",
+    "source_commit": "7c6199801fd233d6d55309af4645d4746a077de7",
+    "patch_sha256": "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3",
+    "module_lock": "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34",
+    "first_seconds": 710.343,
+    "independent_seconds": 590.291,
+    "strict_manifest_equal": true,
+    "members": [
+      {
+        "path": "containerd-shim-runsc-v1",
+        "bytes": 43764392,
+        "sha512": "81cc59e3e4d00d3f1f94fa9be4ea9a2a5f4248584c14cc14ed2a4867f0863aa73234ae97ff95221e86e650b4d2f2dc2305f8af9afa133b11f662125c41d933a9"
+      },
+      {
+        "path": "gvisor-bin/checkpointgofer",
+        "bytes": 69308775,
+        "sha512": "6f0bfb214c13ff2584f6a2517f35150db9b64834a0d91be86798dd92294589de0bced7d88083ab59fe3412bc073e16e72fb81fb23d73391312f164126fce9287"
+      },
+      {
+        "path": "gvisor-bin/gvisor-sentry-prewarmer",
+        "bytes": 1416,
+        "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"
+      },
+      {
+        "path": "gvisor-bin/gvisor_sentry",
+        "bytes": 52220899,
+        "sha512": "6b3fcdde7d7b05fee7cf976b0f6e3bbd375a3f8da74fbd673e23af44cd3c9dfe8e794d295dc5a809c579a6582d64c718d5eb1e32ee4e8c4ef3d74b7f77721d7e"
+      },
+      {
+        "path": "gvisor-bin/runsc-metric-server",
+        "bytes": 53298121,
+        "sha512": "62769125f89e08e44f23713567bf1dac10edf3a78473e812449e70b8d6953f0ddbf950da2ad2fcd69fb01d0dfc26fa93205618e4f3b42d352e28dd3e9b599a21"
+      },
+      {
+        "path": "runsc",
+        "bytes": 109853200,
+        "sha512": "ec53795a33e3f35e31375470a3b539226070f555d2a0d1254bdae11599f8675f70f572444cde07869f84de3380759f4b4d47a5d524eaaa11cea53dbefb19918e"
+      }
+    ],
+    "observer": {
+      "exit": 0,
+      "seconds": 298.313,
+      "latch_pass_count": 103,
+      "sha256": "49d1b4fc8f0af4e48bf0ba24396f9efc1fbf647b926ad1c9b7eac34a4d2b18d0",
+      "bytes": 3089496
+    },
+    "scope": "component-level exact Go/gVisor/builder inputs only; final product source/installed CPU/CUDA/remote qualification remain"
+  },
+  "namespace": {
+    "positive": [
+      {
+        "name": "TestProtectedCopyInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.074
+      },
+      {
+        "name": "TestProtectedReaderInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.074
+      },
+      {
+        "name": "TestProtectedProofAndRegistrationInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.124
+      },
+      {
+        "name": "TestProtectedJournalAndLocksInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.124
+      },
+      {
+        "name": "TestProtectedStageInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.073
+      },
+      {
+        "name": "TestRootActivationTransactionInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.172
+      },
+      {
+        "name": "TestProtectedServiceFactsInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.275
+      },
+      {
+        "name": "TestInstallerSocketInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.073
+      },
+      {
+        "name": "TestProtectedPeerInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.224
+      },
+      {
+        "name": "TestInitialNativeFilesInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.275
+      },
+      {
+        "name": "TestProtectedHealthChannelInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.176
+      },
+      {
+        "name": "TestNativeEnrollmentInDisposableNamespace",
+        "exit": 0,
+        "seconds": 0.376
+      }
+    ],
+    "first_failure": {
+      "name": "TestProtectedJournalAndLocksInDisposableNamespace",
+      "code": "SELF_UPDATE_INSTALLATION_IDENTITY_INVALID",
+      "reason": "required versions directory absent in initial operator namespace; same unchanged binary passes with private versions directory prepared; production unchanged"
+    }
+  },
+  "limitations": [
+    "Host Go/CLI/services/runtime not activated",
+    "fresh source remote Required/installed cross-ecosystem/CPU and three independent CUDA qualification pending",
+    "production uv runtime/CLI remain unwired"
+  ],
+  "source_transfer": {
+    "all_non_delivery_doc_bytes_match": true,
+    "git_executable_modes_match": true,
+    "preserved_local_mode_differences": [
+      {
+        "path": "scripts/qualify-wsl2-cli.sh",
+        "root": "0o744",
+        "checked": "0o755",
+        "scope": "local group/other execute permissions preserved; Git executable mode matches; outside patch"
+      }
+    ]
+  }
+}

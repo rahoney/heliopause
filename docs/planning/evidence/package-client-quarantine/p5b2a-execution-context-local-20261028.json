@@ -1,0 +1,99 @@
+{
+  "scope": "P5-B2a non-install metadata context and argv preflight only",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "NO (actual P5 run/application absent)",
+    "QUALIFIED": "YES (named local value/API)",
+    "ACCEPTANCE_CLOSED": "YES (B2a metadata only); NO (whole P5)"
+  },
+  "source_base": "0626301d809efd559c786a0d94640c40b8939985",
+  "prior1285_unchanged_each": true,
+  "current_source_files_each": 1287,
+  "new_source": [
+    {
+      "path": "internal/core/domain/execution_context.go",
+      "sha256": "da6e424b5af6e010861745231c0441f624fb0571e04f43ef90ea5171d69b7b7e",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/core/domain/execution_context_test.go",
+      "sha256": "930cafe13096cfc4ce807fe9f277eb241b3e9270d7b246fa19fc68aab624d669",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 288.508
+    },
+    {
+      "step": "domain-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/core/domain"
+      ],
+      "exit_code": 0,
+      "seconds": 2.62
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.295
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 17.228
+    }
+  ],
+  "reused": [
+    "VerifiedSet",
+    "DependencyResolution",
+    "InspectedDependencySet",
+    "PolicyDecision"
+  ],
+  "bindings": [
+    "exact complete normalized graph nodes/edges",
+    "exact approved primary acquired object including intake handle",
+    "member path/digest/size and command",
+    "required runtime metadata",
+    "source lock digest and normalized actual Policy ID/versions",
+    "private copied argv vector"
+  ],
+  "input_bounds": {
+    "arguments": 128,
+    "total_UTF8_bytes": 32768,
+    "NUL_invalid_UTF8_rejected": true,
+    "empty_and_whitespace_values_preserved": true
+  },
+  "privacy": "argv stays in private request memory; excluded from source/Policy fingerprints and persistence; current trusted admission binding unchanged",
+  "limits": [
+    "member facts still require adapter proof and introduction rehash",
+    "runtime identity is metadata; canonical Node pin composition still missing",
+    "fresh whole inspection service/Manifest/staging handoff/backend/CLI still missing",
+    "derived graphs and non-primary entry selection unsupported in current context"
+  ],
+  "host_io_or_execution": false,
+  "ci423_source_6dd_excludes_this_code": true
+}

@@ -1,0 +1,493 @@
+{
+  "scope": "Go1.27.3 final frozen source/local qualification and source-only adoption; remote four-profile/native platform and controlled activation still pending",
+  "baseline": "967022858f7b03e35a1ad38ccbca48718f2bb751",
+  "plan_id": "1826cdfeb99f07a911d5c0ea0c4b0c5afa0f87f755fe5ce5174be2bdc73623f7",
+  "state": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "target_go": "1.27.3",
+  "configuration": {
+    "plan_id": "1826cdfeb99f07a911d5c0ea0c4b0c5afa0f87f755fe5ce5174be2bdc73623f7",
+    "attempt": "verification-2700661179",
+    "configuration": "PASS",
+    "go": "/tmp/haa-go1273-yzyvqne9/final-capture/sdk/go/bin/go",
+    "checked_source": "/tmp/haa-go1273-yzyvqne9/final-capture/verification-2700661179/source",
+    "results": [
+      {
+        "profile": "bootstrap",
+        "status": "PASS",
+        "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+      },
+      {
+        "profile": "quick",
+        "status": "PASS",
+        "log_sha256": "352242670646c3e063d05f462d64b8916fa44d5706939b8e2a8ac9ff6182e822"
+      },
+      {
+        "profile": "security",
+        "status": "PASS",
+        "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "workflow",
+        "status": "PASS",
+        "log_sha256": "17350976fefa11ac59df5631d39bd59e1adc714c8cf1f5aaa81e80d8b01a0c3f"
+      },
+      {
+        "profile": "release-gate",
+        "status": "PASS",
+        "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+      },
+      {
+        "profile": "docs",
+        "status": "PASS",
+        "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "qualification-freshness",
+        "status": "PASS",
+        "log_sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+      }
+    ],
+    "required_qualification": [
+      "quality-tool compiler/rebuild",
+      "gVisor/observer rebuild",
+      "installed npm/PyPI/GitHub/Go/Cargo/Terraform",
+      "PyTorch CPU",
+      "PyTorch cu126",
+      "PyTorch cu130",
+      "PyTorch cu132",
+      "fresh Required/platform evidence",
+      "verified activation/retirement"
+    ],
+    "migration_complete": false
+  },
+  "source_application": {
+    "baseline": "967022858f7b03e35a1ad38ccbca48718f2bb751",
+    "plan_id": "1826cdfeb99f07a911d5c0ea0c4b0c5afa0f87f755fe5ce5174be2bdc73623f7",
+    "checked_source": "/tmp/haa-go1273-yzyvqne9/final-capture/verification-2700661179/source",
+    "whole_tracked_count": 2081,
+    "whole_before_bytes_modes": "MATCH",
+    "whole_checked_after_bytes_modes": "MATCH",
+    "files": [
+      {
+        "path": ".github/workflows/heliopause-ci.yml",
+        "before": "8f6aa3eaae52b3bd5675328e22c7b6b4815d57331ff27c10495f93335a30e2d7",
+        "after": "2cf17d1f2c0ae35c0ddadf64c460ad60f16a408fc423c3c7036037a7165a845d",
+        "mode": 420
+      },
+      {
+        "path": ".github/workflows/heliopause-release-build.yml",
+        "before": "f34406dd40536db2ffcad96bbc430b569e80ab550b3b6d0145ea1b71dd4d67e8",
+        "after": "613db5315dc98cb52572d42393e46360d616e5812de5a569a98c41a042e2e910",
+        "mode": 420
+      },
+      {
+        "path": ".github/workflows/heliopause-release-publish.yml",
+        "before": "9e354f880148419b39fa115f54d6cec1a330e1f7ced9d20a76fd987a7cd76380",
+        "after": "ffcdf0d121dd52934d346cffacce3254fa8ae730442f196765ab577a595d83a7",
+        "mode": 420
+      },
+      {
+        "path": ".github/workflows/heliopause-security.yml",
+        "before": "757e58dc497320b5fd373b115a1f1492b51f51838639b24d3731da92f8c1e9e1",
+        "after": "f60fb79dc47c6aa53dece130561d3c32796c03c972735865109b9f3f01a2e211",
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "before": "de4c290602c7832ed0bde5fb45a0fa2328c3c65da7851b8968f6ade37307a774",
+        "after": "239920aceb06c35ef9bf5c4aacbd6d6f2521ccf3c6d277d1acb625d1577779c8",
+        "mode": 420
+      },
+      {
+        "path": "go.mod",
+        "before": "38499a2cfbce4058c4d94f72951aefd6ac9ffaac4cb739aaab36afbc3440a56a",
+        "after": "59709834b2cec0c3374221fc5cc3f87f4e4681492c093358495d0f5836b129c6",
+        "mode": 420
+      },
+      {
+        "path": "internal/runtimeidentity/runtime_lock_gen.go",
+        "before": "72304e27f2348f7d12a25d4d9cd7bf2e33fab6d65dc1c1dfa2792296dd2d0147",
+        "after": "0a7105935a1eab8697e5321eb439a84f3070fdf80e520a75d694f5f347ad6f54",
+        "mode": 420
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "before": "e14d633eacfca0e55ba9b4089a7306547bbda7dd6f5c44302da393080347e929",
+        "after": "80c14e139728d47b60a20cc8637b7f21f654556c380fcb425928eccabfd41d11",
+        "mode": 420
+      },
+      {
+        "path": "scripts/tools.lock.json",
+        "before": "a0ef5910ffd51714c9cd63402d7ea58a2ed6ebc030b9b9244adff2723d82f0f4",
+        "after": "4532bd267a5ed19ef2e4e8f7ad3206e497681de581c601b65e5eda683040c8ad",
+        "mode": 420
+      },
+      {
+        "path": "scripts/version-support.lock.json",
+        "before": "23d5031614ce6f44cb4dd2e0b5d3f04d1a9016c6bd664738303b5bb9c432af11",
+        "after": "9f20772fdfaec08471a641ebb2eeccb0c69e73cf7815867ff96960236822cc2b",
+        "mode": 420
+      }
+    ],
+    "scope": "source-only adoption; installed Host SDK/runtime/services unchanged",
+    "phase": "APPLIED",
+    "whole_after_bytes_modes": "MATCH",
+    "migration_complete": false
+  },
+  "bundle": {
+    "first_capture_seconds": 419.733,
+    "reproduction": {
+      "exit": 0,
+      "seconds": 363.643,
+      "scope": "independent strict build resumed only after exact acquisition TLS failure; no first-capture compiled outputs copied",
+      "log_sha256": "69901c3865379d5413f6e813101ecabb0af04ef4d5c8da3a5ddba079f3bc5b7c",
+      "migration_complete": false,
+      "manifest_byte_identical": true,
+      "members": [
+        {
+          "path": "containerd-shim-runsc-v1",
+          "bytes": 43865876,
+          "sha512": "2bc7d8a01f9aa8bd496f855826d407b004842289ad9c29512063eeee23399eeb777748134caee7c948a870f1b9db424978b56d251b4a80649728e3936f4a9e69"
+        },
+        {
+          "path": "gvisor-bin/checkpointgofer",
+          "bytes": 68249064,
+          "sha512": "f1bb8ac5062e740fe06274034df3addd1a67afc5ee97321ea9b65a4032fdc2c750888bf5da569b75bba12f829e6c8ba079b8aff44c31fe06d441c36a28ecc271"
+        },
+        {
+          "path": "gvisor-bin/gvisor-sentry-prewarmer",
+          "bytes": 1416,
+          "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"
+        },
+        {
+          "path": "gvisor-bin/gvisor_sentry",
+          "bytes": 51923536,
+          "sha512": "2cce5e1dc72bc6a707f03d59d97dce3993937f18b04a3e850d7f36be74d560bd1cce8fa9e9011123bb470cdd3aded1e00d159c41eaad25ce2f6bf732aaa38cf7"
+        },
+        {
+          "path": "gvisor-bin/runsc-metric-server",
+          "bytes": 53387149,
+          "sha512": "9388f23322dea1b5e8e4489fb2ae98bedfc0c0d9654911f440062c1a9d51b6b70d39419209abe87d0b16deacf9f0405ca4463509768953a9590ee979086f0625"
+        },
+        {
+          "path": "runsc",
+          "bytes": 110972712,
+          "sha512": "805cc156ec6b56ba8da638472eb8ec0478de644a1380242de00ffdf531d4337c0095a440bc521b828c64d74349e101c4204f7249c2fb28d522b4869321a2477d"
+        }
+      ],
+      "comparison_status": "PASS"
+    },
+    "scope": "independent full compilation resumed after exact module TLS acquisition failure; strict verifier/source reconstruction/whole lock retained; byte-identical six members and manifest; not pristine cold acquisition"
+  },
+  "observer": {
+    "args": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-go1273-yzyvqne9/haa-gvisor-observer"
+    ],
+    "exit": 0,
+    "seconds": 236.438,
+    "source": "/tmp/haa-go1273-yzyvqne9/nogo-config/candidate",
+    "selected_go": "1.27.3",
+    "source_commit": "7c6199801fd233d6d55309af4645d4746a077de7",
+    "patch_sha256": "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331",
+    "log_sha256": "755a4954751877c49e418a2d66bd769ee9868af49fe75ea209fdd78f80e620b5",
+    "latch_pass_count": 106,
+    "latch_fail_count": 0,
+    "migration_complete": false,
+    "binary": {
+      "path": "/tmp/haa-go1273-yzyvqne9/haa-gvisor-observer",
+      "bytes": 3099736,
+      "sha256": "a30f4ed0f923a3734dc87f11bab86257584603fff736d13fafdb8c18f7cd75e9"
+    }
+  },
+  "managed_tools": [
+    {
+      "name": "actionlint",
+      "bytes": 9249767,
+      "sha256": "e681034f296d200119f7c55d112bc65f19c9754221d87039985cd18d67ba1406",
+      "actual_compiler": "go1.27.3"
+    },
+    {
+      "name": "gitleaks",
+      "bytes": 8781984,
+      "sha256": "a08a812edb7b0f6fc807025485ffd901d4e9ce9a0593bab45f3b7683d641d2df",
+      "actual_compiler": "go1.27.3"
+    },
+    {
+      "name": "gosec",
+      "bytes": 96213869,
+      "sha256": "63bac6a47f207c9a7f870b5fcef24a1a5645cd2ce08395bbcd2b50f23ef22771",
+      "actual_compiler": "go1.27.3"
+    },
+    {
+      "name": "govulncheck",
+      "bytes": 16017619,
+      "sha256": "60cc00b1094f59f39352e18d6e540ad4d552655f14227d1cbc5ddf713943d9dc",
+      "actual_compiler": "go1.27.3"
+    },
+    {
+      "name": "staticcheck",
+      "bytes": 17260948,
+      "sha256": "dc8605b152c54cd7624772b7441aa56ab39239a2c5fa4ee33f8383453645016e",
+      "actual_compiler": "go1.27.3"
+    }
+  ],
+  "namespace": {
+    "tests": [
+      {
+        "name": "TestProtectedCopyInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestInterruptedSystemCopyInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestProtectedReaderInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestProtectedProofAndRegistrationInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestProtectedJournalAndLocksInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestProtectedStageInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestRootActivationTransactionInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestProtectedServiceFactsInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestInstallerSocketInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestProtectedPeerInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestInitialNativeFilesInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestProtectedHealthChannelInDisposableNamespace",
+        "exit": 0
+      },
+      {
+        "name": "TestNativeEnrollmentInDisposableNamespace",
+        "exit": 0
+      }
+    ],
+    "protected_host_files_unchanged": true,
+    "scope": "existing namespace filesystem/control/recovery mechanics with existing authenticity mocks; not actual signed deployment"
+  },
+  "additional_checks": [
+    {
+      "profile": "vulnerability",
+      "exit": 0,
+      "seconds": 11.715,
+      "source": "/tmp/haa-go1273-yzyvqne9/final-capture/verification-2700661179/source",
+      "sdk": "/tmp/haa-go1273-yzyvqne9/final-capture/sdk/go",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "fuzz",
+      "exit": 0,
+      "seconds": 78.659,
+      "source": "/tmp/haa-go1273-yzyvqne9/final-capture/verification-2700661179/source",
+      "sdk": "/tmp/haa-go1273-yzyvqne9/final-capture/sdk/go",
+      "log_sha256": "8be3af30d830065d81916b1a89070680da721c52894b1a5fe767d66af2a0a40e"
+    },
+    {
+      "profile": "platform",
+      "exit": 0,
+      "seconds": 150.72,
+      "source": "/tmp/haa-go1273-yzyvqne9/final-capture/verification-2700661179/source",
+      "sdk": "/tmp/haa-go1273-yzyvqne9/final-capture/sdk/go",
+      "TMPDIR": "/tmp/h27-jg2d301z",
+      "scope": "same frozen source/profile, only short owned temp corrected from existing lesson",
+      "log_sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7"
+    },
+    {
+      "command": [
+        "/tmp/haa-go1273-yzyvqne9/final-capture/sdk/go/bin/go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 224.671,
+      "source": "/tmp/haa-go1273-yzyvqne9/final-capture/verification-2700661179/source",
+      "sdk": "/tmp/haa-go1273-yzyvqne9/final-capture/sdk/go",
+      "TMPDIR": "/tmp/h27-jg2d301z",
+      "CGO_ENABLED": "1",
+      "log_sha256": "6c79f106147a450c04aeba469fcdb8f555c5d7f9d6ed07b5c6f7bcf2cb20446f"
+    }
+  ],
+  "first_failures_preserved": {
+    "module_acquisition": "TLS handshake timeout on exact resourcemapping@v0.55.0 .info; scoped authenticated fetch PASS3.612s; no source/pin/budget change",
+    "platform": "long task TMPDIR caused Unix socket bind EINVAL; same source/profile with short owned temp PASS150.720s; existing lesson omitted in first operator"
+  },
+  "MISSING": [
+    "installed npm/PyPI/GitHub/Go/Cargo/Terraform",
+    "PyTorch CPU",
+    "PyTorch cu126",
+    "PyTorch cu130",
+    "PyTorch cu132",
+    "fresh Required/platform evidence",
+    "verified activation/retirement"
+  ],
+  "migration_complete": false,
+  "host": {
+    "global_sdk_before": "1.26.9",
+    "sdk_runtime_services_activation": "NOT_RUN",
+    "old_owned_retirement": "PENDING last-consumer verification"
+  },
+  "completed_payload_cleanup": {
+    "phase": "RETIRED",
+    "items": [
+      {
+        "path": "/tmp/haa-go1273-yzyvqne9/namespace-qualification",
+        "files": 4,
+        "logical_bytes": 39209261
+      },
+      {
+        "path": "/tmp/haa-go1273-yzyvqne9/additional-check-tmp",
+        "files": 0,
+        "logical_bytes": 0
+      }
+    ],
+    "references": [],
+    "query_errors": [],
+    "mount_references": 0,
+    "logs_and_executable_hashes_and_launcher_source_retained": true,
+    "absent": true
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-configuration-pass-20261023.json",
+      "bytes": 4257,
+      "sha256": "ddc509bf0b04fc75a66b887ac98a9644ec3b0f2d0347451fa86bbfd943c19f53"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-bundle-capture2-20261023.json",
+      "bytes": 534,
+      "sha256": "819999f05ec88fc6e8f16e63ab24719daa39dfe7e7304a1995a47e1d6cd42b77"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-bundle-reproduction-20261023.json",
+      "bytes": 584,
+      "sha256": "1856576f07b1fa7a12657bd293d1239621f1a5a8c0978e12d8b0b699876abde7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-reproduction-module-fetch-20261023.json",
+      "bytes": 1381,
+      "sha256": "9f9e7ed6f0e1f36a39be4194937062ef94a9403889cba401fdbb45a20e7aaf2a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-reproduction-resume-plan-20261023.json",
+      "bytes": 823,
+      "sha256": "a52250a0cc4922925e359975cb41d8bacebec0ccd61ee5377d6d577f4efdd1fa"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-bundle-reproduction-resumed-20261023.json",
+      "bytes": 1726,
+      "sha256": "c5059bc6abc5c1ad001faa7bce0614396e701f7fd8bd2194f9854297adbf722c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-reproduction-resumed-observed-lock.json",
+      "bytes": 5737,
+      "sha256": "80c14e139728d47b60a20cc8637b7f21f654556c380fcb425928eccabfd41d11"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-reproduction-resumed-source-preparation-20261023.json",
+      "bytes": 398,
+      "sha256": "6ffaec46699f2b28696ecaacfc6529cafd191e1413625b2ed644b610b8ce8445"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-observer-build-20261023.json",
+      "bytes": 751,
+      "sha256": "9edde74083428269730dba343e7dc84a9d85e59ab0f26673b369535892fb45c9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-observer-preparation-capture-limit-20261023.json",
+      "bytes": 381,
+      "sha256": "9dee1bf985fa01986ee26ad2974b91933e200d4b7b4d141a151459cc4b326435"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-managed-tool-identities-20261023.json",
+      "bytes": 13291,
+      "sha256": "ca3af286ee2333d97a30812b70c068037fd24710e02b370b1c729502be491431"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-namespace-current-results-20261023.json",
+      "bytes": 12508,
+      "sha256": "ec6d233c3ac73100f73d2efe586813898c1e3cf681fc39384e067ad7cf3c9fb6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-namespace-host-comparison-20261023.json",
+      "bytes": 45,
+      "sha256": "8c8ed76efb594a6244f414e9cfe3a78f363b0536ece44db4bbcdc96c85f598a3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-namespace-executable-identities-20261023.json",
+      "bytes": 8839,
+      "sha256": "e0e22d5093b20a9a3fc5bc785e2413d9afb3a8f85383627a557756e901eba1f3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-additional-vulnerability-20261023.json",
+      "bytes": 294,
+      "sha256": "84c97a86b7586349c2dce68658e6b41bface1e0d3cecfc7d8ca5e02a3cdc94e1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-additional-fuzz-20261023.json",
+      "bytes": 285,
+      "sha256": "0ff9d51442028f6508f7dcc922ad6efc0236337da24695694d73a290aff03653"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-additional-platform-20261023.json",
+      "bytes": 290,
+      "sha256": "c3bb840470c8082b64e501e87c115f656e87450b28231aeca10cefa59d94aa0e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-platform-tempdir-correction-20261023.json",
+      "bytes": 555,
+      "sha256": "6f4384e4bf8672f4a0d26045a63af9cad06b262cba6701aae40c6bbecb798621"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-platform-short-20261023.json",
+      "bytes": 417,
+      "sha256": "40b5737d4eaf56d10624676c366e7a0ce899e4b5062be6a1058d50f95efb44fb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-race-20261023.json",
+      "bytes": 437,
+      "sha256": "9f8d654a7135221122abf5e17180dce78800a256c48855909e9dea064e44ba75"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-root-source-application-20261023.json",
+      "bytes": 3012,
+      "sha256": "191d7b6d16664698288c4de32d0879be1d0951d75207d33669486102662fa940"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-completed-local-payload-retirement-20261023.json",
+      "bytes": 442,
+      "sha256": "3694e62bf8e4646840c3985a82be5fb322d0d9ce8f6169a14ad01b864d2fdc86"
+    }
+  ]
+}

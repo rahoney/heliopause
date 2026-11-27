@@ -1,0 +1,355 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D4A",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "baseline": "47e0c23e4dcdf6c0a2d84a97e49b087e4c209128",
+  "runtime_inputs": 1371,
+  "existing1369_unchanged": true,
+  "modified_paths": [
+    "internal/sandbox/uv_runtime_real_test.go"
+  ],
+  "new_paths": [
+    "internal/sandbox/uv_tool_run_public_real_test.go"
+  ],
+  "source_identity": [
+    {
+      "path": "internal/sandbox/uv_runtime_real_test.go",
+      "sha256": "06c220c17e1cf9273c764b378b37028b3b4b275d107af077022f50ebea9aa0fe",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_run_public_real_test.go",
+      "mode": "100644",
+      "sha256": "0465beb5ed88ed97e1f54234a3132ae4311517434e944e06f2b2525d229a47e4"
+    }
+  ],
+  "delta": "Test-only optional public raw readonly mirror in existing native UV fixture; independent public proposal/archive and unchanged whole source/startup gate before native query. Existing nil-input native owners preserved.",
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.866
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.518
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 12.801
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d4a-v1-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 2.273
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.417
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 11.747
+    }
+  ],
+  "exact_input_reuse": {
+    "prior": "/tmp/haa-p6-d3e2-v1-build-identity.json",
+    "default_Quick_and_full_sandbox_Race": "exact same default Go/compiler/test DATA and CPP inputs; changed2 excluded by actual go list; format separately rerun",
+    "CPP132_UV120": "unchanged72a1/source9037/f7; canonical E2 receipt"
+  },
+  "original_binaries": [
+    {
+      "role": "sandbox",
+      "path": "/tmp/haa-p6-d4a-v1-sandbox.test",
+      "bytes": 27791749,
+      "sha256": "e714aafe9e3103c4215f669647d9759eb8041646d3fc9ea425da57d07287e28b"
+    }
+  ],
+  "actuals": {
+    "old-native": {
+      "result": {
+        "cpp_source_unchanged": true,
+        "source_unchanged": true,
+        "fixed42_and_zip_unchanged": true,
+        "exit": 0,
+        "seconds": 22.899,
+        "host_before_after_identical": true,
+        "input_unchanged": true,
+        "no_skip": true,
+        "helper_confirmed_stopped": true,
+        "helper_wait_zero": true,
+        "no_helpers_after": true,
+        "owned_fixture_workspaces_absent": true,
+        "log_sha256": "6d2f406c35f6a6e654e88be6fc1253207ce6eeee8f21e7055d818ada4e772c4c",
+        "sources": [
+          {
+            "path": "/tmp/haa-p6-d4a-old-native-actual-v1/protected-client",
+            "sha256": "e714aafe9e3103c4215f669647d9759eb8041646d3fc9ea425da57d07287e28b"
+          },
+          {
+            "path": "/tmp/haa-p6-d4a-old-native-actual-v1/observer",
+            "sha256": "72a1c4b4e30c75c660d4a615405d0ad05f63c9196d3faa325841074d9ae67551"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_probe_real_test.go",
+            "sha256": "310f3c97454d1b985934185be914171b27b186695958905137449d4bc9489775"
+          }
+        ],
+        "scope": "native isolated offline tool-run DATA preparation only; local raw wheel and constant non-executable /dev/null; no public selection equivalence/Policy/Artifact program/CLI qualification",
+        "passed_named_tests": [
+          "TestUVActualIsolatedNativeStartup",
+          "TestUVActualIsolatedEmptyTargetQuery",
+          "TestUVActualIsolatedNativeLockCollection",
+          "TestUVActualToolRunSelectionOnly"
+        ],
+        "fixture_source": "CONTROLLED_LOCAL_RAW_WHEEL_NETWORK_NONE",
+        "native_solver": "ACTUAL offline UV tool run",
+        "public_authentication": "NOT_RUN",
+        "current_verification_inspection_Evidence_Policy": "NOT_RUN",
+        "owned_native_workspaces_absent": true,
+        "named_pass": true,
+        "observer_directory_entries_after": [],
+        "observer_directory_empty_after": true,
+        "expected_terminal_diagnostic": true,
+        "healthy_trace": true,
+        "clean_normalized_trace": true
+      },
+      "test_seconds": {
+        "TestUVActualIsolatedNativeStartup": "4.57",
+        "TestUVActualIsolatedEmptyTargetQuery": "4.32",
+        "TestUVActualIsolatedNativeLockCollection": "5.08",
+        "TestUVActualToolRunSelectionOnly": "4.91"
+      },
+      "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d4a-old-native-actual-v1-original-inventory.json"
+    },
+    "public-binding": {
+      "result": {
+        "cpp_source_unchanged": true,
+        "source_unchanged": true,
+        "fixed42_and_zip_unchanged": true,
+        "exit": 0,
+        "seconds": 32.618,
+        "host_before_after_identical": true,
+        "input_unchanged": true,
+        "no_skip": true,
+        "helper_confirmed_stopped": true,
+        "helper_wait_zero": true,
+        "no_helpers_after": true,
+        "owned_fixture_workspaces_absent": true,
+        "log_sha256": "e6a1b64ffca8cce47c9be5951b84150f941d65d120d93801da93935aaef4b312",
+        "sources": [
+          {
+            "path": "/tmp/haa-p6-d4a-public-binding-actual-v1/protected-client",
+            "sha256": "e714aafe9e3103c4215f669647d9759eb8041646d3fc9ea425da57d07287e28b"
+          },
+          {
+            "path": "/tmp/haa-p6-d4a-public-binding-actual-v1/observer",
+            "sha256": "72a1c4b4e30c75c660d4a615405d0ad05f63c9196d3faa325841074d9ae67551"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_public_real_test.go",
+            "sha256": "0465beb5ed88ed97e1f54234a3132ae4311517434e944e06f2b2525d229a47e4"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_runtime_real_test.go",
+            "sha256": "06c220c17e1cf9273c764b378b37028b3b4b275d107af077022f50ebea9aa0fe"
+          }
+        ],
+        "scope": "Public native pre-query DATA binding only: actual independent public original/source/whole startup gate/RO mirror before UV tool-run preparation; Evidence/Policy/program/selection equivalence/CLI NOT_RUN",
+        "passed_named_tests": [
+          "TestUVActualPublicToolRunSourceBinding"
+        ],
+        "fixture_source": "ACTUAL_PUBLIC_COWSAY_6_1",
+        "native_solver": "ACTUAL UV pip compile proposal and offline UV tool run preparation; not yet native result census equivalence",
+        "public_authentication": "ACTUAL independent release/archive binding",
+        "current_verification_inspection_Evidence_Policy": "NOT_RUN",
+        "owned_native_workspaces_absent": true,
+        "named_pass": true,
+        "observer_directory_entries_after": [],
+        "observer_directory_empty_after": true,
+        "expected_terminal_diagnostic": true,
+        "healthy_trace": true,
+        "clean_normalized_trace": true
+      },
+      "test_seconds": {
+        "TestUVActualPublicToolRunSourceBinding": "30.04"
+      },
+      "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d4a-public-binding-actual-v1-original-inventory.json"
+    }
+  },
+  "unchanged": [
+    "production Go/Core/CLI/API",
+    "CPP source9037/latch f7/binary72a1 and CPP132/UV120",
+    "wire/pins/runtime roles/privileges/CPU/trace/CI budgets"
+  ],
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (test-only public pre-query consumer)",
+    "QUALIFIED": "YES (named local public source/whole startup/readonly DATA binding only)",
+    "ACCEPTANCE_CLOSED": "YES (same named D4A scope only)",
+    "MISSING": [
+      "native complete installed census/selection/console-script equivalence (D4B)",
+      "current runtime adapter/approved Artifact execution and supported aliases/CLI",
+      "new-source hosted/final CPU/three CUDA/signed support"
+    ]
+  },
+  "cleanup": {
+    "completed_duplicate_ELFs": 4,
+    "logical_bytes": 62042442,
+    "cumulative_ELF_files": 231,
+    "private_completed_cache_dirs": 6,
+    "combined_logical_bytes": 11344157602,
+    "Windows_VHD_physical_shrink_claimed": false,
+    "originals_active_monitor_reusable_cache_SDK_fixed_inputs_preserved": true
+  },
+  "active_CI": "CI434/source d81 excludes D3-E2 and D4A; old macOS production build120s FAIL cause unknown/Linux pending; actual20min GET and no push while active",
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-check.py",
+      "bytes": 4378,
+      "sha256": "bb8b475b10fdf90b07e5a5d0abe8536784edebd1b2f722c2fb348a86f7330aba"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-actual-producer.py",
+      "bytes": 3480,
+      "sha256": "551fac9df5c07c939f8221fe0d99d697e1ae78ede1398ab0c06b0ea330e07645"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-build-identity.json",
+      "bytes": 249842,
+      "sha256": "8e587a4b21caccc87632ae757f634c245949b609e4924a65c3ff59f6c6d95d8a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-default-membership-proof.json",
+      "bytes": 44150,
+      "sha256": "939ca93a3eed5f7f0bd51b25ee40b4e3a9bbcc6bb11ec53a42f48508aeb82b4a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-checks.json",
+      "bytes": 1144,
+      "sha256": "75ea80f1231769aee73b41a4efb33277fb87ce7d193e9c8c52425053bf0641cb"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-freeze-cleanup-producer.py",
+      "bytes": 1974,
+      "sha256": "c65ddaf3b36b460dd34ec42c50acc47e3846504c5f6a7453e73eb8a48fd83dc1"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-freeze-actual.py",
+      "bytes": 1079,
+      "sha256": "793fc936e011ddeb3b16dfc7fd6aadd37b47f5c74e30d2709da98cadc99fc4a4"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-old-native-actual-v1.py",
+      "bytes": 11270,
+      "sha256": "d959ca80c0490c96195f2c6a9aa28d34b65e4a7987b66837a8ba6cbea4eb76bb"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-public-binding-actual-v1.py",
+      "bytes": 11690,
+      "sha256": "9a64d892d9053b5321760377962d5f9e5e4498b68a5236aa22a346e074ff4ae9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-sandbox-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-v1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-inventory.py",
+      "bytes": 3626,
+      "sha256": "1c913f58558c3c673803bda2c4ff1b642ce1d097306f9927ef68d09be598a7b3"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-cleanup.py",
+      "bytes": 6127,
+      "sha256": "380d6f8a664843cbd3c715cde85aaaf7d8dfa125d0c3c9dad8a3e95af9e8aada"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-candidate.json",
+      "bytes": 3309,
+      "sha256": "902b46b14fd8b1db60143cd8b28e7d079a5d71d5eec99fa42b651083af60381b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-zombie-proof.json",
+      "bytes": 1629,
+      "sha256": "6d65a5cc5b039fad32f7c1bb274bc5a47b9e795805de39f4bbfd5d9ca29ba3e0"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-preflight.json",
+      "bytes": 3790,
+      "sha256": "df7108df5b097d8b6c0de4fdb02a0b5054104a4a1ec456f439df2af4105e6bc8"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-result.json",
+      "bytes": 4015,
+      "sha256": "accce89d75bc17aea9e32b2442bb26389a54ee61254d59d88e43ff4c55bb1b4b"
+    }
+  ]
+}

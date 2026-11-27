@@ -1,0 +1,168 @@
+{
+  "work_item": "M13-004/P7 final profile cu132",
+  "profile": "cu132",
+  "status": "COMPLETED_SUCCESS_ALL10_CU132_QUALIFIED",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "expected_tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "ordinary_prerequisite": "ci442-ordinary-cpu-qualification-20261031.json",
+  "previous_profile_prerequisite": "p7-cu130-final-qualification-20261031.json",
+  "dispatch": {
+    "profile": "cu132",
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+    "submitted_at": "2026-10-30T22:36:20.981925+00:00",
+    "request": {
+      "ref": "milestone/m13-release-build-packages",
+      "inputs": {
+        "pytorch_cu126_qualification": false,
+        "pytorch_cu130_qualification": false,
+        "pytorch_cu132_qualification": true
+      },
+      "return_run_details": true
+    },
+    "api_version": "2026-03-10",
+    "auth_provider": "existing repository Git credential helper",
+    "credentials_logged_or_saved": false,
+    "POST_attempts": 1,
+    "official_contract": "https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event",
+    "http_status": 200,
+    "response": {
+      "workflow_run_id": 41139233912,
+      "run_url": "https://api.github.com/repos/rahoney/heliopause/actions/runs/41139233912",
+      "html_url": "https://github.com/rahoney/heliopause/actions/runs/41139233912"
+    },
+    "status": "DISPATCH_ACKNOWLEDGED_RUN_ID_RETURNED"
+  },
+  "run": {
+    "id": 41139233912,
+    "number": 445,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/41139233912",
+    "start": "2026-10-30T22:36:21Z",
+    "event": "workflow_dispatch",
+    "head_sha": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "initial_job_count": 9,
+  "timer": {
+    "run_id": 41139233912,
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "pid": 833379,
+    "uid": 1000,
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci445-autopoll-config.json",
+    "process_start_ticks": "7539307",
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "actual_queries": 3,
+    "next_due_at": null,
+    "state": "COMPLETED",
+    "session_id": 89839,
+    "owner_identity_verified": true,
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "last_result": {
+      "number": 3,
+      "due_at": "2026-10-30T23:36:22.649829+00:00",
+      "query_started_at": "2026-10-30T23:36:22.649962+00:00",
+      "api_get_only": true,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 124349157573,
+          "name": "Representative Wheel Corpus",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349157909,
+          "name": "Quick",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349157922,
+          "name": "Docs",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349157929,
+          "name": "gVisor Observer Helper",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349157984,
+          "name": "Vulnerability",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349157994,
+          "name": "Minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349158036,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349158206,
+          "name": "gVisor Linux Integration",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124349158564,
+          "name": "macOS",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124364775866,
+          "name": "Required",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        }
+      ],
+      "query_ended_at": "2026-10-30T23:36:23.495584+00:00",
+      "next_due_at": null
+    },
+    "last_timed_query_at": "2026-10-30T23:36:23.495584+00:00",
+    "start_ticks": "7539307",
+    "observed_exit_code": 0,
+    "exec_chunk_id": "32af0d",
+    "signal_sent": false,
+    "host_proc_absent": true
+  },
+  "required_contract": {
+    "all_jobs": 10,
+    "max_selected_cuda_profiles": 1,
+    "cpu_full_timeout_minutes": 15,
+    "selected_cuda_timeout_minutes": 40,
+    "whole_linux_timeout_minutes": 150,
+    "qualification_plan": "cuda-bindings-numpy",
+    "not_attested_module": "triton.profiler.viewer",
+    "source_runtime_and_qualification_inputs_unchanged": true,
+    "ordinary_clients_are_qualified_separately": true
+  },
+  "remaining": [],
+  "acceptance_closed": false,
+  "qualification": "p7-cu132-final-qualification-20261031.json",
+  "remaining_current_profile_checkpoint": [],
+  "final_handoff": "p7-final-qualification-20261031.json"
+}

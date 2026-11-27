@@ -1,0 +1,94 @@
+{
+  "run_id": 40790847742,
+  "number": 428,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40790847742",
+  "source": "558d75a818a661249f9dcde96211e4399a8aa844",
+  "tree": "f5e4d9f995bd9cd3dfe59a5c2c640f2b06235d7a",
+  "tracked_files": 2969,
+  "source_inputs": 1330,
+  "run_started_at": "2026-10-28T23:57:29Z",
+  "last_actual_query_at": "2026-10-29T01:42:43Z",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 123175399238,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399435,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399481,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399495,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399514,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399549,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399619,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399648,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123175399663,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123208725781,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "timer_session": null,
+  "next_due_at": null,
+  "completed20min_polls": 5,
+  "scope": "qualified normal/nonzero Artifact Node backend with current readonly whole flow/CPP131 and prior common consumers; new actual hostile/cancel/overflow/child/CLI/final not included",
+  "authorization": "user-authorized important CI and normal milestone push during sleep; direct timer status checks every20min",
+  "recent_observed_elapsed_to_final_update_seconds": [
+    4725,
+    5730,
+    5343
+  ],
+  "estimated_completion": "roughly80-105min if ordinary pipeline completes;20min checks also catch early errors; no promise",
+  "whole_hosted_qualification": "PASS (source558 normal/nonzero backend and prior consumers only)",
+  "later_C3d_source_excluded": true,
+  "push": "normal fast-forward e0dc39a ->558d75a on existing milestone branch; remote ref confirmed; no merge/tag/release",
+  "completed8_same_checkout": "d965d5bf297d334647cff6dc67f4cb5110f79922",
+  "whole_checkout_tree_matches": true,
+  "decoded_partial_log_bytes": 446321,
+  "completed_helper_latches": 131,
+  "qualification_receipt": "ci428-node-backend-hosted-qualification-20261029.json"
+}

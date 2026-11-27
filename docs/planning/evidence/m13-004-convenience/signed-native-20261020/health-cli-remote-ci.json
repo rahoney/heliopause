@@ -1,0 +1,122 @@
+{
+  "schema": "helox.m13.health-cli-remote-ci/v1",
+  "source": "7fedaf3430acd4c8a9f37ceaffec33bce143b2ae",
+  "actual_checkout": "6d65dfcc9f93ee143875be5085015415e0a8c1f9",
+  "whole_tree_modes_equal": true,
+  "tree": "a7975cd41678e4a03da71f4f057fbb2ab0eee939",
+  "workflow_run": 39448071670,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39448071670",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 118715187477,
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187484,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187549,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187554,
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187719,
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187723,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187768,
+      "name": "gVisor Linux Integration",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187828,
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "id": 118715187907,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 118733709886,
+      "name": "Required",
+      "conclusion": "success"
+    }
+  ],
+  "all10_actual_checkout_logs_verified": true,
+  "cpp_latches": 103,
+  "linux": {
+    "top_level_consumers": 45,
+    "names": [
+      "TestLinuxTrustedHostExecutorIntegration",
+      "TestPublicTerraformProviderSourceIntegration",
+      "TestLinuxPyTorchResolverIntegration",
+      "TestLinuxGoIsolatedResolverIntegration",
+      "TestLinuxGoIsolatedProjectResolverIntegration",
+      "TestLinuxGoSourceProjectSnapshotIntegration",
+      "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+      "TestLinuxCargoSourceProjectSnapshotIntegration",
+      "TestLinuxTerraformProviderProbeIntegration",
+      "TestLinuxTerraformProviderSecurityIntegration",
+      "TestLinuxNPMInspectCLIIntegration",
+      "TestLinuxGoDependencyFreeDownloadIntegration",
+      "TestLinuxGoGetDownloadIntegration",
+      "TestLinuxGoTransitiveGetDownloadIntegration",
+      "TestLinuxGoDependencyFreeBuildCLIIntegration",
+      "TestLinuxGoPublicBuildCLIIntegration",
+      "TestLinuxGoTransitiveBuildCLIIntegration",
+      "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+      "TestLinuxGoCgoBuildCLIIntegration",
+      "TestLinuxGoLibraryBuildCLIIntegration",
+      "TestLinuxGoMixedPackagesBuildCLIIntegration",
+      "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+      "TestLinuxGoBuildSecurityCLIIntegration",
+      "TestLinuxCargoAddIntegration",
+      "TestLinuxCargoTransitiveAddIntegration",
+      "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+      "TestLinuxCargoPublicBuildCLIIntegration",
+      "TestLinuxCargoTransitiveBuildCLIIntegration",
+      "TestLinuxCargoLibraryBuildCLIIntegration",
+      "TestLinuxCargoWorkspaceBuildCLIIntegration",
+      "TestLinuxCargoBuildScriptBuildCLIIntegration",
+      "TestLinuxCargoProcMacroBuildCLIIntegration",
+      "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+      "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+      "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+      "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+      "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+      "TestLinuxCargoProcMacroSecurityCLIIntegration",
+      "TestLinuxTerraformInitIntegration",
+      "TestLinuxTerraformInitNegativeIntegration",
+      "TestLinuxPyTorchFullIntegration",
+      "TestLinuxPyPISdistBuildIntegration",
+      "TestLinuxPyPIWheelDynamicIntegration",
+      "TestLinuxNPMPromotionIntegration",
+      "TestLinuxPyPIPromotionIntegration"
+    ],
+    "cpu_full_seconds": 226.62,
+    "helper_wait_zero": 5,
+    "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=273843"
+  },
+  "macos_native": "SUCCESS",
+  "new_cuda_full": false,
+  "whole_signed_successful_activation_qualified": false,
+  "next_input": "../signed-target-plan-20261021.md",
+  "raw_owner": "docs/github-logs/self-update-signed-20261020"
+}

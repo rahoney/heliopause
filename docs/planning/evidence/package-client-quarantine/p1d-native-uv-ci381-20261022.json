@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "run_id": 39783519463,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39783519463",
+  "source_commit": "3871c6fd8728a662c8db83ee95915c9eb9817c20",
+  "checkout": "3c6e1588d776b61be507b4c6ea15c9f0292f782e",
+  "tree": "3b86ec38544555ae61611e3742db779448497af7",
+  "source_and_checkout_tree_equal": true,
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "id": 119840568191,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119840568438,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119840568441,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119840568532,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119840568547,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119840568735,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119840568769,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119840568831,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 119840568977,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119853279367,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "scope": "C3d native UV enrollment remains unqualified; failure in test-original data introduction before native execution/adoption",
+  "first_failure": "fixture docker cp --archive to running read-only container: container rootfs is marked read-only",
+  "uv_cli_managed_five_steps": "fresh/retained/root-upgrade/closure-noop/new-root all COMPLETED/ALLOW/promotion COMPLETED",
+  "uv_cli_test_seconds": 99.1,
+  "native_original_generated": "NO",
+  "native_adoption": "NOT_RUN",
+  "cpu_full": "NOT_RUN after earlier failure",
+  "helpers_reaped": 3,
+  "helper_wait": 0,
+  "cleanup": "original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED",
+  "fixture_cleanup": "exact label/image removal and absence query assertions completed without additional cleanup error",
+  "macos": "PASS; actual Go1.26.10",
+  "vulnerability": "PASS; actual Go1.26.10",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci381-linux.log",
+      "bytes": 419170,
+      "sha256": "50cfa659af7102b3085f32957576f56f6191f168842d1275830066f23eaacffe"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci381-macos.log",
+      "bytes": 25752,
+      "sha256": "466d914505d9ad90b5fc811b41333f1b594ddd3b49e769e8baac6a0695c632f8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci381-vulnerability.log",
+      "bytes": 21648,
+      "sha256": "486eb1487fbe6cc4b742ceea6ca7524ed86415432c2f8a2dbde3dc6d4eb40421"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci381-docs.log",
+      "bytes": 20464,
+      "sha256": "a35e9fb8eea57ed00c63194cc7514fe62d529d766bfba80aef46932e5dd929d2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci381-final-jobs.json",
+      "bytes": 12243,
+      "sha256": "4e467d23588b8c17cb57d1734bafa341e3df1fc02c05bea724dfa9f687b944ce"
+    }
+  ],
+  "next": "Repair fixture transport without relaxing read-only rootfs; actual native proof/upgrade/replay and same-source CI still required"
+}

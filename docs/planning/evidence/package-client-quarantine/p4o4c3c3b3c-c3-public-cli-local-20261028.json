@@ -1,0 +1,405 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-c3 public production pipx install/managed upgrade CLI only; native adoption/run/final open",
+  "baseline_commit": "7e4a74f1b10c83f82e2083c7cb4574efb6f34c2e",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (distinct compiled CLI descriptor and production selector/preparations/explicit lifetime owner)",
+    "QUALIFIED": "YES (named local default/affected Race/current final-source actual)",
+    "ACCEPTANCE_CLOSED": "YES (public install/managed upgrade CLI scope only)"
+  },
+  "go": {
+    "source_identity": [
+      {
+        "path": "internal/promotion/tool_target.go",
+        "sha256": "c0920bb91f5d077a258b2626a851e38900a39650a84b203d6a22cbebd7538061"
+      },
+      {
+        "path": "internal/promotion/tool_publication.go",
+        "sha256": "d247e575f70991b09e1949a270255ca60c83fbd150ecc746cba9233580890780"
+      },
+      {
+        "path": "internal/promotion/uv_tool_install.go",
+        "sha256": "32b5d708083657346cdaf851ee32a36e2b36f455b0ff085be2484784f3967227"
+      },
+      {
+        "path": "internal/promotion/uv_tool_update.go",
+        "sha256": "69eab7ee6cc4d13ffde08063994b7f70cfba51df8088c74f21329aaf41cf3649"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_install.go",
+        "sha256": "80a826ec1994856f1684166f1c929c7d85767febad7406642409d6fa707eae6c"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_install_test.go",
+        "sha256": "bbe3608010716a3344daac1955a3e521e98adf31aabf609656eb12c0478488d6"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool.go",
+        "sha256": "4ee221c2a16604687710b0c2874941b11f173c04a2e8aee76ff09bb5dd38ff59"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_install_integration_test.go",
+        "sha256": "eda739723fcc0c983e55787032d483494a1eee728888b25d3c11a092aeda0ddd"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "2634211d82c93ec564c7b4f1964cb3443619d8b1102ce3358cba97a6b2a10f2f"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver.go",
+        "sha256": "2f605e7fc6b111fb380a60c5670b156fad6860df34b9249376c21a264b4e864e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_test.go",
+        "sha256": "9ca16b5496c9dd2124f1b12d401a1c578cee170259a700bb681d55f18d18d23e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_integration_linux_test.go",
+        "sha256": "133e4147d5d0665f55a4339224386a3b2890bb422e34d16126bc2ee423b69976"
+      },
+      {
+        "path": "internal/sandbox/uv_tool_replay.go",
+        "sha256": "1733d908ea2033d82a20915cd524aa601994fa8c5f12d6d31f844f1efd4fea84"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay.go",
+        "sha256": "7135d0552e2cee38b5aeef0ee6f49d095139c03b72274c21420bb5a334defcef"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay_test.go",
+        "sha256": "1f0d451f5adc7a200313963f9d185c23252d46c549e28745a5abffa713640dce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "069becc8872d7198c544ed6fee7b6fbad3a25cb7b92b344857a73883e4f21fef"
+      },
+      {
+        "path": "internal/promotion/tool_original.go",
+        "sha256": "50332bf9bf9fc07c88e72459fa116719d1cac07233e256561ef5e2e6662a53b9"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_update.go",
+        "sha256": "9846091625ec3e7f8fed072210f921fc3c63731268fcbb980a80363f44493052"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_update_test.go",
+        "sha256": "a301194c56c4b7c2dedff521e61a4213258af715884eebd629040e65b376d8ec"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_update_integration_test.go",
+        "sha256": "5ce47565c44922671bb74074c3b3f0db2f9d6db6a9ad183de14492d9e6917baa"
+      },
+      {
+        "path": "internal/cli/uv_tool.go",
+        "sha256": "ba02c32a517e90c44b667ae0c5ad14fcdb84b86b7fa1873fbe5faf4bb6a0b9d0"
+      },
+      {
+        "path": "internal/cli/package_client.go",
+        "sha256": "316cea48ff02cf5966818c92b280ab093a70c8c145570f35156ea3f3eac30e87"
+      },
+      {
+        "path": "internal/cli/presentation.go",
+        "sha256": "cb2d58e88e5baabfd3b0111ec29202e6a3efab747a73b57b652c9e3d0854acf1"
+      },
+      {
+        "path": "internal/cli/pipx_tool.go",
+        "sha256": "a093c36484dfa6498b7ae811fcdb8d2c3f66971d9e31a3693107ce3edc822889"
+      },
+      {
+        "path": "internal/cli/pipx_tool_test.go",
+        "sha256": "cd58cb26236f80b626873a97d10856622b821fcbb3ac238f7f1187de9f77c8e8"
+      },
+      {
+        "path": "internal/bootstrap/bootstrap.go",
+        "sha256": "4a4566c1d666511dc8564982e480e9ce1e4258182bdee32b4c76ae4c9155324d"
+      },
+      {
+        "path": "internal/bootstrap/python_client.go",
+        "sha256": "125e7eaa1b41223226ef87535c5416068914a2808b21a388a7bdca20f428e4a5"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_client.go",
+        "sha256": "93785a7dfd076c0c89ed80090b19af069824d4a01d7e344399970c9fff00f611"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_client_test.go",
+        "sha256": "76d8c179c2eeeb58c1036881d84e0aa81a21fdd0c19cfe7e6977e166a0b5cab0"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_cli_integration_test.go",
+        "sha256": "752fd2f69f11a7bb878b667669e3117fd5850c848e9cbfc3a9449102cccf597e"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_upgrade_cli_integration_test.go",
+        "sha256": "7bf495975db4104c73fe839257bac93a148023d5a6ec884d5784698c14c27da3"
+      }
+    ],
+    "source_after_matches_before": true,
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 1.675
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 63.237
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 1.969
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 3.794
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.357
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 10.484
+      }
+    ],
+    "full_affected_race": "v3 CLI/bootstrap 27.752s; only new pipx descriptor English Usage assignment changed; other sources unchanged",
+    "binary_sha256": "00b6c77824fca8ad63040cfacc91c48c7b39192882cc05d1c64d0563c78b97de"
+  },
+  "affected_race_before_english_usage_only": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.676
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 2.518
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 42.392
+    },
+    {
+      "step": "affected-race",
+      "exit_code": 0,
+      "seconds": 27.752
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 3.47
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.302
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 10.649
+    }
+  ],
+  "binding": {
+    "go36_both_copies_match": true,
+    "only_change_after_v3_affected_race": [
+      "internal/cli/package_client.go"
+    ],
+    "change": "new pipx descriptor English flag Usage only; name/value/parse/validators/runtime unchanged",
+    "go_binary": "00b6c77824fca8ad63040cfacc91c48c7b39192882cc05d1c64d0563c78b97de",
+    "cpp": "unchanged c1-v5/ae301892/128PASS"
+  },
+  "existing_owner_reuse": {
+    "uv_path_validator_bodies_identical_after_label_signature_and_extraction": true,
+    "unchanged_current_backend_and_observer_owners": [
+      {
+        "path": "internal/promotion/pipx_tool_install.go",
+        "sha256": "80a826ec1994856f1684166f1c929c7d85767febad7406642409d6fa707eae6c"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_update.go",
+        "sha256": "9846091625ec3e7f8fed072210f921fc3c63731268fcbb980a80363f44493052"
+      },
+      {
+        "path": "internal/promotion/tool_target.go",
+        "sha256": "c0920bb91f5d077a258b2626a851e38900a39650a84b203d6a22cbebd7538061"
+      },
+      {
+        "path": "internal/promotion/tool_original.go",
+        "sha256": "50332bf9bf9fc07c88e72459fa116719d1cac07233e256561ef5e2e6662a53b9"
+      },
+      {
+        "path": "internal/promotion/tool_publication.go",
+        "sha256": "d247e575f70991b09e1949a270255ca60c83fbd150ecc746cba9233580890780"
+      },
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "cdb6375fc955521385cdc36dbb61353841a4d619ec436b2bd766ce2009497f1a"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "a72723697bd94adb035cd12391c5ab16ba49178cf2bc0d57e301ce9b0d53d11f"
+      }
+    ],
+    "other_client_close_owner": null
+  },
+  "cpp_unchanged": "c1-v5/ae301892/128PASS; no runtime/profile/CPU/coverage change",
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 374.394,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "fc3fc148772a331234ab0b8f17c1c6522ed91c297db767ee76a31b51e3d54375",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-c3-actual-v2/protected-client",
+        "sha256": "00b6c77824fca8ad63040cfacc91c48c7b39192882cc05d1c64d0563c78b97de"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-c3-actual-v2/observer",
+        "sha256": "ae3018926cc4bdb78707803a47541bfe4ea42d10eabffaaf5299e18ed80843ff"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "public_selection_confirmed": true,
+    "passed_named_tests": [
+      "TestLinuxUVToolInstallCLIIntegration",
+      "TestLinuxPipxToolInstallCLIIntegration",
+      "TestLinuxUVToolUpgradeCLIIntegration",
+      "TestLinuxPipxToolUpgradeCLIIntegration"
+    ],
+    "named_pass": true
+  },
+  "stages": [
+    {
+      "client": "uv",
+      "operation": "INSTALL",
+      "output": "json",
+      "controls": 6,
+      "manifest": "fea70b222a622b98b41c11ccb8af8c9048ffff298d3ee647fd1a426b00b59016"
+    },
+    {
+      "client": "uv",
+      "operation": "INSTALL",
+      "output": "human",
+      "controls": 6,
+      "manifest": "fab89c97cbd9d02219c6c40f047f564941e5cd95c869b3285fa6696448fabdd0"
+    },
+    {
+      "client": "pipx",
+      "operation": "INSTALL",
+      "output": "json",
+      "controls": 6,
+      "manifest": "b27f82fe2db8bd172c95d424bfefb58f560217ae1be53cf961af690f16e4eae6"
+    },
+    {
+      "client": "pipx",
+      "operation": "INSTALL",
+      "output": "human",
+      "controls": 6,
+      "manifest": "a805b196c1c2b438fd2ba35953f3e208a7165160dd66279346d71925bcced88c"
+    },
+    {
+      "client": "uv",
+      "operation": "UPDATE",
+      "output": "json",
+      "controls": 8,
+      "manifest": "a3f743c1bad44d31a26b1f450c34e9f5ad092bae2fbe338fcc419b2e69022f0b"
+    },
+    {
+      "client": "uv",
+      "operation": "UPDATE",
+      "output": "human",
+      "controls": 8,
+      "manifest": "cd104a4082aff6850f948892ef05908242bffb370c684de21b769e2a63150e99"
+    },
+    {
+      "client": "pipx",
+      "operation": "UPDATE",
+      "output": "json",
+      "controls": 9,
+      "manifest": "3fa99e36252049b954fc6160efe43ae18bbc9919331e9b795e204f1169149fd7"
+    },
+    {
+      "client": "pipx",
+      "operation": "UPDATE",
+      "output": "human",
+      "controls": 9,
+      "manifest": "2a52d9b1c87a6eb3f4e4d300e1e57eccb6410d4f9fc5577916c6286bdb8e783b"
+    }
+  ],
+  "english_static_help": {
+    "commands": [
+      {
+        "operation": "install",
+        "exit": 0,
+        "target_flag": "--target string    Existing empty virtual environment named after the package (absolute path)"
+      },
+      {
+        "operation": "upgrade",
+        "exit": 0,
+        "target_flag": "--target string    Existing HAA-managed tool virtual environment (absolute path)"
+      }
+    ],
+    "runtime_cache_not_created": true
+  },
+  "first_actual_preserved": {
+    "seconds": 384.322,
+    "status": "four named parent PASS on v3 source; subsequent only English flag Usage metadata corrected; final actual separately source-bound"
+  },
+  "negative_boundaries": [
+    "unsupported pipx parent operation rejected before runtime/cache; no fallback/placeholder",
+    "explicit target/bin required; duplicate/relative/alias/overlap and unsupported native/backend/index/adoption flags refused",
+    "foreign or existing fresh original/occupied command preserved; no new approved staging",
+    "managed authentic pipx6.0 exact receipt remains unedited; bare upgrade6.1 then same-version new current Manifest",
+    "UV historic unversioned receipt remains explicitly synthetic in its existing upgrade fixture",
+    "current JSON/human/KO/space handling and user files/approved receipts/links match current Manifest; no Host interpreter/command execution"
+  ],
+  "MISSING": [
+    "native pipx original adoption independent source proof and explicit CLI capability",
+    "whole hosted/final CPU-CUDA/signed-native and independent legacy ZIP CPU boundary qualification"
+  ],
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-c3-"
+}

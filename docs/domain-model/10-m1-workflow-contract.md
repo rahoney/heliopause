@@ -263,7 +263,14 @@ Policy Decision은 decision, policy ID/version과 하나 이상의 ordered reaso
 
 ## 8. Operation Result와 CLI contract
 
-machine schema identity는 `helox.operation-result/v1`이다. JSON은 stable snake_case field를 사용하고 unknown/newer schema를 consumer가 성공으로 추측하지 않게 한다.
+M1의 선언/profile 없는 기존 결과는 `helox.operation-result/v1`을 유지한다. 현재 검사 선언·
+profile 또는 graph 진단을 포함한 결과는 `helox.operation-result/v2`이고
+`schemas/operation-result-v2.schema.json`이 소유한다. V2의 `check_plan`/`check_plans`는
+`helox.check-plan/v1`의 Run·정확한 subject/digest와 독립 requirement 목록이며 `checks`는
+actual이다. `profile_sha256`·필수 여부·실행 상태·미실행 한계를 섞지 않는다. 이전 v1은
+새 필수 coverage 완료 증거가 아니고 explicit migration 없이 새 승인으로 사용하지 않는다.
+
+Legacy machine schema identity는 `helox.operation-result/v1`이다. JSON은 stable snake_case field를 사용하고 unknown/newer schema를 consumer가 성공으로 추측하지 않게 한다.
 
 구현 schema는 `schemas/operation-result-v1.schema.json`이 소유하며 Draft 2020-12 metaschema validator로 검증한다. presenter contract test는 synthetic result가 이 field·상태 규칙과 같은 identity를 출력하는지 확인한다.
 

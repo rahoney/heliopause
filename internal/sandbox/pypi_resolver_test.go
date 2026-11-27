@@ -12,9 +12,35 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const resolverTestSHA256 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+func TestPyTorchResolverCacheRequiresPinnedLocalImage(t *testing.T) {
+	image := runtimeidentity.PythonResolverImageConfig
+	for _, test := range []struct{ name, result, want string }{
+		{"exact cache", image + "\n", image},
+		{"unavailable cache", "", ""},
+		{"other local image", runtimeidentity.PythonResolverBaseConfig, ""},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			output := map[string]string{
+				"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine,
+				"runsc --version":      canonicalRunscVersionOutput,
+				"runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: sentry/filesystem_mutation\n",
+				"docker image inspect " + pythonImageReference + " --format {{.Id}}": runtimeidentity.PythonResolverBaseConfig,
+			}
+			if test.result != "" {
+				output["docker image inspect --format {{.Id}} "+image] = test.result
+			}
+			capability, err := probePyTorchResolver(context.Background(), "linux", "amd64", fakeExecutor{outputs: output})
+			if err != nil || !capability.Available || capability.Runtime != PinnedPythonRuntime() || capability.resolverImage != test.want {
+				t.Fatalf("resolver probe returned %#v, %v", capability, err)
+			}
+		})
+	}
+}
 
 func TestPyPIResolverKeepsSourceOwnershipAndCanonicalRootMetadataBudget(t *testing.T) {
 	for _, tc := range []struct {
@@ -45,7 +71,7 @@ func TestPyPIResolverKeepsSourceOwnershipAndCanonicalRootMetadataBudget(t *testi
 			page = strings.TrimSuffix(page, "]}") + more.String() + "]}"
 			runner := &recordingRunner{responses: [][]byte{
 				[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789abcdef"), nil,
-				[]byte("3.14.7\n"), []byte("pip 26.2.1 from pip\n"), []byte("cp314-cp314-manylinux_2_36_x86_64\n"), nil, nil,
+				[]byte(runtimeidentity.PythonVersion + "\n"), []byte("pip " + runtimeidentity.PipVersion + " from pip\n"), []byte("cp314-cp314-manylinux_2_36_x86_64\n"), nil, nil,
 				[]byte(pypiResolverReportJSON()), []byte(page), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),
 			}}
 			observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
@@ -78,7 +104,7 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	report := pypiResolverReportJSON()
 	runner := &recordingRunner{responses: [][]byte{
 		[]byte("0123456789abcdef"), []byte("172.30.0.0/24"),
-		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("pip 26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil, nil,
+		[]byte("0123456789abcdef"), nil, []byte(runtimeidentity.PythonVersion + "\n"), []byte("pip " + runtimeidentity.PipVersion + " from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil, nil,
 		[]byte(report), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),
 	}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
@@ -140,7 +166,7 @@ func TestPyPIResolverFailsClosedForObserverOrEndpointFailure(t *testing.T) {
 			name:      "observer stream incomplete",
 			endpoints: pypiStaticEndpoints{},
 			observer:  &recordingObserver{reader: &traceReader{err: errors.New("observer ended")}},
-			responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789abcdef"), nil, []byte("3.14.7"), []byte("pip 26.2.1 from pip"), []byte("cp314-cp314-manylinux_2_36_x86_64"), nil, []byte(pypiResolverReportJSON()), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"))},
+			responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789abcdef"), nil, []byte(runtimeidentity.PythonVersion), []byte("pip " + runtimeidentity.PipVersion + " from pip"), []byte("cp314-cp314-manylinux_2_36_x86_64"), nil, []byte(pypiResolverReportJSON()), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"))},
 		},
 	}
 	for _, test := range tests {
@@ -269,7 +295,7 @@ func pypiResolverSimpleJSON(project, filename, requiresPython string) string {
 }
 
 func pypiResolverReportJSON() string {
-	return `{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://files.pythonhosted.org/packages/primary-1.0-py3-none-any.whl","archive_info":{"hash":"sha256=` + resolverTestSHA256 + `","hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"primary","version":"1.0","requires_python":">=3.14","requires_dist":["child>=2"]}},{"download_info":{"url":"https://files.pythonhosted.org/packages/child-2.0-py3-none-any.whl","archive_info":{"hash":"sha256=` + resolverTestSHA256 + `","hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":false,"metadata":{"name":"child","version":"2.0","requires_python":"","requires_dist":[]}}]}`
+	return "{\"version\":\"1\",\"pip_version\":\"" + runtimeidentity.PipVersion + "\",\"environment\":{\"implementation_name\":\"cpython\",\"implementation_version\":\"" + runtimeidentity.PythonVersion + "\",\"python_full_version\":\"" + runtimeidentity.PythonVersion + "\",\"platform_machine\":\"x86_64\",\"sys_platform\":\"linux\"},\"install\":[{\"download_info\":{\"url\":\"https://files.pythonhosted.org/packages/primary-1.0-py3-none-any.whl\",\"archive_info\":{\"hash\":\"sha256=" + resolverTestSHA256 + `","hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"primary","version":"1.0","requires_python":">=3.14","requires_dist":["child>=2"]}},{"download_info":{"url":"https://files.pythonhosted.org/packages/child-2.0-py3-none-any.whl","archive_info":{"hash":"sha256=` + resolverTestSHA256 + `","hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":false,"metadata":{"name":"child","version":"2.0","requires_python":"","requires_dist":[]}}]}`
 }
 
 func TestPyTorchFetchScriptsSendTruthfulUserAgentAndPreserveInvariants(t *testing.T) {

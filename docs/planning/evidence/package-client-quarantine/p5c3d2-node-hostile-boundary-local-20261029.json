@@ -1,0 +1,197 @@
+{
+  "scope": "P5-C3d2 current same-source10 controlled fixture cases: preserved6 + outside failed-open/network/clone child/helper-comm spoof; actual current verifier/static/dynamic/Evidence/Policy; no native registry/solver qualification",
+  "status": "PASS (defined named local scope)",
+  "baseline_commit": "a6e7ee622db20ac53223e3e3ca2af42988ca6ae4",
+  "runtime_inputs": 1332,
+  "existing_production_CPP_inputs_unchanged": true,
+  "states": {
+    "IMPLEMENTED": "YES (two existing test files only)",
+    "WIRED": "YES (same existing runtime/current inspection/Policy)",
+    "QUALIFIED": "YES (same-source10 named local)",
+    "ACCEPTANCE_CLOSED": "YES (named four hostile cases and six regression cases only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.816
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.426
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.089
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c3d2-v2-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.427
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.316
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 11.447
+    }
+  ],
+  "binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c3d2-v2-bootstrap.test",
+      "sha256": "e61900be53f179fa5af5f0c28b7ae07a7406195db974c642e29bee50107c9b8c",
+      "bytes": 51092956
+    }
+  ],
+  "actual": {
+    "seconds": 154.558,
+    "parent_seconds": 152.56,
+    "cases": [
+      [
+        "argv",
+        "true",
+        "73",
+        "0"
+      ],
+      [
+        "term",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "kill",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "cancel",
+        "false",
+        "6",
+        "0"
+      ],
+      [
+        "stdout-overflow",
+        "false",
+        "1048576",
+        "0"
+      ],
+      [
+        "stderr-overflow",
+        "false",
+        "0",
+        "1048576"
+      ],
+      [
+        "outside-read",
+        "false",
+        "9",
+        "0"
+      ],
+      [
+        "network",
+        "false",
+        "14",
+        "0"
+      ],
+      [
+        "child",
+        "false",
+        "12",
+        "0"
+      ],
+      [
+        "comm-spoof",
+        "false",
+        "12",
+        "0"
+      ]
+    ],
+    "outside_read": "known nonexistent guest /home probe: actual outside-workspace fact/incomplete despite caught failure; no Host home/secret access",
+    "network": "guest-only loopback127.0.0.1:9; actual NETWORK/CONNECT/INET/ARTIFACT_GROUP count1 and network-attempt/incomplete",
+    "child": {
+      "wait_delay": false,
+      "unexpected_exec": false,
+      "clone_fault": true,
+      "artifact_role": true,
+      "qualified": "clone-startup denial/incomplete and whole cleanup",
+      "not_proven": [
+        "child JS body executed",
+        "held-pipe WaitDelay/drain path",
+        "general arbitrary child support"
+      ]
+    },
+    "comm_spoof": "helper process.title followed by own status read; actual kernel NODE/ARTIFACT diagnostics and incomplete",
+    "all_current_Policy_ALLOW": "actual integrity/static/dynamic/Evidence/Policy each fresh case; controlled test registry/native solver NOT_RUN",
+    "all_source_CPP_Host_fixed42_ZIP_Docker_preserved": true,
+    "helper_wait0_confirmedstop_owned_resources_endpoints0": true,
+    "no_skip": true
+  },
+  "earlier_evidence": {
+    "v1_actual": "PASS153.328s/10; child role scalar not separately saved; same fixture bytes and CPP",
+    "v2_actual": "PASS154.558s/current role assertion; only caller assertion/scalar changed fromv1",
+    "v2_operator": "post-actual type mismatch: tuple slice compared with list; outer exit1 after actual0/whole cleanup",
+    "record_validation": "independent readback of source/log/input/Host/ten cases/four child scalars confirmed; original preserved; no actual rerun for record correction"
+  },
+  "source_and_raw_evidence": {
+    "identity": "docs/github-logs/package-client-quarantine-20261021/p5-c3d2-v2-build-identity.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p5-c3d2-actual-v2-result.json",
+    "assessment": "docs/github-logs/package-client-quarantine-20261021/p5-c3d2-actual-v2-assessment.json",
+    "record_validator": "docs/github-logs/package-client-quarantine-20261021/p5-c3d2-v2-result-validation.py.txt"
+  },
+  "hosted": "active CI428/source558d75a excludes C3d1/a6e7ee6 and this unit; no new push",
+  "MISSING": [
+    "actual caller DeadlineExceeded after Node body readiness",
+    "actual attempted input self-write denied with whole readonly source unchanged",
+    "held-pipe branch if a supported child can reach it; current child startup denied",
+    "public application/CLI and safe output rendering",
+    "new grouped hosted/wholeP5/final4profiles/signed acceptance"
+  ],
+  "next": "same M13-004 C3d3 actual deadline/readonly self-write baseline before source; local commit only; preserve CI428 and consume timers"
+}

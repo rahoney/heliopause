@@ -1,0 +1,155 @@
+{
+  "schema": "helox.qualification-receipt/v1",
+  "scope": "actual signed rc3 to rc5; cancellation gap separate",
+  "source_commit": "7fedaf3430acd4c8a9f37ceaffec33bce143b2ae",
+  "base": "v0.1.1-rc.3",
+  "target": "v0.1.1-rc.5",
+  "official_run": 39456168381,
+  "independent_offline": {
+    "subjects": 13,
+    "uid": 1000,
+    "network": "unshare --net",
+    "verifier": "gh2.102.0",
+    "all_pass": true
+  },
+  "canonical_exact_bundle": "PASS",
+  "normal": {
+    "exit": 0,
+    "seconds": 39.06,
+    "required": 18,
+    "all_completed": true,
+    "policy": "ALLOW",
+    "promotion": "COMPLETED",
+    "error_code": null
+  },
+  "os_auth_positive": {
+    "exit": 0,
+    "seconds": 32.53,
+    "required": 18,
+    "all_completed": true,
+    "policy": "ALLOW",
+    "promotion": "COMPLETED",
+    "error_code": null
+  },
+  "concurrent": {
+    "first": {
+      "exit": 0,
+      "seconds": 34.7,
+      "required": 18,
+      "all_completed": true,
+      "policy": "ALLOW",
+      "promotion": "COMPLETED",
+      "error_code": null
+    },
+    "second_exit": 1,
+    "rejected_before_acquisition": true
+  },
+  "candidate_service_failure": {
+    "result": {
+      "exit": 1,
+      "seconds": 25.16,
+      "required": 18,
+      "all_completed": true,
+      "policy": "ALLOW",
+      "promotion": "FAILED",
+      "error_code": "SELF_UPDATE_TRANSITION_OR_RECOVERY_REQUIRED"
+    },
+    "history": "ROLLED_BACK",
+    "old_health": "doctor5/npm3 ALLOW"
+  },
+  "root_SIGKILL": {
+    "journal": "VERIFYING",
+    "journal_preserved_across_guest_cold_start": true,
+    "installed_recover": 0,
+    "history": "ROLLED_BACK",
+    "old_health": "doctor5/npm3 ALLOW",
+    "retry": {
+      "exit": 0,
+      "seconds": 52.76,
+      "required": 18,
+      "all_completed": true,
+      "policy": "ALLOW",
+      "promotion": "COMPLETED",
+      "error_code": null
+    }
+  },
+  "cancellation": {
+    "result": {
+      "exit": 1,
+      "seconds": 1.96,
+      "required": 0,
+      "all_completed": true,
+      "policy": null,
+      "promotion": "FAILED",
+      "error_code": "INSTALL_INSPECTION_FAILED"
+    },
+    "installed_version_preserved": true,
+    "cleanup": "FAILED: retained control socket/supervisor lock; next npm refused",
+    "local_root_cause": "long-lived exec.CommandContext auto-kills owned observer on operation cancellation",
+    "actual_child_red": {
+      "exit": 1,
+      "failed_cases": 2,
+      "seconds": 8.42
+    },
+    "local_child_green": {
+      "exit": 0,
+      "cases": 4,
+      "seconds": 1.16
+    },
+    "corrected_signed_caller": "NOT_YET_QUALIFIED"
+  },
+  "limits": [
+    "guest-only HTTPS transport; no public Release publication",
+    "guest PID1 cold start; no Host kernel/WSL reboot",
+    "no new CUDA full",
+    "no Host permanent migration",
+    "M13-004 remains IN_PROGRESS"
+  ],
+  "raw_owner": "docs/github-logs/self-update-signed-20261020",
+  "local_correction_checks": {
+    "code": [
+      {
+        "path": "internal/hosttool/observer.go",
+        "sha256": "b2e73e9d9ffea2bdc67cb20d8a8df14648f8822b7b4cd6ca8c7acb1486931148"
+      },
+      {
+        "path": "internal/hosttool/observer_test.go",
+        "sha256": "d87a19fe7dbbf8b232b361580fab82a84ad17c9ef204f0aa4a17fdaf694d5044"
+      }
+    ],
+    "format": {
+      "exit": 0,
+      "seconds": 1.27
+    },
+    "quick": {
+      "exit": 0,
+      "seconds": 240.7
+    },
+    "vulnerability": {
+      "exit": 0,
+      "seconds": 14.25
+    },
+    "related_race": {
+      "hosttool": "PASS 5.080s",
+      "bootstrap": "PASS 2.002s",
+      "releaseactivation": "PASS 2.309s",
+      "supervisor": "PASS 1.98s",
+      "expanded_sandbox": "FAIL seven preexisting races; baseline six selected plus one bounded attribution reproduction"
+    },
+    "new_source_remote_CI": {
+      "source": "4a8c2787bdc2cb2d57e15b853d83dcee31b2ce25",
+      "run": 39461816815,
+      "Required_plus_9": "SUCCESS",
+      "receipt": "observer-remote-ci.json"
+    },
+    "corrected_signed_caller_cancellation": "NOT_QUALIFIED"
+  },
+  "cleanup": {
+    "download13_deleted_bytes": 231996591,
+    "references": 0,
+    "query_errors": 0,
+    "completed_guests_TLS_and_password": "removed by sequential baseline restoration",
+    "qualified_rc3_base": "retained idle stopped for unfinished acceptance",
+    "Host_protected10_runtime6_pod_init_shared_images4": "unchanged"
+  }
+}

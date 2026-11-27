@@ -26,11 +26,15 @@ type archive struct {
 	SHA256 string `json:"sha256"`
 }
 type metadata struct {
-	Image        string     `json:"image"`
-	Architecture string     `json:"architecture"`
-	Bundled      string     `json:"bundled,omitempty"`
-	Archives     []archive  `json:"archives,omitempty"`
-	Documents    []document `json:"documents,omitempty"`
+	Pipx         *pipxSupplyMetadata `json:"pipx_supply,omitempty"`
+	Bun          *bunSupplyMetadata  `json:"bun_supply,omitempty"`
+	PNPM         *pnpmSupplyMetadata `json:"pnpm_supply,omitempty"`
+	UV           *uvSupplyMetadata   `json:"uv_supply,omitempty"`
+	Image        string              `json:"image"`
+	Architecture string              `json:"architecture"`
+	Bundled      string              `json:"bundled,omitempty"`
+	Archives     []archive           `json:"archives,omitempty"`
+	Documents    []document          `json:"documents,omitempty"`
 }
 
 func imageName(component, version string) (string, string, error) {

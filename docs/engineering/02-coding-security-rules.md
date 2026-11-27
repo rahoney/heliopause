@@ -51,6 +51,78 @@ module path·release tag·checksum 신뢰성
 - Artifact가 제공한 Go module, executable 또는 script를 Heliopause product dependency로 동적 import·load하지 않는다.
 - MVP에 동적 Go plugin loading을 추가하지 않는다.
 
+### M13-004 Sigstore verifier dependency review
+
+2026-10-20에 production release provenance 검증용으로
+`github.com/sigstore/sigstore-go v1.3.0`을 선택한다. Go 표준 라이브러리로 DSSE,
+Fulcio extension/CT, Rekor inclusion과 timestamp 검증을 다시 만들지 않는다.
+[공식 tag source](https://github.com/sigstore/sigstore-go/tree/v1.3.0)의 commit은
+`22d3691c7b8e0c5530fae3c05577690bfef5cd00`, Go floor는1.25.8,
+license는 Apache-2.0이다. [공식 검증 API](https://github.com/sigstore/sigstore-go/blob/v1.3.0/docs/verification.md)를
+사용하며 signing/TUF online refresh/unsafe policy를 사용하지 않는다.
+새 import는 `internal/verification/releaseprovenance`에만 한정한다.
+
+Canonical Go proxy/SumDB의 exact zip/mod h1은 각각
+`h1:hnIMHREyCNTYFtOE1o7ae3Axa9B5W5EjUSBJICP2NBE=`와
+`h1:AyRQXfpH89py1twjE3kEZxlRersng90GSYqQV9zGJE8=`다. 직접·전이 pin은
+go.mod/go.sum에 기록한다. v1.3.0은 upstream의 timestamp validity/empty identity
+교정을 포함하지만 알려진 취약점이 없다는 보증은 아니며 실제 reachable import의
+canonical vulnerability 검사를 완료해야 이 구현 단위를 qualification한다.
+Go/compiler·기존 의존성 선택은 임의로 최신화하지 않는다.
+
+첫 tidy/MVS 대조에서 기존59개 pin 중 바뀐 것은 `github.com/sergi/go-diff` 하나다.
+CT verifier의 `github.com/google/certificate-transparency-go v1.3.3`이 요구하는
+`v1.4.0`으로 상승하며 floating latest 선택이 아니다. [공식 v1.4.0](https://github.com/sergi/go-diff/releases/tag/v1.4.0),
+MIT license와 Go1.13 floor를 확인했다. 기존 package tooling도 이 module을 소비하므로
+canonical 전체 build/default와 해당 package consumer 회귀에서 함께 확인한다.
+첫 신규 직접·전이 선택은122개였으며 signing/KMS 관련 upstream test 다운로드를 production
+import나 runtime credential 사용으로 오인하지 않는다. reachable 취약점 검사는 별도다.
+
+신규 import를 포함한 첫 candidate의 실제 Quick/security는 통과했으나 canonical
+vulnerability가 x/net0.58.0의 GO-2026-6617/6612/6611/6603과 gRPC1.82.1의
+GO-2026-6348을 reachable로 보고했다. 이전 pin의 PASS를 새 import에 전용하지 않는다.
+원본은 `docs/github-logs/self-update-20261020/provenance-vulnerability.log`다.
+기존 source가 동일 DB에서 실패했다거나 새 코드가 과거 오류를 유발했다는 판단은 하지 않는다.
+
+수정 pin은 [x/net v0.60.0](https://go.googlesource.com/net/+/refs/tags/v0.60.0/go.mod)과
+[gRPC v1.83.1](https://github.com/grpc/grpc-go/blob/v1.83.1/go.mod)이다.
+공식 [Go 취약점 기록](https://pkg.go.dev/vuln/GO-2026-6617)과
+[gRPC 취약점 기록](https://pkg.go.dev/vuln/GO-2026-6348)의 fixed 버전이며,
+각 Go floor1.26.0/1.25.0은 고정 Go1.26.9에서 지원된다. x/net의 필수 전이
+x/crypto0.57.0·x/sys0.48.0·x/text0.42.0·x/term0.46.0도 MVS로 고정한다.
+x/text0.42.0은 x/mod0.41.0·x/sync0.23.0을 요구한다. 실제 module graph로 이
+경로를 확인했으며 두 module의 Go floor도1.26.0이다. 기존 SumDB/ZIP/parser·
+동시성 소비자도 새 선택의 회귀 범위에 포함한다.
+모두 기존 upstream license를 유지한다. compiler/runtime lock·gVisor build와
+budget·검사 제외를 바꾸지 않는다. 새 graph의 실제 build/default/native 소비자와
+reachable vulnerability를 다시 확인한다.
+
+Production trust material은 M13-003에서 실제 offline 검증한
+`docs/planning/evidence/m13-003-release-build/v0.1.0/trusted-root.jsonl`의 public-good
+첫 record만 고정한다. 새 embedded 사본은5748bytes/최종 LF 포함 SHA-256
+`3c2cc7f357dc064ec527fdcd78da6e9245c21a381e1abaa0f2b62b186bcac1a1`이며
+두 번째 GitHub private root는 포함하지 않는다. 이는 작은 public key/certificate
+입력이고 executable·credential이 아니다. 새 릴리스가 제공한 trust root나
+PATH executable로 대체하지 않는다. 원본 signed bundle/manifest는 committed
+M13 evidence를 그대로 읽어 회귀에 재사용하며 test용 signer/private key를 만들지 않는다.
+
+### M13-004 PNPM YAML consumer review
+
+PNPM v9의 nested importer/package/snapshot 구조를 자체 문자열 parser로 흉내 내지 않는다.
+기존 `go.yaml.in/yaml/v3 v3.0.4`를 `internal/artifact/npm`의 bounded unapproved lock
+parser에서만 추가 소비한다. Version은 현재 go.mod/go.sum에 이미 고정돼 있으며 새 module/
+전이 pin 변경은 없다. 고정 module의 README는 official YAML organization이 유지하는
+fork임을 설명하고 Go floor는1.16이다. LICENSE는 libyaml 포팅 파일의 MIT와 그 밖의
+Apache 부분을 구분하므로 기존 배포 license 검토 범위에 같은 의무를 유지한다.
+
+실제 필요성과 호출 위치·YAML node/depth/size, duplicate/alias/anchor/tag/unknown-field
+거부·독립 source binding의 경계는 [P2c 지도](../planning/evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md)가 소유한다.
+Architecture allowlist는 이 npm adapter의 exact YAML import만 추가한다. Core/Application,
+다른 unreviewed adapter와 runtimeidentity 내부 dependency 경계는 유지한다. Parser의
+version 인자는 producer가 generated current pin으로 전달하며 adapter가 ambient client나
+runtime을 선택하지 않는다. 새 production wiring의 reachable vulnerability와 실제 소비자
+검증은 최종 qualification에서 별도로 확인한다.
+
 ### M0-003 Cobra dependency review
 
 2026-08-12 KST에 Heliopause의 확정된 CLI framework를 처음 사용하는 시점의 공식 release와 module graph를 검토해 `github.com/spf13/cobra v1.10.2`를 product dependency로 고정한다.
@@ -606,3 +678,17 @@ Host path 전체를 일괄 제거할 필요는 없다. 작업 의미에 필요�
 - [x] exception·suppression 정책
 - [x] Security Review Checklist
 - [x] 13개 invariant
+
+### M13-004 Bun constraint consumer review
+
+Bun의 공개 lock constraints를 문자열 prefix나 자체 semver solver로 판정하지 않는다.
+기존 go.mod/go.sum의 `github.com/Masterminds/semver/v3 v3.5.0`을 npm adapter의 bounded
+Bun parser에서 추가 소비한다. 새 module/version/checksum은 없으며 direct 표기만 갱신한다.
+고정 cache의 MIT license·Go1.21 floor·README/SECURITY와 constraint/version source 및
+`go mod verify`의 전체 checksum 일치를 검토했다. Copyright/permission notice 의무를
+유지하며 module global coercion 또는 prerelease 설정을 바꾸지 않는다.
+
+[정확한 검토와 지원 subset](../planning/evidence/package-client-quarantine/p3b3b-bun-parser-source-plan-20261025.md)이
+소비 위치와 bounds·의미 비교/negative·vulnerability 검증을 소유한다. 전체 Bun/npm solver
+동등성, 현재 최신 버전 또는 upstream release note 확인을 주장하지 않는다. Architecture는
+npm exact import만 허용하며 다른 adapter/Core/Application으로 전파하지 않는다.

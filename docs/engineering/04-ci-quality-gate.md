@@ -119,12 +119,12 @@ exact runner label, Go patch와 현재 사용하는 Action/tool version은 아�
 | Role | Exact identity | 근거와 적용 |
 | --- | --- | --- |
 | Linux runner | `ubuntu-24.04` | GA versioned x64 image; primary, minimum, docs와 required aggregate |
-| macOS runner | `macos-26-intel` | public/private repository에 공통 제공되는 GA versioned x64 image; macOS CLI build/default test |
+| macOS runner | `macos-26` (기본), `macos-26-intel` (수동 선택) | GA 고정 버전 Apple Silicon ARM64 및 Intel x64 이미지. 두 경로에서 macOS CLI build/default test 실행 |
 | Checkout Action | `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1` | signed stable release `v7.0.1` |
 | Go setup Action | `actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e` | signed immutable stable release `v7.0.0` |
 
 - `ubuntu-26.04`는 확인 시점에 public preview이므로 required gate에 사용하지 않는다. `ubuntu-24.04`는 최신 GA LTS versioned Ubuntu label이다.
-- `macos-26-intel`은 `-latest` alias 대신 사용하는 최신 GA versioned x64 label이며 public/private repository 표에 공통으로 존재한다. arm64 qualification이 실제 requirement가 되면 repository visibility와 runner 제공 범위를 다시 확인해 별도 matrix로 추가한다.
+- 기본 macOS 검사는 Apple Silicon ARM64 러너 `macos-26`에서 실행한다. `workflow_dispatch`에서 `macos_intel_qualification`을 선택하면 같은 `macOS` job을 `macos-26-intel`에서 실행한다. 두 경로 모두 같은 build·test 명령과 한도를 사용하며 `Required`는 해당 `macos` job 결과를 받는다.
 - 두 Action은 GitHub-owned이고 MIT license이며 active release와 dependency maintenance가 확인된다. tag 이동에 의존하지 않도록 exact release commit을 full SHA로 사용한다.
 - Checkout은 `persist-credentials: false`, setup-go는 exact Go patch, `check-latest: false`, `cache: false`로 사용한다. 이 input은 각 Action의 implicit network·credential·cache 동작을 Step 11 invariant와 맞춘다.
 - GitHub-hosted runner가 제공하는 current runner application은 두 Node 24 Action의 requirement를 충족한다. self-hosted runner는 M0 required gate에 사용하지 않는다.
@@ -282,6 +282,12 @@ Check phase — default offline
 
 minimum Go와 macOS의 build/default test job은 external quality tool이 필요하지 않으므로 `bootstrap-modules`로 product module만 준비하고 `platform`을 offline 실행한다. Primary Quick은 `bootstrap`으로 Staticcheck까지 준비한다.
 
+Production build와 test-build/default test는 같은 고정 `-trimpath` compiler 입력을 사용한다.
+minimum Go/macOS의 outer checker `go run`도 이 flag를 쓰며 bootstrap/platform 두 step은
+동일한 `HELOX_TOOL_CACHE/go-build`를 `GOCACHE`로 지정한다. Step env의 `GOFLAGS`는
+명시적으로 비워 외부 flag가 이 입력을 바꾸지 못하게 한다. Source fixture는 package
+working directory를 기준으로 읽고 compiler에 담긴 절대 source path에 의존하지 않는다.
+
 - `go get`, `go mod tidy` mutation, `@latest`와 floating tool install을 CI에서 사용하지 않는다.
 - bootstrap이 `go.mod`, `go.sum`, lock 또는 source를 변경하면 실패한다.
 - tool version mismatch와 checksum verification failure는 실행 실패다.
@@ -291,6 +297,11 @@ minimum Go와 macOS의 build/default test job은 external quality tool이 필요
 ## 12. Cache 정책
 
 초기 CI는 GitHub Actions dependency/build/tool cache를 사용하지 않는다.
+
+같은 job·checkout·고정 SDK 안에서 생성한 ephemeral Go build cache는 canonical checker가
+이미 사용하는 로컬 작업 자료다. Bootstrap/checker child의 중복 컴파일을 피하도록 경로와
+compiler 입력을 맞추되 다른 job/PR에서 restore하거나 Actions cache에 저장하지 않는다.
+Cache miss의 결과·전체 검사 범위·timeout은 동일하며 cache hit는 성공/무결성 증거가 아니다.
 
 - `setup-go` 등 기본 cache를 제공하는 action에도 cache 비활성화를 명시한다.
 

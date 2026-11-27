@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "baseline": "a7755ca992cd3876c5c4ab4e7af96886168d45c4",
+  "closure_commit": "244afdba27d4d0e2f1629bbfa6ca8a5ca300238a",
+  "scope": "C3c2a managed public UV guard port; CLI binding and actual UV target update remain",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES at InstallUpdatePreparation port; NO at production CLI",
+  "QUALIFIED": "LOCAL ONLY; new source native/shared-consumer CI pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "same-source native pip/shared consumer remote CI",
+    "ordinary installed-aware UV install and CLI update bindings",
+    "actual UV target update qualification",
+    "native UV ownership enrollment",
+    "complete multi-root/empty sync"
+  ],
+  "source": [
+    {
+      "path": "internal/promotion/pypi_update.go",
+      "bytes": 19966,
+      "sha256": "8fd332bfd52ea024ac93bf5cb5f0c1db1edbb1b3e69d2c84e30a56d5ba20cd60"
+    },
+    {
+      "path": "internal/promotion/uv_update.go",
+      "bytes": 4684,
+      "sha256": "4750ab809786b69907592fca45331627849df7d12780f69a424ff264d12f4ed5"
+    },
+    {
+      "path": "internal/promotion/uv_update_test.go",
+      "bytes": 17315,
+      "sha256": "d7c0b30a4e224be420392885e9913622bdad2a1309f37ed20771c582c283c2a4"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.325,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-format.json",
+        "bytes": 110,
+        "sha256": "658d785215895deb33021ac1832ea1f6287eb55196800d45ba40db6b68d8b47c"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 121.209,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-quick.json",
+        "bytes": 111,
+        "sha256": "1302df0b7321a014a50a7d5d2950b3a13e69f6490cbe76aa25a68d7660732de3"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-quick.log",
+        "bytes": 1354,
+        "sha256": "0bc293e3807e53505f3df36b2898ebc748ae682640693852e7a9116df4e6592f"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.615,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-security.json",
+        "bytes": 112,
+        "sha256": "4f07a115a9431bec337c61e6f26579a27104b0f5468c60f34d42dfab165734af"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.235,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-docs.json",
+        "bytes": 108,
+        "sha256": "6184c82dc45a0571076fe0604676269239e75a375c0d0701f3edca098458b8ec"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.785,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-workflow.json",
+        "bytes": 112,
+        "sha256": "e5f0dab67b8c6b43e4058076263e376e2848764a0bebd9992ee8a37422a32809"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-final-workflow.log",
+        "bytes": 1071,
+        "sha256": "cb212264823ffeba78abebfe3444d7d7ea7a05f20f9e23d068af00387c4671cd"
+      }
+    },
+    {
+      "command": [
+        "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/promotion",
+        "./internal/application",
+        "./internal/artifact/pypi"
+      ],
+      "exit": 0,
+      "seconds": 148.725,
+      "scope": "full promotion, application, artifact/pypi packages",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-full-race.json",
+        "bytes": 323,
+        "sha256": "b24f1ce28806ce60891488b79f2b4586b6f8edfe5b5d813f429b11dcefd04d38"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-full-race.log",
+        "bytes": 191,
+        "sha256": "99876f99624ae2a31f75d693c423f5b7f606b2b6522fb71ce77a05e135bd781d"
+      }
+    }
+  ],
+  "failures": [
+    {
+      "scope": "new test fixture compile error only",
+      "cause": "ResolvedArtifact has no Digest method; use existing acquired artifact from inspected set for staged-tamper path",
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2a-first-quick.log",
+        "bytes": 4828,
+        "sha256": "8f69129ca9733c256b31631379adba4817716134e312333194815339dd5e6b7c"
+      },
+      "result": {
+        "profile": "quick",
+        "exit": 1,
+        "seconds": 24.43,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      }
+    }
+  ],
+  "review": [
+    "Existing pip/named validators moved without report/runtime/graph semantic change. Original metadata/ledger/retired directory/native enrollment/transaction bodies reused.",
+    "UV binds exact original/intent/delta/pylock controls; runtime, lock SHA and wheel graph name/version/URL/declared SHA checked; no derived extension.",
+    "Only public PyPI and adopt=false; existing HAA ownership required. UV cfg history is not active tool identity.",
+    "Canonical first, complete related package Race next. No Host activation, new Go pin, public release, tag or merge."
+  ],
+  "cleanup": {
+    "task_tmp_entries": 0,
+    "new_native_resources": 0,
+    "preserved": "small raw/repro evidence and SDK/source/quality/qualified bundle needed by next P1 consumer"
+  }
+}

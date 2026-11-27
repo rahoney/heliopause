@@ -28,5 +28,8 @@ func TestPythonObservationRuntimeUsesBoundedPhaseVolumeAndCgroup(t *testing.T) {
 		if readOnly != (phase != phasePreparation) {
 			t.Fatalf("%s has wrong closure write access", phase)
 		}
+		if strings.Contains(joined, "--env TMPDIR=/haa-site") != (phase == phasePreparation) {
+			t.Fatalf("%s has wrong wheel staging directory", phase)
+		}
 	}
 }

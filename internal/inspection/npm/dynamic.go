@@ -3,12 +3,20 @@ package npm
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 // DynamicInspector interprets raw Sandbox results; it never controls a runtime.
+// Required fresh experiments and state evidence are bound to the common
+// version owners; one-shot or earlier count-only evidence cannot satisfy them.
+const dynamicCheckProfileName = "npm-dynamic-environment-state-v3"
+
+var dynamicCheckRuntimeDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema + "|shared-normalized-events=" + strconv.Itoa(ports.NPMEnvironmentTraceEventLimit) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
+
 type DynamicInspector struct{ sandbox ports.Sandbox }
 
 // NewDynamicInspector constructs an npm lifecycle inspector from the consumer-owned Sandbox Port.
@@ -32,13 +40,16 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 		return domain.InspectionReport{}, err
 	}
 	result, err := i.sandbox.Execute(ctx, request)
-	if err != nil {
+	// A trusted backend may retain an operational cause alongside its valid
+	// incomplete result. Keep that first limitation in the required check.
+	if err != nil && (result.Status() != domain.SandboxIncomplete || result.SessionID().String() == "") {
 		return domain.InspectionReport{}, err
 	}
 	return normalizeDynamicResult(artifact, result)
 }
 
 func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.SandboxResult) (domain.InspectionReport, error) {
+	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, dynamicCheckRuntimeDescriptor)
 	checkID, err := domain.NewCheckID("npm-dynamic-lifecycle")
 	if err != nil {
 		return domain.InspectionReport{}, err
@@ -49,7 +60,7 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 		if limitation == "M3_LINUX_ONLY" || limitation == "M3_RUNTIME_UNAVAILABLE" || limitation == "M3_RUNTIME_VERSION_UNSUPPORTED" || limitation == "M3_IMAGE_UNAVAILABLE" {
 			capability, status = domain.CapabilityUnsupported, domain.ExecutionNotExecuted
 		}
-		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation)
+		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, profile)
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}
@@ -57,20 +68,27 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 	}
 	for _, observation := range result.Observations() {
 		if observation.Category() == domain.ObservationResource {
-			execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M3_DYNAMIC_RESOURCE_LIMIT")
+			execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M3_DYNAMIC_RESOURCE_LIMIT", profile)
 			if err != nil {
 				return domain.InspectionReport{}, err
 			}
 			return domain.NewInspectionReport(execution, nil, nil)
 		}
 	}
-	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	if !completeDynamicEnvironments(result) {
+		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE", profile)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		return domain.NewInspectionReport(execution, nil, nil)
+	}
+	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
 	summary, err := result.ObservationSummary()
 	if err != nil {
-		incomplete, checkErr := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID")
+		incomplete, checkErr := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID", profile)
 		if checkErr != nil {
 			return domain.InspectionReport{}, checkErr
 		}
@@ -84,6 +102,11 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
+	workspaces, err := workspaceEvidence(artifact, checkID, result, "npm-workspace")
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	retained := append([]domain.Evidence{evidence}, workspaces...)
 	codes := dynamicFindingCodes(result.Observations())
 	findings := make([]domain.Finding, 0, len(codes))
 	for _, code := range codes {
@@ -93,7 +116,7 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 		}
 		findings = append(findings, finding)
 	}
-	return domain.NewInspectionReport(execution, findings, []domain.Evidence{evidence})
+	return domain.NewInspectionReport(execution, findings, retained)
 }
 
 func dynamicFindingCodes(observations []domain.SandboxObservation) []string {
@@ -121,4 +144,47 @@ func dynamicFindingCodes(observations []domain.SandboxObservation) []string {
 		}
 	}
 	return codes
+}
+
+func (i *DynamicInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.sandbox == nil || ctx == nil || kind != domain.CheckInspection || artifact.Identity().Source().String() != "npm" {
+		return nil, errors.New("npm dynamic declaration is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID("npm-dynamic-lifecycle")
+	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, dynamicCheckRuntimeDescriptor)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
+}
+
+func completeDynamicEnvironments(result domain.SandboxResult) bool {
+	states := result.EnvironmentStates()
+	return len(states) == 2 && states[0].VFSOperationsCovered && states[1].VFSOperationsCovered
+}
+
+// Archive, instance and local-root consumers retain the same bounded state
+// contract under their own current check and opaque controller-owned IDs.
+func workspaceEvidence(artifact domain.AcquiredArtifact, checkID domain.CheckID, result domain.SandboxResult, prefix string) ([]domain.Evidence, error) {
+	var facts []domain.Evidence
+	for _, state := range result.EnvironmentStates() {
+		summary, err := state.Summary()
+		if err != nil {
+			return nil, err
+		}
+		id, err := domain.NewEvidenceID(prefix + "-" + string(state.Profile))
+		if err != nil {
+			return nil, err
+		}
+		fact, err := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
+		if err != nil {
+			return nil, err
+		}
+		facts = append(facts, fact)
+	}
+	return facts, nil
 }

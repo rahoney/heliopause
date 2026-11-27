@@ -1,0 +1,405 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-H1",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES: named H1 local scope",
+    "ACCEPTANCE_CLOSED": "YES: bounded root extras local; hosted/whole final OPEN"
+  },
+  "source_base": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+  "scope": "UV run root extras only; reuse whole original/startup gate/marker AST/connected graph/current approval/records/readonly Python. Installed and CUDA grammars unchanged. H2 --with and general/native/final remain OPEN.",
+  "candidate_sources": [
+    {
+      "path": "internal/artifact/pypi/uv_run_requirement.go",
+      "sha256": "1b591451f5521cf95fe0094889ac234b135551184c321d5f7e4a4f506321dfd0"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_run_requirement_test.go",
+      "sha256": "d4264854f4e44f05dcd2ce72918cbc89d05735909874240f314abd94cbead775"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_run_wheels.go",
+      "sha256": "8c757bed2ebdf5e12cacc6e1425f458245cbdc84d88689e6b1602425a36fe541"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_run_wheels_test.go",
+      "sha256": "95e8144f9d5449648add2328ac21596c49dd91fe5f948c25e47f784b83377b79"
+    },
+    {
+      "path": "internal/artifact/pypi/wheel.go",
+      "sha256": "3903e80427e2520eb3befa07d6011bac0c3357645e7657a8481c15f3e3ed3119"
+    },
+    {
+      "path": "internal/artifact/pypi/simple.go",
+      "sha256": "e952087cbb44a02fe20b975c06b05e185baf9a4b2038748f04b53c15215c37fc"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "sha256": "80ecb173cb86a1d8d88478d310280b315d814ae5cb17269efe8eb555205cbde2"
+    },
+    {
+      "path": "internal/artifact/pypi/tool_wheels.go",
+      "sha256": "b5ad7155a525a621b71908eba1472cc0c9910a17c0e70c2fb02c0bc634741148"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_supply_closure.go",
+      "sha256": "596121177c76274c0436325a60f1ca3e1eb26e15d59995c9d0e334926a6bef94"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_query_wheels.go",
+      "sha256": "03b7a4c8dd3a016ea574bfe4e3999d856a6171abc79d2807a6a293a2d1b8575a"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_input.go",
+      "sha256": "004f0b58b3cc1ef8bffc26d6e36b8a78446fb2af1e2130c1121096460c79d04c"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver.go",
+      "sha256": "646f0fe6d63f809726e7a671a347eee9c9467117999bc073c5b07af7ed2e8ec4"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_execution.go",
+      "sha256": "0e103140f0efce921223b03095ec5e29818463bd07a4b229b4da174261787146"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_cli.go",
+      "sha256": "2a0ebb2b40e3d31c61feda3c240ecf2d3147df7181d766331ef99c3b34085c44"
+    },
+    {
+      "path": "internal/cli/python_execution.go",
+      "sha256": "c93e795d0ae46d4fdb6c3b2e684745fea68eab27c90653c860944d3989864f82"
+    },
+    {
+      "path": "internal/cli/python_execution_extras_test.go",
+      "sha256": "70046f5d16dcd43d1f082762becd4e8a51ee0f29ac61f94cda4bcb23728c98a4"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_cli_integration_test.go",
+      "sha256": "070f35f442665a9ebebc0f852bae2e0da01091e3313762667892b395b5378d56"
+    },
+    {
+      "path": "internal/cli/python_execution_test.go",
+      "sha256": "75b85b7af2992e31b2c381fe073fb7f6c38824910ad447e6760621e4edb05eb7"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_input_test.go",
+      "sha256": "304a6fd5e6a78f671c6726fa8254544f9bb73ce77b30bfc1373445de4258e004"
+    },
+    {
+      "path": "internal/artifact/pypi/wheel_legacy_identity_test.go",
+      "sha256": "3d15d6602db9f9f3a4a9a750c8fd87651543fe2f4207063552e4be45a01c3280"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_installed_controls.go",
+      "sha256": "28ee95bb4c7ea2daef04e148a19792eb9489aef56e78449719044c1072bec3af"
+    },
+    {
+      "path": "internal/artifact/pypi/execution_entry.go",
+      "sha256": "5a3a390dee84305db8ca18bfc1e47834a559e5df27aa78ec86d4dde4cef8c577"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "0d075f06628e2ec46ad0b8ebbbe07692c5bebe2a2fc4de30369a1140dd4ba86a"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow_test.go",
+      "sha256": "4264fa90328c1e11c2ebb062bbfc116a4b2645b931f390c2e506e5531fa04767"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "8a8c79985f2f8204cb4a3367ae9731940ec76d7191b49ce36a0564ff455c8605"
+    }
+  ],
+  "actual": {
+    "exit_code": 0,
+    "seconds": 231.502,
+    "host_unchanged": true,
+    "helpers_after": {
+      "matches": [],
+      "errors": []
+    },
+    "no_skip": true,
+    "helper_wait_zero": true,
+    "helper_confirmed_stopped": true,
+    "observer_directory_empty_after": true,
+    "scope": "H1 current whole UV root extras CLI: normal0/typed nonzero2/unknown extra refusal plus affected old base case1; fixed existing observer, no CPP or budget change",
+    "source_base": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+    "new_test_source": {
+      "path": "internal/bootstrap/python_uv_run_cli_integration_test.go",
+      "sha256": "070f35f442665a9ebebc0f852bae2e0da01091e3313762667892b395b5378d56"
+    },
+    "local_observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+  },
+  "named_cases": {
+    "1": {
+      "scope": "affected existing base",
+      "seconds": 49.71,
+      "exit": 0,
+      "nodes": 1
+    },
+    "6": {
+      "scope": "uvx root extras",
+      "seconds": 82.24,
+      "exit": 0,
+      "nodes": 3
+    },
+    "7": {
+      "scope": "uv tool run root extras",
+      "seconds": 75.55,
+      "exit": 2,
+      "nodes": 3
+    },
+    "8": {
+      "scope": "authenticated unknown-extra refusal",
+      "seconds": 21.93,
+      "exit": 1,
+      "policy": "NOT_AVAILABLE",
+      "runtime_attempted": false,
+      "stored_manifest": 0
+    }
+  },
+  "single_full_8_case_parent_tested": false,
+  "legacy_identity_cause": {
+    "actual_directory": "Unidecode-1.4.0.dist-info",
+    "raw_name": "Unidecode",
+    "normalized_name": "unidecode",
+    "old_reader": "lowercase-only reconstructed metadata directory",
+    "red_tests": 2,
+    "fix": "share identity normalization but preserve one exact measured directory/RECORD/console path; foreign or duplicate alias directories remain refused",
+    "primary_spec": "https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode"
+  },
+  "wiring": {
+    "existing_parent_cases": 8,
+    "source_markers": 11,
+    "Linux_parents": 122,
+    "CPP": 133,
+    "Required": 10,
+    "Linux_budget_minutes": 120,
+    "new_jobs": 0,
+    "new_CPP_permissions": false,
+    "actual_CPP_repeated": false
+  },
+  "CPP_reused": {
+    "source_sha256": "6d72851ad053c23b5983bccfd28c0d84e7016cc6a83a195301dff4c2620e801f",
+    "observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721",
+    "full133_seconds": 59.054
+  },
+  "checks": {
+    "pre_actual": [
+      {
+        "name": "format",
+        "exit_code": 0,
+        "seconds": 0.928
+      },
+      {
+        "name": "artifact",
+        "exit_code": 0,
+        "seconds": 5.447
+      },
+      {
+        "name": "wiring",
+        "exit_code": 0,
+        "seconds": 21.769
+      },
+      {
+        "name": "tagged-vet",
+        "exit_code": 0,
+        "seconds": 4.95
+      },
+      {
+        "name": "test-build",
+        "exit_code": 0,
+        "seconds": 3.407
+      }
+    ],
+    "wiring": [
+      {
+        "name": "format",
+        "exit_code": 0,
+        "seconds": 1.62
+      },
+      {
+        "name": "workflow",
+        "exit_code": 0,
+        "seconds": 2.447
+      },
+      {
+        "name": "checker",
+        "exit_code": 0,
+        "seconds": 1.973
+      }
+    ],
+    "grouped": [
+      {
+        "name": "quick",
+        "exit_code": 0,
+        "seconds": 374.16
+      },
+      {
+        "name": "affected-race",
+        "exit_code": 0,
+        "seconds": 76.824
+      },
+      {
+        "name": "checker-race",
+        "exit_code": 0,
+        "seconds": 93.755
+      },
+      {
+        "name": "docs",
+        "exit_code": 0,
+        "seconds": 0.362
+      },
+      {
+        "name": "security",
+        "exit_code": 0,
+        "seconds": 20.112
+      }
+    ]
+  },
+  "first_failures_preserved": true,
+  "temporary_diagnostics_removed": true,
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-first-v6-actual.log",
+      "sha256": "6da3cbd7ff2731ea249c64321305560cf21b32871501778a3f448f274b54d11e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-first-v6-actual-result.json",
+      "sha256": "68dd5653953101713db84f6d316074b2a115061473af6515a7bbc0a693290721"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-first-v6-build-result.json",
+      "sha256": "c034c15970c54d6b8b1f4e8569036a2beef5964a4fcb05f72d951c5f63616c10"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-native-v9-actual.log",
+      "sha256": "eaf8d0e85652a2d4312978b27c3d272838d9f791fb3a0783366b73fa448fa678"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-native-v9-actual-result.json",
+      "sha256": "ba7fa9855deeb2a54a1a34ee586f7ae3458ba1566a9dc9297cfc99ae0088ccb1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-identity-v10-actual.log",
+      "sha256": "c55b48813c451f45aad78625e0c0fffad554e6a29f6235654cf0db1476b55fbd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-identity-v10-actual-result.json",
+      "sha256": "f1cc4a191c88c048635bea892d0488862691d488c0999901ae11525def0800ec"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-identity-v10-diagnostic-control-formatted.go.txt",
+      "sha256": "7eaf344669e3f2f0b972f2c38122059f35bb4a47820c926e7e0889017e162280"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-identity-v10-diagnostic-test.go.txt",
+      "sha256": "d8a59e344b7ceaed69eaf9ee22727b753cef284fe2001a00ec577639c5793bdb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-red-v11-legacy-red.log",
+      "sha256": "ff693325ecbac38b6d197bb534573ad52272dae826441fc3acf1c252111828e8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-red-v11-checks.json",
+      "sha256": "bd2106522a968dc951c1c302f3c28597987151557e475189d824a0950c3d5390"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-actual.log",
+      "sha256": "1a67b12ecaf58e36592c8b5392585daf3723d13365b5ff5646dda308bd25adb2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-actual-result.json",
+      "sha256": "c1430fb428293b1ef69cb1374224c22d3582170ea632b48c6432ee48b0f93614"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-build-result.json",
+      "sha256": "b1e31d26592d24b88674aa8c78b200aa9e704f6ee16f4362bb19edf1469b552f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-checks.json",
+      "sha256": "298e14360a5fe8a0aa544f484512b18039350e5297d9dbdb360a4a9b40bebea2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-host-before.json",
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-host-after.json",
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-profile-restored.json",
+      "sha256": "0760bad03f6584bc1fb9397fc5f908d72d4fae443173f4b252405f95d00aaaf6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-actual-v13-namespace-result.json",
+      "sha256": "15103c2e904eefb9d3062d1b11652d498c928c8f9ba022f51eb55f1cb7b04d0c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-wiring-v14-checks.json",
+      "sha256": "b0f8fc8cca8f0f3fc2464be9be5b2216a6b3b225aeef34cefd8bf3140be6aafe"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-wiring-v14-workflow.log",
+      "sha256": "75c6e8180765cab6d972ddb1ebcf8748c39ee15335e315e9c85030896b152583"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-wiring-v14-checker.log",
+      "sha256": "7c75f8418ed300cac81d67f302df7017ad839f592b36d98b16796306248f87e4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-source-v15-source-freeze.json",
+      "sha256": "3507374d835d6dc58febd913c592d255f589f6a7eb2b382df9422db74da211a3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-final-v15-checks.json",
+      "sha256": "d3f0e45b19f98a79bedddd5100fc31410ef8716bd7ef4533dd3e0832747be8a8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-final-v15-quick.log",
+      "sha256": "fc3a337cf845dd7b44d9f19cea935726bb9f94d5e1b3f3426478b3299974d6cd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-final-v15-affected-race.log",
+      "sha256": "e405f89c0f22e47b8dbdd4780cbb5ccf86d9a51ff5122eb7ec3c501de943942a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-final-v15-checker-race.log",
+      "sha256": "2bfc23109f8adba856ed95356dc261f0156b221f3e2ce39cbdbc39f09f5b2ce4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-final-v15-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h1-final-v15-security.log",
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "hosted": "H1 unpushed; CI441 source1ee frozen, not H1 qualification",
+  "reproduce": [
+    "go run ./scripts/check quick",
+    "go test -race ./internal/artifact/pypi ./internal/inspection/pypi ./internal/sandbox ./internal/bootstrap ./internal/cli",
+    "go test -race ./scripts/check",
+    "go run ./scripts/check docs",
+    "go run ./scripts/check security",
+    "bash scripts/ci-uv-tools.sh uv-run-cli (canonical protected client/helper environment; whole8 hosted still pending)"
+  ],
+  "raw_storage": "Named raw paths are preserved in the local workspace; untracked raw logs and ignored AGENTS.md are not claimed as GitHub-delivered.",
+  "completed_copy_cleanup": {
+    "deleted_names": 17,
+    "deleted_inodes": 17,
+    "deleted_logical_bytes": 500814759,
+    "references": [],
+    "query_errors": [],
+    "protected_clients_helpers": [],
+    "containers": [],
+    "kept_current_qualified_ELF": "/tmp/haa-p6h-root-extras-legacy-fixed-v13/bootstrap.test",
+    "kept_current_observer": "/tmp/haa-p6g3-cpp/observer-root",
+    "source_and_logs_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-h1-cleanup-result-20261031.json",
+    "exact_failed_v6_source_archived_and_hash_verified": true
+  }
+}

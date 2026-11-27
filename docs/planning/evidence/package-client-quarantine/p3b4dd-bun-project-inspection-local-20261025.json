@@ -1,0 +1,108 @@
+{
+  "work_item": "M13-004/P3-B4d-d",
+  "baseline": "e212fa491462fafbdc9f71ec5cac2dd8caf2b94a",
+  "status": {
+    "IMPLEMENTED": "YES (Bun typed complete-project static-all/dynamic/facts/required coverage and exact prepared handoff)",
+    "WIRED": "YES (existing Application verification/evidence/entry-set Policy service)",
+    "QUALIFIED": "YES (named local transitive/peer Node-lane public quarantine and existing PNPM regression)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4/Bun)",
+    "MISSING": [
+      "explicit Bun executable/runtime requirements qualification",
+      "approved cache/transaction/CLI/native install handoff",
+      "meaningful backend CI/macOS-Required gate and whole affected-profile qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/inspection/npm/bun_project.go",
+      "sha256": "42d4b8ddb0928e2b5102cb917cfe602d46cffcbc8f05a563938ca45b922f654d"
+    },
+    {
+      "path": "internal/inspection/npm/bun_dynamic.go",
+      "sha256": "02cce75b6df8d2856bc9ddfd0a604771a1549894e88b6f1a5379577fa98136c4"
+    },
+    {
+      "path": "internal/inspection/npm/bun_dynamic_test.go",
+      "sha256": "dbfcf5662a5f8ab0dc02605df9679f097e9ab683c83e97787c5b007fdcc0e678"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_dynamic.go",
+      "sha256": "ef5e89cf3f09449f3b2a757a1771f350402774bb110334e6ab5ce504651e0b65"
+    },
+    {
+      "path": "internal/sandbox/bun_project_inspection_test.go",
+      "sha256": "ff6e2ecf730cee463b10250207dc90f68a64eebdc532b12ceeaa81bc3207c277"
+    },
+    {
+      "path": "internal/sandbox/bun_project_inspection_real_test.go",
+      "sha256": "9a91507d5f24a2f42b27a6bea02980ad620c7555bea8c8a48b9ecd82e51f5af2"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4dd-type-reviewed-quick.json",
+      "exit": 0,
+      "seconds": 149.369,
+      "receipt_sha256": "ec6a2c5e09193ceb919288f60dd20e48417760d8a7067d5cfe97b3122e9b0fff"
+    },
+    {
+      "receipt": "p3b4dd-reviewed-inspection-sandbox-full-race.json",
+      "exit": 0,
+      "seconds": 24.431,
+      "receipt_sha256": "478fa78018133f6db1ae7bd57da4c291f7249c9c7d04644fd5adb0cdee11259a"
+    },
+    {
+      "receipt": "p3b4dd-bun-project-tagged-vet.json",
+      "exit": 0,
+      "seconds": 1.22,
+      "receipt_sha256": "41818ea3010940b968e599c11f2045b29dfa7153db26fabda144975c01f24ffd"
+    },
+    {
+      "receipt": "p3b4dd-bun-project-v2-actual-compile.json",
+      "exit": 0,
+      "seconds": 6.836,
+      "receipt_sha256": "6e9741e610548ef827068162999aa104d96e6c19192ae450f09f3665be699882"
+    },
+    {
+      "receipt": "p3b4dd-bun-project-v2-result.json",
+      "exit": 0,
+      "seconds": 160.202,
+      "receipt_sha256": "5e19b5d3d9b4b190fb8c7c3bed175033c4bb5b8e3cec18111fa1625fdd60249c"
+    }
+  ],
+  "bun_actual": {
+    "fixtures": [
+      "transitive",
+      "peer"
+    ],
+    "archives": [
+      2,
+      4
+    ],
+    "exact_instances": [
+      2,
+      4
+    ],
+    "required_checks_per_archive": 3,
+    "actual_instance_facts": "EXACT",
+    "evidence": "RECORDED",
+    "entry_set_Policy": "ALLOW",
+    "primary": "NONE",
+    "host_install_action": "NOT_REQUIRED",
+    "completed_prepared_handoff": "exact request only; partial acquired request rejected",
+    "seconds": 47.05,
+    "explicit_Bun_runtime_Host_install": "NOT_EXERCISED"
+  },
+  "pnpm_affected_actual": {
+    "native_selections": 8,
+    "complete_quarantine_cases": 4,
+    "required_checks_per_archive": 3,
+    "entry_set_Policy": "ALLOW",
+    "seconds": 110.56
+  },
+  "shared_body": "p3b4dd-dynamic-facts-mechanical-reuse.json",
+  "first_failure": "p3b4dd-first-quick.json (27.793s unknown guessed type); actual API BunLockedPackage used, no new source type created",
+  "observer": "unchanged original canonical119-latch source/binary from 3f328e2 verified by namespace preparation",
+  "Policy_rules_runtime_fs_network_grants_changed": false,
+  "ci": "This completes a meaningful Node-lane backend grouping; wire frozen Bun CI supply/actual before one push/CI; follow actual timer and continuation rule. Cache/transaction/CLI remain independent follow-up work."
+}

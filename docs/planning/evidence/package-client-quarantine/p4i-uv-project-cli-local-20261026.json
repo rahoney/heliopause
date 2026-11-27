@@ -1,0 +1,155 @@
+{
+  "work_item": "M13-004/P4-I",
+  "baseline": "21312f8f0901d21ad6b7ba5e6c05b4141dd6c805",
+  "status": {
+    "IMPLEMENTED": "YES (public uv add/sync CLI/preflight/bootstrap)",
+    "WIRED": "YES (actual production bootstrap and qualified H backend)",
+    "QUALIFIED": "YES (named local public CLI/default+explicit target/current full inspection/records)",
+    "ACCEPTANCE_CLOSED": "YES (named add/sync CLI on existing empty/managed venv); NO (whole P4)",
+    "MISSING": [
+      "native project adoption, distinct lock-only publication and persistent UV tool/pipx",
+      "backend grouped CI wiring/final exact affected source/profile qualification in P7"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4i-project-cli-v4-format.json",
+      "seconds": 0.662,
+      "sha256": "8e1cb39de369a45b4734c1180cfea5c788a7a8091e63d65757a35c7dc6fd5f0f"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4i-project-cli-v4-quick.json",
+      "seconds": 43.517,
+      "sha256": "014c91f50ebc9166133868fed0f9ed3d185e008ec00b23d36e15c79ff285fe9e"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4i-project-cli-v4-security.json",
+      "seconds": 8.958,
+      "sha256": "2d96349536e53b4c99ef763cdefd3cf1296a4f1feda22420cb0e8765e611ff5c"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4i-project-cli-v4-docs.json",
+      "seconds": 0.251,
+      "sha256": "d547218478a5dc9316e7b4cffd31acde27687c2425d22713f57036fc8dd504f1"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4i-project-cli-v4-full-affected-race.json",
+      "seconds": 23.232,
+      "sha256": "1e828c97ffc6c7cc4d5192772e79f9b6c49da34579e46060cf4391503408dc9a"
+    }
+  ],
+  "actual": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4i-project-cli-native-v3-result.json",
+      "seconds": 327.758,
+      "new_cli_seconds": 168.49,
+      "legacy_uv_pip_sync_seconds": 156.66,
+      "project_successful_requests": 7,
+      "project_refusals": 1,
+      "legacy_complete_sync_requests": 6,
+      "observed": [
+        "fresh add24.2 then25.0, same-version sync, second idna3.10 root; all entries freshly inspected with completed required checks/Evidence and ALLOW",
+        "explicit project/default .venv plus cwd/default project human sync",
+        "edited empty dependencies with old native lock regenerates empty graph and retires all owned wheels; empty no-op still complete approval/records",
+        "native-looking unowned original refuses UPDATE_ADOPTION_REQUIRED and preserves original",
+        "complete Manifest/SBOM with exact published controls and preserved user data",
+        "existing UV pip complete/reinspect/edited/explicit-empty/pylock-empty/native original17files adoption regression"
+      ],
+      "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+      "host_before_after_identical": true,
+      "no_skips": true
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4i-project-explicit-target-native-v4-result.json",
+      "seconds": 10.494,
+      "test_seconds": 7.98,
+      "observed": [
+        "explicit external existing target succeeds with absent project/.venv and unrelated VIRTUAL_ENV",
+        "approved Manifest target exactly equals --target; default venv not provisioned"
+      ],
+      "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+      "host_before_after_identical": true,
+      "no_skips": true
+    }
+  ],
+  "source_reuse": "docs/github-logs/package-client-quarantine-20261021/p4i-v4-source-reuse-boundary.json",
+  "corrections": [
+    "docs/github-logs/package-client-quarantine-20261021/p4i-first-executor-capability-assessment.json",
+    "docs/github-logs/package-client-quarantine-20261021/p4i-launcher-prerequisite-fixture-assessment.json",
+    "docs/github-logs/package-client-quarantine-20261021/p4i-headless-human-fixture-assessment.json"
+  ],
+  "mechanical_reuse": "docs/github-logs/package-client-quarantine-20261021/p4i-control-preflight-formatted-mechanical-reuse.json",
+  "unchanged_owners": [
+    "internal/application/uv_project.go",
+    "internal/artifact/pypi/uv_project_input.go",
+    "internal/artifact/pypi/uv_native_project_lock.go",
+    "internal/artifact/pypi/uv_project_original_lock.go",
+    "internal/artifact/pypi/uv_project_export.go",
+    "internal/sandbox/uv_project_resolver.go",
+    "internal/sandbox/uv_project_update.go",
+    "internal/promotion/uv_project_preparation.go",
+    "internal/promotion/uv_project_publication.go",
+    "internal/promotion/uv_project_cache.go",
+    "internal/promotion/python_project_cache.go",
+    "internal/promotion/python_project_output.go",
+    "internal/promotion/pypi_venv_transaction.go",
+    "internal/promotion/uv_project_transaction.go",
+    "internal/bootstrap/uv_project.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/cli/project_control_preflight.go",
+      "sha256": "a2ca96659aa7743d329946ecaa4480e865bbe42090dc4a7713fa72025148409f"
+    },
+    {
+      "path": "internal/cli/uv_project.go",
+      "sha256": "ec6f790fda88e278c3e0f8094be08f1f20feece676c4ef64839ff136e9e2f254"
+    },
+    {
+      "path": "internal/cli/uv_project_test.go",
+      "sha256": "0e36540ede8c0e7221a332fa1c4180453279f318717040c0eb312bad53e3f8f9"
+    },
+    {
+      "path": "internal/cli/pnpm_project.go",
+      "sha256": "48fd5daea4b416f964fd91f43f979b6373916daafd108577401387e97b14e54f"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "1aae8037e36194b63dcd19ec3d7104147a42ed6baddebc5a76056d8e59f80418"
+    },
+    {
+      "path": "internal/cli/launcher_test.go",
+      "sha256": "fd164b2c27e2a71bc2c11415053277862e9f5c96442a056bf8e6a7f3d80e989c"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "64f6790bcd2d7726227784f71b3b9bec70df312db84fcbfebac0226c8a59c06b"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_client.go",
+      "sha256": "72a2377a3a46a413e030c4d817f7849710391ca038065d408f7bc6ec21a7ae16"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_client_test.go",
+      "sha256": "59b021d5ff599d7719e5d2184861e6fcba5de902010c3152c410cad32d202e54"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_cli_integration_test.go",
+      "sha256": "c10276b8cfd403b53337df875cc232e8b6255e257bd38ebcd09d273a460cf157"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_target_integration_test.go",
+      "sha256": "973846248671c84fcd5f3c96e25a9b2193565807acf43fca5247b67ceef1e258"
+    }
+  ],
+  "not_claimed": [
+    "native project --adopt/uv lock--upgrade/UV tool/pipx support",
+    "runtime provisioning, uv run or arbitrary native option compatibility",
+    "remote P4/macOS/CUDA qualification or installed public release update"
+  ],
+  "ci": "No push/dispatch; helpers grouped at documented final affected checkpoint",
+  "lessons_review": "artifact L15 records separate capability type failure, example prerequisites and explicit human expectation; original failures preserved"
+}

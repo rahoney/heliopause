@@ -1,0 +1,878 @@
+{
+  "schema": "haa-local-qualification/v1",
+  "work_item": "M13-004",
+  "substep": "P4-O4-B3c",
+  "baseline_commit": "e0182278c1b1ad11680670b11b6bfdd03aa57c40",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "audit": {
+    "IMPLEMENTED": "YES(existing graph/required inspector/Policy/staging/root copy/recovery reused; one common role-mode gap corrected)",
+    "WIRED": "YES(local actual complete DATA consumers); hosted actual consumer wiring remains",
+    "QUALIFIED": "YES(named original ZIP graph and isolated filesystem mechanics only)",
+    "ACCEPTANCE_CLOSED": "YES(named local graph/file-recovery scope only)",
+    "MISSING": [
+      "wire selected ZIP/current graph/root actual consumers into existing hosted matrix",
+      "native installed pipx runtime/tool/CLI execution qualification",
+      "new full signed native set/current production activation qualification where required",
+      "push e859487 checkpoint awaits explicit destination/payload approval",
+      "full supported CPU/three CUDA/final profiles"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/artifact/githubrelease/pipx_pipeline_fixture_realcorpus_test.go",
+      "sha256": "a54e9098fcf5014b8524c4f14d37967d22f7d618939726a947f88d1cb642c0bd"
+    },
+    {
+      "path": "internal/artifact/githubrelease/pipx_pipeline_integration_realcorpus_test.go",
+      "sha256": "95388c985b8bd8befb2500a5a0ccfdff3b8ff727820feb9021460da1f11f1591"
+    },
+    {
+      "path": "internal/releaseactivation/pipx_data_namespace_realcorpus_linux_test.go",
+      "sha256": "6356a578509d4abb0b1108a4820c8af83042f09ed4eeba950462e528535459c6"
+    },
+    {
+      "path": "internal/releaseinstall/installer.go",
+      "sha256": "13766fb01c70ff7cde95ccabef099ed1d0c0954ae37b53104ea5b6814e5f35e5"
+    },
+    {
+      "path": "internal/releaseinstall/pending_namespace_linux_test.go",
+      "sha256": "5e3ccb2ba24c0417ebeb1f39f7320e7b51ddc5ef714fe84ad60f09b215deb5f5"
+    },
+    {
+      "path": "internal/releaseinstall/pending_unix.go",
+      "sha256": "a31ec750197feb9ea6d8c8ee2d9de1f7bbcac98c9bda19ff7ee6cc2a101f7799"
+    }
+  ],
+  "checks": {
+    "graph": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 0.753
+      },
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 60.488
+      },
+      {
+        "step": "race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "-count=1",
+          "./internal/artifact/githubrelease"
+        ],
+        "exit_code": 0,
+        "seconds": 14.615
+      },
+      {
+        "step": "vet-realcorpus",
+        "command": [
+          "go",
+          "vet",
+          "-tags=realcorpus",
+          "./internal/artifact/githubrelease"
+        ],
+        "exit_code": 0,
+        "seconds": 6.94
+      },
+      {
+        "step": "compile",
+        "command": [
+          "go",
+          "test",
+          "-tags=realcorpus",
+          "-c",
+          "-o",
+          "/tmp/haa-p4o4b3c1-githubrelease.test",
+          "./internal/artifact/githubrelease"
+        ],
+        "exit_code": 0,
+        "seconds": 1.995
+      }
+    ],
+    "root_v2": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 0.665
+      },
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 214.559
+      },
+      {
+        "step": "race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "-count=1",
+          "./internal/releaseinstall",
+          "./internal/releaseactivation"
+        ],
+        "exit_code": 0,
+        "seconds": 6.209
+      },
+      {
+        "step": "vet-realcorpus",
+        "command": [
+          "go",
+          "vet",
+          "-tags=realcorpus",
+          "./internal/releaseinstall",
+          "./internal/releaseactivation"
+        ],
+        "exit_code": 0,
+        "seconds": 0.837
+      },
+      {
+        "step": "compile",
+        "command": [
+          "go",
+          "test",
+          "-tags=realcorpus",
+          "-c",
+          "-o",
+          "/tmp/haa-p4o4b3c2-v2-releaseactivation.test",
+          "./internal/releaseactivation"
+        ],
+        "exit_code": 0,
+        "seconds": 2.774
+      },
+      {
+        "step": "docs",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "docs"
+        ],
+        "exit_code": 0,
+        "seconds": 0.261
+      },
+      {
+        "step": "security",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "security"
+        ],
+        "exit_code": 0,
+        "seconds": 14.476
+      }
+    ],
+    "final": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 0.748
+      },
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 37.624
+      },
+      {
+        "step": "race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "-count=1",
+          "./internal/releaseinstall",
+          "./internal/releaseactivation"
+        ],
+        "exit_code": 0,
+        "seconds": 4.148
+      },
+      {
+        "step": "vet-realcorpus",
+        "command": [
+          "go",
+          "vet",
+          "-tags=realcorpus",
+          "./internal/releaseinstall",
+          "./internal/releaseactivation"
+        ],
+        "exit_code": 0,
+        "seconds": 0.652
+      },
+      {
+        "step": "compile",
+        "command": [
+          "go",
+          "test",
+          "-tags=realcorpus",
+          "-c",
+          "-o",
+          "/tmp/haa-p4o4b3c2-v2-releaseinstall.test",
+          "./internal/releaseinstall"
+        ],
+        "exit_code": 0,
+        "seconds": 0.379
+      },
+      {
+        "step": "docs",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "docs"
+        ],
+        "exit_code": 0,
+        "seconds": 0.245
+      },
+      {
+        "step": "security",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "security"
+        ],
+        "exit_code": 0,
+        "seconds": 9.898
+      }
+    ]
+  },
+  "final_graph_compile": {
+    "step": "final-composed-graph-compile",
+    "command": [
+      "go",
+      "test",
+      "-tags=realcorpus",
+      "-c",
+      "-o",
+      "/tmp/haa-p4o4b3c1-v2-githubrelease.test",
+      "./internal/artifact/githubrelease"
+    ],
+    "exit_code": 0,
+    "seconds": 7.472
+  },
+  "graph_actual": {
+    "exit": 0,
+    "seconds": 84.436,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "7d444e4636f579d439d7cbd8a1e5995cfe02aa91ac64739ceee32d94acae4a67",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4b3c1-actual-v2/protected-client",
+        "sha256": "4f005e5f16af88a39f75fe6710fb043f38bdc9495e7fb9b772120474f2021101"
+      },
+      {
+        "path": "/tmp/haa-p4o4b3c1-actual-v2/observer",
+        "sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/artifact/githubrelease/pipx_pipeline_integration_realcorpus_test.go",
+        "sha256": "95388c985b8bd8befb2500a5a0ccfdff3b8ff727820feb9021460da1f11f1591"
+      }
+    ],
+    "passed_named_tests": [
+      "TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging"
+    ],
+    "named_pass": true,
+    "scope": "actual original ZIP20units/current13subject pipeline; native fixture sandbox/integrity-only positive; negative production SDK refuses unsigned set; no activation/authenticity/native execution claim"
+  },
+  "root_data_actual": {
+    "exit": 0,
+    "seconds": 8.246,
+    "command": [
+      "unshare",
+      "--mount",
+      "--net",
+      "--fork",
+      "/tmp/haa-p4o4b3c2-v2-releaseactivation.test",
+      "-test.v",
+      "-test.failfast",
+      "-test.timeout=3m",
+      "-test.run=^(TestPipx(ActualFullWirePrivateStage|BootstrapCopyRecoveryAndCleanup)InDisposableNamespace|TestProtectedStageInDisposableNamespace|TestInitialNativeFilesInDisposableNamespace)$"
+    ],
+    "named_pass": true,
+    "no_skip": true,
+    "host_unchanged": true,
+    "input_unchanged": true,
+    "source": [
+      {
+        "path": "/tmp/haa-p4o4b3c2-v2-releaseactivation.test",
+        "sha256": "b49e4d2e567e83c5bdc24d6f0b5b6dcc5cd732d44849491dac23889047f9f4e3"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseactivation/pipx_data_namespace_realcorpus_linux_test.go",
+        "sha256": "6356a578509d4abb0b1108a4820c8af83042f09ed4eeba950462e528535459c6"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseinstall/installer.go",
+        "sha256": "13766fb01c70ff7cde95ccabef099ed1d0c0954ae37b53104ea5b6814e5f35e5"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseinstall/pending_unix.go",
+        "sha256": "a31ec750197feb9ea6d8c8ee2d9de1f7bbcac98c9bda19ff7ee6cc2a101f7799"
+      }
+    ],
+    "scope": "unsigned actual12payload wire and original DATA bootstrap/partial-copy/cleanup in separate mount/network namespaces; auth/crypto filesystem doubles only; no activation/authenticity/full release qualification"
+  },
+  "pending_actual": {
+    "exit": 0,
+    "seconds": 0.22,
+    "command": [
+      "unshare",
+      "--mount",
+      "--net",
+      "--fork",
+      "/tmp/haa-p4o4b3c2-v2-releaseinstall.test",
+      "-test.v",
+      "-test.failfast",
+      "-test.timeout=3m",
+      "-test.run=^TestInterruptedSystemCopyInDisposableNamespace$"
+    ],
+    "named_pass": true,
+    "no_skip": true,
+    "host_unchanged": true,
+    "input_unchanged": true,
+    "source": [
+      {
+        "path": "/tmp/haa-p4o4b3c2-v2-releaseinstall.test",
+        "sha256": "17fca39c3b9e36ebe6f6407d773f6b2226faad2aec76faaf0b2bae43abcd576e"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseinstall/pending_namespace_linux_test.go",
+        "sha256": "5e3ccb2ba24c0417ebeb1f39f7320e7b51ddc5ef714fe84ad60f09b215deb5f5"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseinstall/installer.go",
+        "sha256": "13766fb01c70ff7cde95ccabef099ed1d0c0954ae37b53104ea5b6814e5f35e5"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/releaseinstall/pending_unix.go",
+        "sha256": "a31ec750197feb9ea6d8c8ee2d9de1f7bbcac98c9bda19ff7ee6cc2a101f7799"
+      }
+    ],
+    "scope": "existing interrupted-copy namespace full24 cases including actual SIGKILL child; filesystem verifier fixture only; no Host activation/authenticity/full release qualification"
+  },
+  "graph_scope": "final composed source; actual selected ZIP external20units on positive and unsigned-proof negative; graph13subjects/checks32/Evidence37 with ZIP7; missing runner Evidence31 and no staging; current Evidence read back through trusted store; native6 sandbox and integrity-only positive/provenance remain explicit fixture scopes; promoter is spy, no Host activation",
+  "mode_gap": {
+    "owner": "internal/releaseinstall/pending_unix.go:DiscardSystemCopy vs installer.go copier",
+    "failure": "cleanup accepted executable0555 DATA partial copy despite copier intended system0444",
+    "before": {
+      "exit": 1,
+      "seconds": 10.645,
+      "command": [
+        "unshare",
+        "--mount",
+        "--net",
+        "--fork",
+        "/tmp/haa-p4o4b3c2-releaseactivation.test",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=3m",
+        "-test.run=^TestPipx(ActualFullWirePrivateStage|BootstrapCopyRecoveryAndCleanup)InDisposableNamespace$"
+      ],
+      "named_pass": true,
+      "no_skip": true,
+      "host_unchanged": true,
+      "input_unchanged": true,
+      "source": [
+        {
+          "path": "/tmp/haa-p4o4b3c2-releaseactivation.test",
+          "sha256": "9f8ce3c495aef29eb3065b6f3ea82cbea116b6711f2f1ef2b110df9b8c4941fb"
+        },
+        {
+          "path": "/tmp/haa-p4o1-20261027-source/internal/releaseactivation/pipx_data_namespace_realcorpus_linux_test.go",
+          "sha256": "6356a578509d4abb0b1108a4820c8af83042f09ed4eeba950462e528535459c6"
+        }
+      ],
+      "scope": "unsigned actual12payload wire and original DATA bootstrap/partial-copy/cleanup in separate mount/network namespaces; auth/crypto filesystem doubles only; no activation/authenticity/full release qualification"
+    },
+    "same_test_sha256": "6356a578509d4abb0b1108a4820c8af83042f09ed4eeba950462e528535459c6",
+    "correction": "existing role-mode selection extracted as private assetCopyMode; copier behavior preserved; interrupted-copy ceiling reuses system metadata0444/native0555; prefix/inode/ownership/whole-set-before-delete guards unchanged",
+    "verified": "same test SHA RED10.645s→GREEN8.246s including four exact top-level root namespace tests, fresh/retry/partial/tamper/foreign cleanup; existing24 pending/SIGKILL cases PASS0.220s",
+    "first_operator_caveat": "first raw named_pass scalar used substring matching and is inaccurate for failed parent; exit1/FAIL were preserved and no success was claimed; v2 requires exact top-level PASS names"
+  },
+  "fixture_correction": "source audit found legacy pending complete fixture gave two NOTICE members0555 whereas actual copier/system namespace expectation is0444; only those two independent fixed-name fixture expectations changed; no pre-fix runtime failure is invented",
+  "scope_boundaries": [
+    "root auth/current/crypto verification doubles are file mechanics only; real SDK separately refuses unsigned wire/bootstrap/cleanup",
+    "actual12payload255942560B root stage exact bytes/single-link0600; corrupt ZIP/truncation/marker failures cleaned",
+    "original DATA root installed0444 and source0600; no registration/runtime activation; invalid executable partial and foreign replacement retained",
+    "Host5files/Docker/selected input unchanged; graph helper wait0/confirmed stopped/no helpers after",
+    "no public release, package installation, permanent runtime replacement or hosted/full profile claim"
+  ],
+  "raw_inventory": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c-final-source--internal--artifact--githubrelease--pipx_pipeline_fixture_realcorpus_test.go",
+      "bytes": 2829,
+      "sha256": "a54e9098fcf5014b8524c4f14d37967d22f7d618939726a947f88d1cb642c0bd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c-final-source--internal--artifact--githubrelease--pipx_pipeline_integration_realcorpus_test.go",
+      "bytes": 9956,
+      "sha256": "95388c985b8bd8befb2500a5a0ccfdff3b8ff727820feb9021460da1f11f1591"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c-final-source--internal--releaseactivation--pipx_data_namespace_realcorpus_linux_test.go",
+      "bytes": 13138,
+      "sha256": "6356a578509d4abb0b1108a4820c8af83042f09ed4eeba950462e528535459c6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c-final-source--internal--releaseinstall--installer.go",
+      "bytes": 23608,
+      "sha256": "13766fb01c70ff7cde95ccabef099ed1d0c0954ae37b53104ea5b6814e5f35e5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c-final-source--internal--releaseinstall--pending_namespace_linux_test.go",
+      "bytes": 11964,
+      "sha256": "5e3ccb2ba24c0417ebeb1f39f7320e7b51ddc5ef714fe84ad60f09b215deb5f5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c-final-source--internal--releaseinstall--pending_unix.go",
+      "bytes": 6557,
+      "sha256": "a31ec750197feb9ea6d8c8ee2d9de1f7bbcac98c9bda19ff7ee6cc2a101f7799"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-actual.log",
+      "bytes": 1784,
+      "sha256": "65c9aa1b51a8489109e99c968743683cb34ed0dfdc20efee091bad5cef051ffb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-actual.sh",
+      "bytes": 520,
+      "sha256": "dac3f43ff4e129b682fb56eef2da4da8fb00738d1a55229315a28e06055beff1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-ci-integration-cleanup.sh",
+      "bytes": 11165,
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-helpers-after.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-helpers-before.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-inventory.json",
+      "bytes": 2320,
+      "sha256": "9bf071bcc359093499a8be3db53870dbe65c77777c83b95eb14ec7560d74302e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-lifecycle.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-namespace-result.json",
+      "bytes": 215,
+      "sha256": "27634e5a5e5f4a534e69bf8bef2a2249d879a24af11f5e0566cae0bca99224e0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-namespace.py",
+      "bytes": 1564,
+      "sha256": "a94760ba3db2823fee113ba11b7d7d763da4f71c64cbb0c460d6920b785d7296"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v1-result.json",
+      "bytes": 1175,
+      "sha256": "23bcd0a93598d9729d0751d2007a14f8d1f3a37b39f7994c04ea7b311d3c1b30"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-actual.log",
+      "bytes": 1784,
+      "sha256": "7d444e4636f579d439d7cbd8a1e5995cfe02aa91ac64739ceee32d94acae4a67"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-actual.sh",
+      "bytes": 520,
+      "sha256": "63700a0b980ca5e23af8f6d21f045b45fd61fd8950da121c33222f7b71579773"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-ci-integration-cleanup.sh",
+      "bytes": 11165,
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-helpers-after.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-helpers-before.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-inventory.json",
+      "bytes": 2320,
+      "sha256": "57c8e1bbb21777b0219df169c4299f32bd208fc12320d0d3fec08cdad522a10f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-lifecycle.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-namespace-result.json",
+      "bytes": 215,
+      "sha256": "dbe3b382be95bd9051dff2850a80c5436ec015bf857456af9d2060d2c6f89d9f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-namespace.py",
+      "bytes": 1564,
+      "sha256": "f6edfeae43926a2fe0efca525adad8f1d8610f3493ff0df96a42ab7f3d39845f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2-result.json",
+      "bytes": 1175,
+      "sha256": "c25c55c19a782f692335eaa5a3f37eeeaaa87265ec7a89bfad2884b6d6415a4b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-actual-v2.py",
+      "bytes": 6875,
+      "sha256": "75016af8c185da11647b563c619b6d9d3f4ca25fa81ffa4954ff43cf850124ba"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-checks.json",
+      "bytes": 977,
+      "sha256": "3ab84664b361bd518a1658cd1fb0e752a01c6db51bc2a430050dec3c751769da"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-quick.log",
+      "bytes": 1354,
+      "sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-race.log",
+      "bytes": 74,
+      "sha256": "35b18b1c6454cbf8b449cc825fc61ac19ec28ac23ff46b7179e6d65c9adedd65"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-source--internal--artifact--githubrelease--pipx_pipeline_fixture_realcorpus_test.go",
+      "bytes": 2829,
+      "sha256": "a54e9098fcf5014b8524c4f14d37967d22f7d618939726a947f88d1cb642c0bd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-source--internal--artifact--githubrelease--pipx_pipeline_integration_realcorpus_test.go",
+      "bytes": 9956,
+      "sha256": "95388c985b8bd8befb2500a5a0ccfdff3b8ff727820feb9021460da1f11f1591"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-source.json",
+      "bytes": 363,
+      "sha256": "5ae074924f5c069a430ca9c4ce98457b4e13c7fdcf75f6d95deea9e0ec623961"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-v2-compile.json",
+      "bytes": 256,
+      "sha256": "c7ffb5a02fd2d1ba6d41ab76571206ccf4a7eeb65d09a23414cb38c540fe5262"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-v2-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c1-vet-realcorpus.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before--internal--releaseactivation--pipx_data_namespace_realcorpus_linux_test.go",
+      "bytes": 13138,
+      "sha256": "6356a578509d4abb0b1108a4820c8af83042f09ed4eeba950462e528535459c6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before--internal--releaseinstall--installer.go",
+      "bytes": 23302,
+      "sha256": "94ca7c10fb0f0692e8f8bd15a1409fd600f6192484b9ea8e95754cd96226ad45"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before--internal--releaseinstall--pending_unix.go",
+      "bytes": 6530,
+      "sha256": "a39be6993189fd1bcf9afb89ae8368ddd5d59be8c686321fbfb8b5626c6614c1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before-prepare.json",
+      "bytes": 614,
+      "sha256": "9c3d3f48383d9de699af349f1908e902226979d74d759cfe75bd6f929b756835"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before-source.json",
+      "bytes": 180,
+      "sha256": "348cbfe6f290df1905b6a8d555d54a091d4b2f1a8a8242e7adf0d42427acc407"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-before-vet-realcorpus.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-pending-actual-v2-actual.log",
+      "bytes": 3703,
+      "sha256": "ae001c8225f4bb67fe58cc6b739018ea0b1363ed0b1096e487cffd6a49e281cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-pending-actual-v2-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-pending-actual-v2-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-pending-actual-v2-inventory.json",
+      "bytes": 871,
+      "sha256": "ba781e0d998eb6b3cd776a0089615f006eb971070ae399a2fcfccc4537431860"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-pending-actual-v2-result.json",
+      "bytes": 1302,
+      "sha256": "e608fef4a91aa480a10940daa49399af6721175ef1ef4f08032ed9d67f8d5e90"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-pending-actual-v2.py",
+      "bytes": 3560,
+      "sha256": "18791ec082d7282ffba4a91456060f7121e320662b2c9cde820e00587f8ee291"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-pending-fixture-before.go",
+      "bytes": 11907,
+      "sha256": "ed4288299d2126ea3caee0036e74c556f95dd79b08af083bf8b7e1b02560fb67"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v1-actual.log",
+      "bytes": 2373,
+      "sha256": "36d8d5fffef8d66db7f29422aa4e53d592659abf0dd64566aad716d7116f4a43"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v1-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v1-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v1-inventory.json",
+      "bytes": 859,
+      "sha256": "37d593c98753d24b4c1337f2b02e7e461622abfb65ea4c6227a16c33c0c8c713"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v1-result.json",
+      "bytes": 1034,
+      "sha256": "6a433bf58c216077c1047c5fdd639b5a620e7563028bbc138c49e141322a9f3f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v2-actual.log",
+      "bytes": 8539,
+      "sha256": "1c8a01f95f67571caa9e010cdd75e750c8a43dfcd36d425f70661f891d336727"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v2-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v2-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v2-inventory.json",
+      "bytes": 859,
+      "sha256": "a0d65d5bfc6c22907c624a5ee02dac933545ace0d43597ffcfe745c309b1ad41"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v2-result.json",
+      "bytes": 1488,
+      "sha256": "ec93fb0b4a51b1d710367a49783ec7b19d153a8272cb499b58545bbe66043feb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-root-actual-v2.py",
+      "bytes": 3959,
+      "sha256": "72e9becf4add4e3cb4b8af9ae2e989afec5168090677da23f000e9b2c9ea0aa4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-checks.json",
+      "bytes": 1363,
+      "sha256": "ff221f38cba54f70d6270b206fcb4aeb82f13a939ff2ff77e6adc251c40455d3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-quick.log",
+      "bytes": 1354,
+      "sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-race.log",
+      "bytes": 135,
+      "sha256": "ae46ffff268674656cd81a1e27817286bdd0f9cedffbf87165469d529dcc23c4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-source.json",
+      "bytes": 467,
+      "sha256": "e4f35ee0828edba6c4bb72e3635680ee5e1b8d7715150d67df791feea253b2a6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v2-vet-realcorpus.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-checks.json",
+      "bytes": 1355,
+      "sha256": "c9fbfcd2558e643517dc6df6b1c3fbd4c9d98e3f346b1f1eaa0b47eefe2ac6ac"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-quick.log",
+      "bytes": 1354,
+      "sha256": "55da42c667c4ee7af169efd27f3072704aac84902a3ba3a1d2453ae529ef9267"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-race.log",
+      "bytes": 135,
+      "sha256": "6efe7fc4354b6282c914499dccae9edc599c84fceb5a07499312844a5563a1c7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-source.json",
+      "bytes": 628,
+      "sha256": "2a454142ffa3ec613d3d953d37eb3cf51ec592a5e696662a068bb9085c93eb9d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3c2-v3-vet-realcorpus.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

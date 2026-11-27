@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-// These records cover only the two Go/Cargo control transaction directories.
+// These records cover the exact controller-owned project transaction files.
 // Never recursively remove a recovery directory: another writer's member must
 // survive even when it appears after the inventory check.
 type controlBackupRecord struct {

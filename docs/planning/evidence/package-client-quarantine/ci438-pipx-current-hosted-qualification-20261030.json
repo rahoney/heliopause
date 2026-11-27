@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-E2-E3-grouped-hosted",
+  "source": "31acbfe46bb860279fc3005d7104518fa5614010",
+  "whole_tree": "5b40eaf8df3bd83a6b385c7af7df1ecd51cc2de0",
+  "all10_checkout": "7beb11ba066f532b20380d1e419abb5c5548d3db",
+  "merge_source_is_parent": true,
+  "run_id": 41011408932,
+  "run_number": 438,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41011408932",
+  "result": "Required and all10 SUCCESS",
+  "run_started_at": "2026-10-30T05:58:50Z",
+  "run_completed_metadata_at": "2026-10-30T07:45:13Z",
+  "server_elapsed_seconds": 6383,
+  "actual20min_GET": {
+    "queries": 6,
+    "last_query_started_at": "2026-10-30T07:58:59.673868+00:00",
+    "last_query_ended_at": "2026-10-30T07:59:00.679590+00:00",
+    "worker_session": 5733,
+    "worker_exit_code": 0,
+    "worker_state": "COMPLETED",
+    "next_timer": null,
+    "CI_not_cancelled": true
+  },
+  "whole_log_readback": {
+    "jobs": 10,
+    "decoded_bytes": 1369730,
+    "completed8_not_refetched": true,
+    "final_logs_new": 2,
+    "final_transfer_parts": 24,
+    "full_source_log_proof": "docs/github-logs/package-client-quarantine-20261021/ci438-full-source-log-proof.json"
+  },
+  "qualified_named": {
+    "Linux_top_level_parents": 111,
+    "actual_FAIL_SKIP": 0,
+    "CPP_latches_PASS": 132,
+    "pipx_current_application_cases": 3,
+    "pipx_current_application_seconds": 85.43,
+    "pipx_current_CLI_cases": 6,
+    "pipx_current_CLI_source_rows": 7,
+    "pipx_current_CLI_seconds": 195.72,
+    "existing_UV_current_application_seconds": 87.89,
+    "existing_UV_current_CLI_seconds": 150.64,
+    "helper_wait0": 18,
+    "final_four_original0_confirmed_stop_restore": true
+  },
+  "source_scope": "Frozen31acbfe E2/E3 native/public selector and current pipx application/CLI plus existing consumers. Later af2edbd F1 and working F2 are outside this hosted source.",
+  "still_open": [
+    "later PNPM/bunx native/current/CLI",
+    "generic equivalence/hostile and whole P6",
+    "P7 and final four profiles/support/signing acceptance"
+  ],
+  "Required_jobs_product_permissions_budgets_unchanged": true
+}

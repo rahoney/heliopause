@@ -31,6 +31,9 @@ const (
 type CargoVerifiedCache struct {
 	intakeRoot, evidenceRoot, cacheRoot string
 	evidence                            ProjectEvidenceReader
+	// A private instance-local observer may inspect/abort. It never replaces
+	// the mandatory real tree sync before publication.
+	beforeTreeSync func(string) error
 }
 
 func NewCargoVerifiedCache(intake, evidence, cache string, reader ProjectEvidenceReader) (*CargoVerifiedCache, error) {
@@ -43,7 +46,7 @@ func NewCargoVerifiedCache(intake, evidence, cache string, reader ProjectEvidenc
 			return nil, errors.New("cargo cache roots must be canonical absolute paths")
 		}
 	}
-	return &CargoVerifiedCache{intake, evidence, cache, reader}, nil
+	return &CargoVerifiedCache{intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, evidence: reader}, nil
 }
 
 type cargoCacheEntry struct {
@@ -206,7 +209,7 @@ func (c *CargoVerifiedCache) StageProject(ctx context.Context, set domain.Projec
 			if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 				return staged, err
 			}
-			if err := writeRecord(filepath.Dir(file), filepath.Base(file), files[name]); err != nil {
+			if err := writePrivateRecord(filepath.Dir(file), filepath.Base(file), files[name]); err != nil {
 				return staged, err
 			}
 		}
@@ -234,6 +237,11 @@ func (c *CargoVerifiedCache) StageProject(ctx context.Context, set domain.Projec
 	if err := writeRecord(temporary, cargoCacheReceipt, receipt); err != nil {
 		return staged, err
 	}
+	if c.beforeTreeSync != nil {
+		if err := c.beforeTreeSync(temporary); err != nil {
+			return staged, err
+		}
+	}
 	if err := syncTree(temporary); err != nil {
 		return staged, err
 	}
@@ -259,7 +267,7 @@ func (c *CargoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain
 }
 
 func (c *CargoVerifiedCache) openDocument(ctx context.Context, handle string, digest domain.ContentDigest, expected cargoCacheDocument) (string, error) {
-	if err := c.verifyRecordedApproval(ctx, expected); err != nil {
+	if err := c.verifyRecordedApproval(ctx, expected, true); err != nil {
 		return "", err
 	}
 	id, ok := strings.CutPrefix(handle, "project-cache:")
@@ -321,7 +329,7 @@ func (c *CargoVerifiedCache) openDocument(ctx context.Context, handle string, di
 	return filepath.Join(root, "vendor"), nil
 }
 
-func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc cargoCacheDocument) error {
+func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc cargoCacheDocument, requireProfiles bool) error {
 	if (len(doc.Entries) == 0) != doc.DependencyFree || len(doc.Entries) > 4096 {
 		return errors.New("cargo retained approval coverage is invalid")
 	}
@@ -353,8 +361,8 @@ func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc car
 			if err != nil {
 				return err
 			}
-			_, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
-			if err != nil || hash.String() != record.SHA256 {
+			fact, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
+			if err != nil || hash.String() != record.SHA256 || requireProfiles && fact.ProfileDigest().String() == "" {
 				return errors.New("cargo retained Evidence is changed or unavailable")
 			}
 		}

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "baseline": "66aa7e09f05f9101da05cf6253ee1fec099e282b",
+  "owner_approval": "docs/github-logs/package-client-quarantine-20261021/uv-c1b-owner-resume-approval.json",
+  "scope": "fixed UV metadata/null reads only; no interpreter child grant, production resolver or CLI support",
+  "build": {
+    "exit": 0,
+    "seconds": 285.319,
+    "recipe": "scripts/build-gvisor-observer-release.sh",
+    "operator": "fresh canonical build; completed cache was deleted",
+    "approval": "docs/github-logs/package-client-quarantine-20261021/uv-c1b-owner-resume-approval.json",
+    "sources": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "c773940567b944fd01e6a428936980173a2543ffc8fe7804bdca9a850b9b94bf"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "d798c3da86047e57a26e567a9cf5772f6569116ce2cd45ee2e3bf1766ee2458c"
+      }
+    ],
+    "observer_sha256": "98df90b92a95e4faadd4e0fa218ff8ad1af77ebc6788d58873db8620f2d29801"
+  },
+  "canonical_checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.446,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 51.688,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 6.154,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.238,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.754,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "native": {
+    "startup": "PASS",
+    "startup_seconds": 4.09,
+    "startup_trace_complete": true,
+    "inventory": "FAIL",
+    "inventory_seconds": 3.97,
+    "new_fault": "CONTROL/CLONE_CHILD pinned Python3.14 reads libpython3.14.so.1.0",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-approved-null-actual.json",
+    "host_unchanged": true,
+    "daemon_waits": [
+      0,
+      0
+    ]
+  },
+  "cleanup": {
+    "entries": 6834,
+    "bytes": 688162781,
+    "references": 0,
+    "query_errors": 0,
+    "fresh_cpp_workroot_absent": true
+  },
+  "query_discovery": {
+    "scope": "data only; Python source not executed",
+    "argv_count": 5,
+    "files": 6,
+    "source_bytes": 44055,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-query-files-captured.json",
+    "native_fixed_target_still_queries": true,
+    "probe_option_conflict": "no-build and only-binary are mutually exclusive; first bad input retained"
+  },
+  "qualified": false,
+  "acceptance_closed": false,
+  "missing": "exact interpreter query role; production typed-network resolver and guarded install/upgrade/sync/CLI"
+}

@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -20,9 +21,13 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 	for _, tc := range []struct {
 		name, mod, identity, file, body string
 		duplicate, link, corrupt        bool
+		requiredMod                     string
 		want                            string
 	}{
 		{name: "normal", mod: "example.com/module", file: "module.go", body: "package module\nfunc init() { panic(\"must never execute\") }\n"},
+		{name: "required old control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/module\ngo 1.25\n"},
+		{name: "foreign required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/foreign\ngo 1.25\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
+		{name: "malformed required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module (\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
 		{name: "module identity", mod: "example.com/other", file: "module.go", body: "package module", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
 		{name: "syntax", mod: "example.com/module", file: "module.go", body: "package !!!", want: "M12_GO_SOURCE_INVALID"},
 		{name: "negative test asset", mod: "example.com/module", file: "testdata/bad.go", body: "package !!!"},
@@ -78,9 +83,21 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 				z.Bytes()[pos] ^= 1
 			}
 			mod := []byte("module " + tc.mod + "\ngo 1.26.0\n")
-			body := append([]byte("HAA-GO-MODULE-1\n"), make([]byte, 8)...)
-			binary.BigEndian.PutUint64(body[len(body)-8:], uint64(len(mod)))
-			body = append(body, mod...)
+			control, header := mod, "HAA-GO-MODULE-1\n"
+			if tc.requiredMod != "" {
+				var err error
+				control, err = json.Marshal(struct {
+					Mod      []byte                          `json:"mod"`
+					Required []artifactgo.RequiredModControl `json:"required_mods"`
+				}{mod, []artifactgo.RequiredModControl{{Version: "v0.9.0", Body: []byte(tc.requiredMod)}}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				header = "HAA-GO-MODULE-2\n"
+			}
+			body := append([]byte(header), make([]byte, 8)...)
+			binary.BigEndian.PutUint64(body[len(body)-8:], uint64(len(control)))
+			body = append(body, control...)
 			body = append(body, z.Bytes()...)
 			root := t.TempDir()
 			run, err := domain.NewRunID()

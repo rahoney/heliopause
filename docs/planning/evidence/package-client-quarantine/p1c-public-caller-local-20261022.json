@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "baseline": "f76c564e2dbde0fd256b56fcde2ba4c90e4f5e2b",
+  "scope": "P1c C2 public UV native caller/independent binding implementation and local refusal/transport qualification; actual public network run pending",
+  "sources": [
+    {
+      "path": "internal/sandbox/uv_resolver.go",
+      "sha256": "a58975a53a7aaee2d4bd47589badba8fc55db71682c25c100ec321d5e8f0a9bd"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_test.go",
+      "sha256": "ee64278291527ddf4149e4cc5d145b9628f882f6005087b6b0cb7ad61f51db7a"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_integration_linux_test.go",
+      "sha256": "f6cbae73fa3e1dd1fa66c96d270704d366c17e3945c651e2d27ecc2b7e1e6b2a"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output.go",
+      "sha256": "82535e08b1dea7d5b969ba577f6b99cb337f9751ea9eb29ded245602a0ad9c12"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output_test.go",
+      "sha256": "27180260b54aa179002ff95534d437bd6b5dcdd1609ec65164f2b801325ffd8c"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_real_test.go",
+      "sha256": "9efd9311fa70562013c757be0712ae5b7a06a3c8ecf749afcb04aa049e4f0024"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "6bec2094620f4ee659f93b9b5ecaa8e563bd9ed56b4fafc95e045bd1e7ad1ed8"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "b7cca0937d9955f22bc7a5b879c5a682f5d50d5c92866fb6840527c0f2754cb9"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "53c0a7502a5dbcebe8f2651902a38a9ecf4f2a9ed6b4bda358d7ffe49bb9b2fe"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.807,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 42.216,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.025,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.226,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.722,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "race": {
+    "command": [
+      "test",
+      "-trimpath",
+      "-race",
+      "-count=1",
+      "-timeout=2m",
+      "-run",
+      "^Test(UVResolver|UVNative|UVIndependentReader|UVArchiveWriter|PyPIResolver|PyTorch.*(Resolver|Resolve))",
+      "./internal/sandbox"
+    ],
+    "exit": 0,
+    "seconds": 16.61
+  },
+  "native_transport": {
+    "test_exit": 0,
+    "test_seconds": 14.749,
+    "startup_seconds": 5.24,
+    "query_seconds": 4.4,
+    "compile_sync_collection_seconds": 5.04,
+    "trace_events": [
+      29,
+      31,
+      35
+    ],
+    "trace_bytes": [
+      3306,
+      3551,
+      4008
+    ],
+    "all_complete": true,
+    "bounded_lock_read_before_materialization": true,
+    "unchanged_lock_after_materialization": true,
+    "fixture": "inert local source; not public registry/Policy success",
+    "host_before_after_identical": true,
+    "resources_remaining": 0,
+    "daemon_waits": [
+      0,
+      0
+    ],
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-output-preflight-lock-actual.json"
+  },
+  "cleanup": {
+    "targets": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/output-preflight-lock"
+    ],
+    "entries": 6833,
+    "unique_regular_logical_bytes": 688406687,
+    "references": 0,
+    "query_errors": 0,
+    "all_absent": true
+  },
+  "public_qualification": {
+    "status": "NOT_RUN",
+    "entry": "TestUVPublicNativeResolverIntegration",
+    "requests": [
+      "idna@3.11",
+      "requests@2.32.5"
+    ],
+    "execution": "existing authenticated installed test-client after policy helper rebind",
+    "stop_on_first_failure": true,
+    "unconditional_lifecycle_command_and_omission_validator": true
+  },
+  "implemented": true,
+  "wired": "internal UVResolver typed ports/native/Python binding and CI qualification entry; application/guarded CLI NO",
+  "qualified": "local canonical5, related Race, actual offline transport only",
+  "acceptance_closed": false,
+  "missing": [
+    "actual public native UV and Python HTTP/whole graph result",
+    "guarded install/upgrade/sync promotion controls and application/CLI wiring",
+    "same-candidate remote Required and existing consumers"
+  ]
+}

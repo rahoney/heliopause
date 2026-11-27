@@ -1,0 +1,119 @@
+{
+  "work_item": "M13-004/P4-K3",
+  "baseline": "e9565ad7577b7eb81319f0b13a144c523bfd4120",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (public descriptor/preflight/production CLI->K2 factory)",
+    "QUALIFIED": "YES (named local public lock-only/current approval/records/negative and installed CLI regression)",
+    "ACCEPTANCE_CLOSED": "YES (named public lock --upgrade lane); NO (whole P4)",
+    "MISSING": [
+      "persistent UV tool/pipx",
+      "execution foundation and temporary runners P5/P6",
+      "final support/failure/profile qualification P7"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k3-lock-cli-v2-format.json",
+      "seconds": 1.655,
+      "sha256": "655be95486e6f7acff37c4f01d52e09459009a973c552dd7913c1adc7c7f52fa"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k3-lock-cli-v2-quick.json",
+      "seconds": 71.547,
+      "sha256": "130441236e4f34ccb6a68538d3c94b9524adf9ca09b9e98029a6bb6ea05424fe"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k3-lock-cli-v2-security.json",
+      "seconds": 10.488,
+      "sha256": "ac2978d9f9e30103713e7aeac9b11328746cdd42f20a0ffc3318186b6dee034f"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k3-lock-cli-v2-docs.json",
+      "seconds": 0.253,
+      "sha256": "68db1b68ed85a2cf6e4aec881c798c75ec0d2b20d048928a57dd5ec927548a3a"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k3-lock-cli-v2-full-affected-race.json",
+      "seconds": 29.145,
+      "sha256": "8e66ce9561b856747d76860c5137aa146fbd7968f10064a8b25484377ef636ad"
+    }
+  ],
+  "actual": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k3-lock-cli-native-v1-result.json",
+    "seconds": 252.1,
+    "existing_add_sync_cli_seconds": 169.25,
+    "new_lock_cli_seconds": 80.15,
+    "successful_requests": {
+      "existing_add_sync": 7,
+      "new_lock_only": 4
+    },
+    "observed": [
+      "actual uv lock --upgrade JSON current packaging25 selection/repeated full inspection/current complete Policy/Manifest/SBOM and six exact provenance controls",
+      "human cwd route/current JSON explicit-empty native lock; installation_status NOT_REQUESTED distinct from lock_update_status COMPLETED",
+      "manifest bytes/inode/mode and uv.lock0600 preserved; no venv provisioning; arbitrary project venv and unrelated active venv unchanged",
+      "existing add24.2->25/sync/two roots/human default/edited-empty/no-op plus unowned refusal remain successful"
+    ],
+    "host_before_after_identical": true,
+    "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+    "no_skips": true,
+    "sha256": "5ba3c9a89af2fa950fd2992003fade88d3e5c96ca74d236a6431983791f0dd7e"
+  },
+  "mechanical_reuse": "docs/github-logs/package-client-quarantine-20261021/p4k3-cli-common-body-mechanical-reuse-v2.json",
+  "negative_scope": [
+    "explicit --upgrade required; missing/false/duplicate options refused before application",
+    "target/adopt/positional arguments, missing/malformed/shared/symlink lock and empty project rejected",
+    "completed record absence/backend failure never yields lock completion or installation claim"
+  ],
+  "source": [
+    {
+      "path": "internal/bootstrap/uv_project_lock_cli_integration_test.go",
+      "sha256": "ead28d0715fdd77709617d527287fff2a76eec61d88c45e619da985c48fc473a"
+    },
+    {
+      "path": "internal/cli/uv_project_lock.go",
+      "sha256": "19aa0d0bed72d69f623796099c37a70d807416d2e0ee4e11a3add86009f42abd"
+    },
+    {
+      "path": "internal/cli/uv_project_lock_report.go",
+      "sha256": "3a19de4cdf2e0ff1392a3e59e4e0ee72424f93fcf91e04f7026c8d069a5691c8"
+    },
+    {
+      "path": "internal/cli/uv_project_lock_test.go",
+      "sha256": "20b0c8e3442d8f6ba7bfc443fae7b1a733944a8ed6030d0e4262df37c65aae21"
+    },
+    {
+      "path": "internal/cli/uv_project.go",
+      "sha256": "1c034949a87321a56f03ce8456ef4ccd477cb0fb7765b27c2f5d863d3b4f81d1"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "sha256": "dac615a7ce4d97dca7aee8d534ce44c5efe44843dce621487dcab8e01d1bf5e4"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "afc7d60b5b76ad5fe5b9650fa2a8a9cfe445679be70f152cfbc7980584ec8f35"
+    },
+    {
+      "path": "internal/cli/launcher_test.go",
+      "sha256": "32d91814c43ee92c0436a8bd973ac9c882b16ba370b13ba6baa8652819b9f7de"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_client.go",
+      "sha256": "6ef7d941d8d7cb93804db1e7dc97f31411a4ec7669d953b8096a2344ea6ae1c9"
+    }
+  ],
+  "unchanged_owners": [
+    "internal/application/uv_project.go",
+    "internal/promotion/uv_project_lock_transaction.go",
+    "internal/promotion/uv_project_lock_publication.go",
+    "internal/promotion/python_project_cache.go",
+    "internal/promotion/pypi_venv_transaction.go",
+    "internal/sandbox/uv_project_resolver.go",
+    "internal/inspection/pypi/project.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "remote": "NOT_RUN; grouped CI cadence/final source profiles remain under plan20 section5"
+}

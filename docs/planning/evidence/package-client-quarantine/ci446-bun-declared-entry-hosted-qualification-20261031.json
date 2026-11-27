@@ -1,0 +1,158 @@
+{
+  "work_item": "M13-004/P6-G4 and P7 bounded functional acceptance",
+  "status": "QUALIFIED_ACCEPTANCE_CLOSED_BOUNDED_FUNCTIONAL_SCOPE",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES",
+  "ACCEPTANCE_CLOSED": "YES (original bounded client/runner contract; not M13 channels/publication)",
+  "MISSING": [],
+  "source": "e3b2b7011825c6322e5aa8d031716ff51f752a27",
+  "tree": "0cdaeaa206c10aa9b93ac45c2c418aab68948d3d",
+  "checkout": "e757cc1b05a761ad1ee7ac0b496128039489e754",
+  "tracked_files": 3252,
+  "run_id": 41159991137,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41159991137",
+  "run_started_at": "2026-10-31T02:26:06Z",
+  "run_updated_at": "2026-10-31T03:53:52Z",
+  "elapsed_to_final_update_seconds": 5266,
+  "all10_success": true,
+  "all10_actual_checkout_tree_matches": true,
+  "jobs": [
+    {
+      "id": 124415202301,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202419,
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202450,
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202456,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202486,
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202492,
+      "name": "gVisor Linux Integration",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202496,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202565,
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "id": 124415202937,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 124434395552,
+      "name": "Required",
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "unique_top_parents": 126,
+    "actual_failed": 0,
+    "actual_skipped": 0,
+    "CPU_full_seconds": 192.4,
+    "new_bun_declared_application": {
+      "cases": 2,
+      "seconds": 25.34,
+      "exits": [
+        0,
+        1
+      ]
+    },
+    "new_bun_declared_CLI": {
+      "cases": 3,
+      "seconds": 39.35,
+      "aliases": [
+        "bunx",
+        "bun x"
+      ],
+      "forced": [
+        false,
+        false,
+        true
+      ],
+      "exits": [
+        0,
+        1,
+        0
+      ]
+    },
+    "existing_bun_Node_application_seconds": 27.28,
+    "existing_forced_bun_boundaries_seconds": 124.48,
+    "helper_reaped_wait0": 18,
+    "final_cleanup_confirmed_original0": 4,
+    "final_restore_records": [
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=732476",
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=733159",
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=978683",
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=994932"
+    ]
+  },
+  "raw_evidence": {
+    "decoded10_log_bytes": 1331441,
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/ci446-final-log-inventory.json",
+    "source_proof": "docs/github-logs/package-client-quarantine-20261021/ci446-partial-source-proof.json",
+    "storage": "local originals; not pushed"
+  },
+  "timer": {
+    "actual_20minute_GETs": 5,
+    "last_query_at": "2026-10-31T04:06:10.961341+00:00",
+    "state": "COMPLETED",
+    "next_due_at": null,
+    "worker_pid": 909486,
+    "session_id": 81628,
+    "observed_exec_exit_code": 0,
+    "signal_sent": false,
+    "active_response_consumed_polls3_through5_and_terminal": true
+  },
+  "qualification_boundary": {
+    "ordinary_current_source": "YES",
+    "new_exact_source_CUDA_three_profiles": "NOT_RUN; not claimed",
+    "retained_ec1_profiles": "CI442/443/444/445 apply to ec1 and unchanged consumer owners only",
+    "original_explicit_exclusions": "all-native-option equivalence, runtime provisioning, initial stdin/TTY/file-export and arbitrary-child grants are not added",
+    "M13_remaining": [
+      "owner-selected official channel names/publisher binding",
+      "channel implementation/qualification",
+      "new signed distribution/main review/publication"
+    ]
+  },
+  "local_checks": "p6g4-bun-declared-entry-local-20261031.json",
+  "no_new_product_changes_or_CI_during_wait": true,
+  "documentation_closure": {
+    "docs": {
+      "name": "docs",
+      "exit_code": 0,
+      "seconds": 0.85,
+      "scope": "11 documentation/evidence files; product source19 unchanged"
+    },
+    "security": {
+      "name": "security",
+      "exit_code": 0,
+      "seconds": 12.581,
+      "scope": "11 documentation/evidence files; product source19 unchanged"
+    }
+  }
+}

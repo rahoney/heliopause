@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "baseline": "e3665ea385d1f4fc1d151f45965cbf1389ac6f2f",
+  "scope": "P1c C2 bounded UV output transport and installed METADATA/WHEEL selection adapter; production resolver remains unwired",
+  "sources": [
+    {
+      "path": "internal/artifact/pypi/uv_installed_controls.go",
+      "sha256": "be1a4026c7a1305db3bda138976113c016d5396dc4c231392df906bc35734369"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_installed_controls_test.go",
+      "sha256": "69a1cc39969334eac1aeeb4eeaeb573af6a0ade7d695163c33bcf1a29c5f6865"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output.go",
+      "sha256": "d64b0e9d2745e04abe0e62ceeb530c026e6be7a2a4c92a87dc6218453548d2c0"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output_test.go",
+      "sha256": "dc3297fb436a0310685a3bdea1ed6ca78e7b4bcd66f5261593a11c1a64347768"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.342,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 102.96,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.203,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.218,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.759,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "race": {
+    "command": [
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout=2m",
+      "-run",
+      "^Test(UVInstalledControls|UVNativeOutput)",
+      "./internal/artifact/pypi",
+      "./internal/sandbox"
+    ],
+    "exit": 0,
+    "seconds": 9.454
+  },
+  "native_format_probe": {
+    "runtime": "runc",
+    "network": "none",
+    "uid": 1000,
+    "read_only": true,
+    "public_registry": false,
+    "gvisor_trace_or_policy_qualification": false,
+    "cases": [
+      {
+        "case": "compile-stdin",
+        "exit": 0
+      },
+      {
+        "case": "sync-lock",
+        "exit": 0
+      },
+      {
+        "case": "list",
+        "exit": 0
+      }
+    ],
+    "output_mount": "owned named tmpfs /haa-site",
+    "host_snapshot_fields": [
+      "files",
+      "images",
+      "containers",
+      "bridge"
+    ],
+    "host_before_after_identical": true,
+    "cleanup_items": 5,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-native-volume-probe-result.json"
+  },
+  "first_probe": {
+    "exit": 1,
+    "native_compile_sync_list_exit": [
+      0,
+      0,
+      0
+    ],
+    "collection_error": "docker cp cannot see guest-only /tmp/site",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-native-lock-probe-result.json"
+  },
+  "cleanup": {
+    "root_reference_query_errors": 0,
+    "root_references": 0,
+    "owned_resources_remaining": 0,
+    "removed": [
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/uv-native-lock-probe",
+        "entries": 2,
+        "regular_bytes": 0
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/uv-native-volume-probe",
+        "entries": 2,
+        "regular_bytes": 0
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/probe-native-uv-lock.py",
+        "entries": 1,
+        "regular_bytes": 8534
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/probe-native-uv-volume.py",
+        "entries": 1,
+        "regular_bytes": 9447
+      }
+    ]
+  },
+  "implemented": true,
+  "wired": "collector to streamingDockerOutput and RFC822/WHEEL adapter to existing selector; production resolver NO",
+  "qualified": "canonical5 and targeted Race; native format/volume transport only",
+  "acceptance_closed": false,
+  "missing": [
+    "native UV output named-volume runtime/topology and actual gVisor collection",
+    "production typed-network native selection and isolated independent metadata/archive reader",
+    "guarded install/upgrade/sync, promotion controls and CLI",
+    "same-candidate remote qualification; native macOS build/default timeout cause remains unresolved"
+  ]
+}

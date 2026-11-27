@@ -14,6 +14,8 @@ import (
 // Neither process output nor Python state is an input to this ledger.
 type observationUnit struct {
 	id          string
+	originalID  string
+	environment inspectionEnvironment
 	kind        observationUnitKind
 	candidate   string
 	program     string
@@ -27,6 +29,7 @@ const (
 	observationDirectImport     observationUnitKind = "DIRECT_IMPORT"
 	observationActivePTHHook    observationUnitKind = "ACTIVE_PTH_HOOK"
 	observationInstalledStartup observationUnitKind = "INSTALLED_STARTUP_SCENARIO"
+	observationLifecycle        observationUnitKind = "LIFECYCLE"
 )
 
 type observationTerminalOutcome string
@@ -107,7 +110,7 @@ func newObservationTransaction(policy observationResourcePolicy, units []observa
 	}
 	for _, unit := range units {
 		if unit.id == "" || unit.candidate == "" || transaction.expected[unit.id] != nil ||
-			(unit.kind != observationDirectImport && unit.kind != observationActivePTHHook && unit.kind != observationInstalledStartup) {
+			(unit.kind != observationDirectImport && unit.kind != observationActivePTHHook && unit.kind != observationInstalledStartup && unit.kind != observationLifecycle) {
 			return nil, errors.New("python observation unit identity is missing or repeated")
 		}
 		if unit.coverage != artifactpypi.RequiredObservation && (unit.coverage != artifactpypi.PostInstallCommandObservation || unit.kind != observationDirectImport) {
@@ -296,10 +299,21 @@ func (t *observationTransaction) commandObservations() []PythonCommandObservatio
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	var out []PythonCommandObservation
+	positions := make(map[string]int)
 	for _, id := range t.order {
 		state := t.expected[id]
-		if state.finished && state.unit.coverage == artifactpypi.PostInstallCommandObservation {
-			out = append(out, PythonCommandObservation{Module: state.unit.candidate, UnitID: id, OwnerSHA256: state.unit.ownerDigest, ZeroExit: state.outcome == observationZeroExit})
+		if !state.finished || state.unit.coverage != artifactpypi.PostInstallCommandObservation {
+			continue
+		}
+		original := state.unit.originalID
+		if original == "" {
+			original = id
+		}
+		if index, seen := positions[original]; seen {
+			out[index].ZeroExit = out[index].ZeroExit && state.outcome == observationZeroExit
+		} else {
+			positions[original] = len(out)
+			out = append(out, PythonCommandObservation{Module: state.unit.candidate, UnitID: original, OwnerSHA256: state.unit.ownerDigest, ZeroExit: state.outcome == observationZeroExit})
 		}
 	}
 	return out

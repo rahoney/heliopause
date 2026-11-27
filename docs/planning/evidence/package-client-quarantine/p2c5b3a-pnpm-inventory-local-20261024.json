@@ -1,0 +1,144 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B3a",
+  "baseline": "83db86c8a3ef5eaae80dc50288178a826dbc4937",
+  "status": "LOCAL_VERIFIED_ARCHIVE_INVENTORY_PRODUCER_ONLY",
+  "implemented": "YES_OPTIONAL_STATIC_INVENTORY",
+  "wired": "YES_STATIC_API_AND_GATED_PUBLIC_FIXTURE; NO_PRODUCT_PNPM_BATCH",
+  "qualified": "NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/archive_inventory.go",
+      "sha256": "f0d137442b7ce150c13998e31ef116efb363dc19fb6b9fae9e55f2759279acc7"
+    },
+    {
+      "path": "internal/artifact/npm/archive_inventory_test.go",
+      "sha256": "a445650c22e5aa1e015e39778d7ea8ae57f9284aac9e7d19ed7d914c57331c51"
+    },
+    {
+      "path": "internal/inspection/npm/archive_inventory.go",
+      "sha256": "f15a389d9f0acb67df8ba6fd6032541b1f76fd8e7e9d9871a330eb50ff305f6c"
+    },
+    {
+      "path": "internal/inspection/npm/archive_inventory_test.go",
+      "sha256": "3ca34000eeae587fea0a68299d4eb00d8833d2200e8384a88da9093bc70ed4e9"
+    },
+    {
+      "path": "internal/inspection/npm/static.go",
+      "sha256": "a7ededb69ceaf3a4d93ef298fc2e8f64e49f65099bae756601346f7965bd56a0"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "d06bde0c85d09bea3117c015671278fd171951e873076007c72e37af439db5f6"
+    },
+    {
+      "path": "scripts/check/architecture_test.go",
+      "sha256": "8c3067df472923866bec74ea32535c7154df64a4ccbd64534dffc55a5fc428d4"
+    },
+    {
+      "path": "internal/inspection/npm/install_action_real_test.go",
+      "sha256": "62a5736c833f43d95724c22116bc807812dfb8a351c25be00c6368446e69b623"
+    }
+  ],
+  "checks": {
+    "quick_seconds": 36.294,
+    "security_seconds": 5.627,
+    "docs_seconds": 0.253,
+    "full_race_seconds": 26.274,
+    "full_race_packages": [
+      "internal/artifact/npm",
+      "internal/inspection/npm",
+      "scripts/check"
+    ]
+  },
+  "actual_public": {
+    "seconds": 1.325,
+    "packages": [
+      {
+        "name": "is-number",
+        "version": "7.0.0",
+        "bytes": 3730,
+        "inventory_entries": 4
+      },
+      {
+        "name": "node-sass",
+        "version": "9.0.0",
+        "bytes": 390705,
+        "inventory_entries": 334
+      }
+    ],
+    "sri_verified": true,
+    "inventory_exact_acquired_subject": true,
+    "original_report_unchanged": true,
+    "host_action_fact_and_stored_evidence_preserved": true,
+    "dynamic_native_installation_executed": false,
+    "temporary_inputs": "t.TempDir automatic cleanup"
+  },
+  "negative_scope": [
+    "source digest/size drift, truncation and gzip CRC",
+    "second gzip member, trailing compressed byte, nonzero tar tail and decoded limit",
+    "unsafe/duplicate/special/link archive entries preserve original static findings",
+    "file as ancestor, foreign manifest/body digest, permissions and bounded file facts",
+    "immutable getters, foreign intake subject and cancellation"
+  ],
+  "not_qualified": [
+    "PNPM native full layout/edge/bin/owner byte validation",
+    "production prepare/static-all/per-instance aggregation",
+    "Host staging/records/transaction/CLI and full P2"
+  ],
+  "raw_evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-first-format.json",
+      "sha256": "1604bac70645728ab677b95ad91c2202e84e096be4275f38608abc7d531bb443"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-first-quick.json",
+      "sha256": "f33f93aef001b31196fb114d6b4218d8402715e08ab9df7c4779fdf73141019f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-first-security.json",
+      "sha256": "006dfaa64922af2fae31a8e9f52cb86b2d00128aba614abd8ebc906940f31091"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-first-docs.json",
+      "sha256": "e09406370bf9586ebeb569735ca5a783db24752ceb2371fc595cc17a709a4001"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-final-format.json",
+      "sha256": "caec978c7714d165197e59397c1dea45db6257c7cb7b5be9b8708b0dd0348a50"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-final-quick.json",
+      "sha256": "0ca605b05dd3c10349ccb6ee6cad127156f441b5a8c5f7c41577859ffd13411c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-final-security.json",
+      "sha256": "144fd254266f6344fd20fbd964cebbfb8fb96e345c244ea1a041e9ea00291e34"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-final-docs.json",
+      "sha256": "e09406370bf9586ebeb569735ca5a783db24752ceb2371fc595cc17a709a4001"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-full-race.json",
+      "sha256": "4c97126c918cf9e548043e0cf5e8f9d98ded6d0ad43ba9eadbfc583b3bcefa18"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-full-race.log",
+      "sha256": "0a926bce6281de435240809e955eed7c450e335d4d52b9b5a8be99c333a584bd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-public.json",
+      "sha256": "469bb948caccac326e31c6c14fc1e3940122477e51f5d6e9a96eda04d1f05d58"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3a-inventory-public.log",
+      "sha256": "081c6706983da722d49e8c270b827cbf170c0c340023bbaee06206316325dbfb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-target-index-correction.json",
+      "sha256": "e0e2380274f354c27f6598ef909edb21d54000dac55a44c5ca6d2e4582f8da4f"
+    }
+  ]
+}

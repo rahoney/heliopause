@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "source_commit": "66aa7e09f05f9101da05cf6253ee1fec099e282b",
+  "source_tree": "545ffe30d76b2ff01048e0d3bd7057030b03e6ad",
+  "run_id": 39698278618,
+  "run_number": 370,
+  "status": "completed",
+  "conclusion": "success",
+  "checkout": {
+    "sha": "f3318b1bd25a63ed00550920cec90eb8ae39f229",
+    "tree": "545ffe30d76b2ff01048e0d3bd7057030b03e6ad",
+    "equals_source_tree": true
+  },
+  "jobs": [
+    {
+      "id": 119560943311,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943440,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943454,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943474,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943476,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943481,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943524,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943635,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119560943656,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119571169542,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "native_uv": {
+    "seconds": 3.2,
+    "trace_events": 29,
+    "trace_bytes": 3306,
+    "session_complete": true
+  },
+  "linux": {
+    "existing_tests": 45,
+    "native_startup_tests": 1,
+    "cpu_full_seconds": 209.5,
+    "helper_wait_statuses": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "final_original_status": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "client_restore": 0,
+    "restore_result": "NOT_REQUIRED"
+  },
+  "macos": {
+    "production_build": "PASS",
+    "default_test": "PASS",
+    "prior_timeout_cause": "UNCONFIRMED; diagnostic-only change, no timeout/test-scope relaxation"
+  },
+  "scope": "Qualification of source66aa/startup and existing consumers only; later fixed-read/query-role candidates not covered; production UV resolver/CLI still missing",
+  "raw_linux": "docs/github-logs/package-client-quarantine-20261021/ci370-linux.log",
+  "raw_macos": "docs/github-logs/package-client-quarantine-20261021/ci370-macos.log"
+}

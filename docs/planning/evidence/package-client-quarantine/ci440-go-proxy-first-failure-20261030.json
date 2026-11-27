@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/CI440 first failure",
+  "status": "WHOLE_HOSTED_FAILURE_FIRST_TRANSPORT_CAUSE_UNDETERMINED",
+  "source": "6d9d3bf8967f2116f01c7a05e5e8ce5cf52b7530",
+  "tree": "dad13b09ae8e862ec2c279154ffadd4b21e26564",
+  "checkout": "b83dc4cf6f39a863901fbff018177e1a273c9eeb",
+  "all10_same_checkout": true,
+  "run_id": 41048941282,
+  "run_number": 440,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41048941282",
+  "jobs": "8SUCCESS/Linux and Required FAIL",
+  "server_elapsed_seconds": 2717,
+  "first_failure": {
+    "test": "TestLinuxGoTransitiveGetDownloadIntegration",
+    "at": "2026-10-30T12:18:15.9154754Z",
+    "seconds": 42.9,
+    "requested": "google.golang.org/grpc@v1.76.0",
+    "expected_modules": 41,
+    "message": "inspect complete selected Go project: inspect exact project dependency: go proxy request failed",
+    "origin": "internal/artifact/gomodule/client.go Client.read c.http.Do(req) error branch",
+    "lower_transport_error_and_endpoint": "NOT_CAPTURED; do not infer HTTP status/DNS/TLS/timeout or exact dependency",
+    "previous_Go_dependency_free_and_pflag_positive": "PASS",
+    "original_controls_approval_guard_assertions": "No failed cleanup/original-change assertion reported",
+    "root_cause": "UNKNOWN"
+  },
+  "new_Bun_named_cases": {
+    "top_level_PASS_seconds": {
+      "TestBunPublicColdToolRunSelectionIntegration": 4.58,
+      "TestLinuxBunRunExecutionWorkflowIntegration": 29.72,
+      "TestLinuxBunRunExecutionCLIIntegration": 84.62,
+      "TestLinuxBunRunExecutionCLIRefusalIntegration": 24.3
+    },
+    "application_cases": 2,
+    "CLI_cases": 3,
+    "implicit_graph": {
+      "nodes": 12,
+      "edges": 13
+    },
+    "refusals": 2,
+    "scope": "Named G1/G2 cold/current/Node CLI reached and passed; whole source qualification remains NO"
+  },
+  "CPP_latches": 132,
+  "Linux_top_level_PASS_before_failure": 52,
+  "cleanup": {
+    "helper_wait_zero": 9,
+    "final": "original1 CONFIRMED_STOPPED helper_stop0 client_error0 client_restore0 RESTORED"
+  },
+  "timer": {
+    "actual_20min_GETs": 3,
+    "last_at": "2026-10-30T12:33:41.113962+00:00",
+    "worker_session": 18946,
+    "natural_exit_code": 0,
+    "next_due_at": null
+  },
+  "raw": {
+    "full10_source_proof": "docs/github-logs/package-client-quarantine-20261021/ci440-full10-source-proof.json",
+    "decoded_bytes": 979208,
+    "completed8_not_refetched": true
+  },
+  "later_local_source": "G3 commit684a6df is outside CI440; no claim of causation or new-source hosted pass",
+  "next": "No Go product fix is indicated by this evidence. Preserve historical transport UNKNOWN. Group already-qualified G3 with the necessary final-profile routing/acceptance checkpoint, then one fresh ordinary CI; do not spend a separate full CI rerun on unchanged G1/G2.",
+  "current_local_check": {
+    "source_commit": "684a6df3a2b6689354abdf100a05de1eff4d37c3",
+    "test_seconds": 196.03,
+    "operator": {
+      "exit_code": 0,
+      "seconds": 198.175,
+      "host_unchanged": true,
+      "helpers_after": {
+        "matches": [],
+        "errors": []
+      },
+      "no_skip": true,
+      "helper_wait_zero": true,
+      "helper_confirmed_stopped": true,
+      "observer_directory_empty_after": true,
+      "scope": "CI440 first failure targeted local: existing real Go get/download grpc1.76.0 complete41 graph; latest locally qualified G3 source/observer. Current local availability only, not historical hosted transport cause proof; no product/timeouts/retry change",
+      "Go_source_base": "6d9d3bf8967f2116f01c7a05e5e8ce5cf52b7530",
+      "new_test_source": {
+        "path": "internal/bootstrap/go_download_integration_test.go",
+        "sha256": "3f781a9f362139785ebd9e3da13be9800ebb268e18e027c6aeecf85406fcbf30"
+      },
+      "local_observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+    },
+    "scope": "Existing real Go41 get/download PASS; current local availability/workflow only, no historical cause or hosted/new-source success claim",
+    "Go_source_code_HTTP_timeout_retry_changed": false
+  }
+}

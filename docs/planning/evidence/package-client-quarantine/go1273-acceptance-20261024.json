@@ -1,0 +1,241 @@
+{
+  "work_item": "M13-004/G127",
+  "status": "COMPLETE",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES",
+  "ACCEPTANCE_CLOSED": "YES",
+  "MISSING": [],
+  "qualified_source": {
+    "commit": "095450d52b921adda63a8ae5cd664e87853d8891",
+    "tree": "0358c53277f565e536694cceb5dcd30d2c4d4f99",
+    "scope": "same functional candidate; closure edits are documentation/evidence only; a new HEAD Required is not claimed"
+  },
+  "local_qualification": "go1273-local-qualification-20261023.json",
+  "remote_runs": [
+    {
+      "run_id": 39994940572,
+      "run_number": 397,
+      "source_head": "095450d52b921adda63a8ae5cd664e87853d8891",
+      "actual_checkout": "6c3b16a488c59c84844707d033ce9506cbd8b685",
+      "tree": "0358c53277f565e536694cceb5dcd30d2c4d4f99",
+      "status": "SUCCESS",
+      "jobs_success": 10,
+      "actual_go": "1.27.3",
+      "CPU_full_seconds": 265.94,
+      "final_cleanup": "CONFIRMED_STOPPED/stop0/client_error0/client_restore0/NOT_REQUIRED/original0",
+      "native_macOS": "actual Go1.27.3 darwin/amd64 production82.773s/default245.664s within unchanged bounds",
+      "created_at": "2026-10-23T17:25:29Z",
+      "completed_metadata_updated_at": "2026-10-23T18:12:07Z",
+      "timer": "one50min real timer, no API polling during wait"
+    },
+    {
+      "run_id": 39994974417,
+      "run_number": 398,
+      "source_head": "095450d52b921adda63a8ae5cd664e87853d8891",
+      "tree": "0358c53277f565e536694cceb5dcd30d2c4d4f99",
+      "actual_checkout": "095450d52b921adda63a8ae5cd664e87853d8891",
+      "status": "SUCCESS",
+      "jobs_success": 10,
+      "actual_go": "1.27.3",
+      "CPU_full_seconds": 282.74,
+      "cu126_full_seconds": 1249.34,
+      "native_macOS": "actual Go1.27.3 darwin/amd64 platform SUCCESS",
+      "final_cleanup": "CONFIRMED_STOPPED/stop0/client_error0/client_restore0/NOT_REQUIRED/original0",
+      "created_at": "2026-10-23T17:25:43Z",
+      "completed_metadata_updated_at": "2026-10-23T18:37:21Z",
+      "timer": "actual80min timer; first50min metadata showed Linux in progress; no API polling between"
+    },
+    {
+      "run_id": 40006284437,
+      "run_number": 399,
+      "source_head": "095450d52b921adda63a8ae5cd664e87853d8891",
+      "tree": "0358c53277f565e536694cceb5dcd30d2c4d4f99",
+      "actual_checkout": "095450d52b921adda63a8ae5cd664e87853d8891",
+      "status": "SUCCESS",
+      "jobs_success": 10,
+      "actual_go": "1.27.3",
+      "CPU_full_seconds": 187.93,
+      "cu130_full_seconds": 770.96,
+      "native_macOS": "actual Go27 darwin/amd64 platform SUCCESS",
+      "final_cleanup": "CONFIRMED_STOPPED/stop0/client_error0/client_restore0/NOT_REQUIRED/original0",
+      "created_at": "2026-10-23T18:48:10Z",
+      "completed_metadata_updated_at": "2026-10-23T19:35:40Z",
+      "timer": "actual80min first check, based prior sameprofile75m18s; actual47m30s now available for next timer estimate; no API polling during wait"
+    },
+    {
+      "run_id": 40017110559,
+      "run_number": 400,
+      "source_head": "095450d52b921adda63a8ae5cd664e87853d8891",
+      "tree": "0358c53277f565e536694cceb5dcd30d2c4d4f99",
+      "actual_checkout": "095450d52b921adda63a8ae5cd664e87853d8891",
+      "status": "SUCCESS",
+      "jobs_success": 10,
+      "actual_go": "1.27.3",
+      "CPU_full_seconds": 255.2,
+      "cu132_full_seconds": 1004.39,
+      "native_macOS": "actual Go27 darwin/amd64 platform SUCCESS",
+      "final_cleanup": "CONFIRMED_STOPPED/stop0/client_error0/client_restore0/NOT_REQUIRED/original0",
+      "created_at": "2026-10-23T20:10:08Z",
+      "completed_metadata_updated_at": "2026-10-23T21:14:58Z",
+      "timer": "actual55min checkpoint8SUCCESS/Linuxinprogress then actual15min extension; same run completed64m50s; no short status polling/redispatch"
+    }
+  ],
+  "local_adoption": {
+    "phase": "ACTIVATED_LOCAL_CONTROLLED",
+    "SDK_version": "go version go1.27.3 linux/amd64",
+    "runtime_Go_members": [
+      {
+        "path": "/usr/libexec/heliopause/helox",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "path": "/usr/libexec/heliopause/gvisor/containerd-shim-runsc-v1",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/checkpointgofer",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor_sentry",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/runsc-metric-server",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "path": "/usr/libexec/heliopause/gvisor/runsc",
+        "actual_compiler": "go1.27.3"
+      }
+    ],
+    "default_tools": [
+      {
+        "role": "staticcheck",
+        "sha256": "6c01079a5969c4bb79785facbeffca9ea74008865b53c696b53a44dbb87791d2",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "role": "gosec",
+        "sha256": "3b7702c6854913d694807c982c8e2f566c5d88e748e31a0f21e7555c9632c820",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "role": "govulncheck",
+        "sha256": "c64d25675ebc56efb0821f450abdeb134d96cfba571e424951c4d35d341d3c4d",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "role": "gitleaks",
+        "sha256": "a08a812edb7b0f6fc807025485ffd901d4e9ce9a0593bab45f3b7683d641d2df",
+        "actual_compiler": "go1.27.3"
+      },
+      {
+        "role": "actionlint",
+        "sha256": "19d4df1f300d3db5ac66b945fdb2d93a13e408011f39a5366b50932f2e82533d",
+        "actual_compiler": "go1.27.3"
+      }
+    ],
+    "protected_file_count": 12,
+    "protected_metadata_exact": true,
+    "consumers": {
+      "containers": 0,
+      "proc_count": 67,
+      "installed_consumers": 0,
+      "runtime_handles": 0
+    },
+    "doctor": {
+      "doctor_exit_code": 1,
+      "overall_doctor_healthy": false,
+      "host_runtime_checks_healthy": true,
+      "release_installation": "release-installation=UNAVAILABLE (RELEASE_INSTALLATION_UNAVAILABLE)",
+      "checks": [
+        "release-installation=UNAVAILABLE (RELEASE_INSTALLATION_UNAVAILABLE)",
+        "trusted-host-runtime=OK (OK)",
+        "observer-helper=OK (OK)",
+        "network-policy-service=OK (OK)",
+        "runtime-images=OK (OK)"
+      ],
+      "scope": "actual default user release root; unavailable release installation remains unavailable/M13, not healthy"
+    },
+    "cleanup": {
+      "primary_exit": 0,
+      "helper_stop": 0,
+      "helper_state": "CONFIRMED_STOPPED",
+      "owner": 2756208,
+      "shell_pid": 2756208,
+      "ever_started": 1,
+      "registered": 1,
+      "reaped": 1,
+      "recorded_pid": "2756209"
+    },
+    "original_backups_verified": true,
+    "ordinary_npm_pip": "actual is-number@7.0.0 and packaging@25.0 install PASS; temporary original restore PASS before final adoption"
+  },
+  "reconciliation": {
+    "source": "095450d",
+    "selected_sdk": "1.27.3",
+    "existing_plan_apply_apply_again": "PASS",
+    "plan_changes": []
+  },
+  "retirement": {
+    "finished_private_inputs_logical_bytes": 9554156782,
+    "references": [],
+    "query_errors": [],
+    "disposition": "completed private SDKs/caches/temporary executors retired; active SDK/tools/runtime/source/candidate and original SDK/runtime/tool rollback backups preserved",
+    "automatic_review": "broader original-SDK-backup deletion rejected before execution; safe alternative excludes all operational backups; no bypass"
+  },
+  "raw_refs": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-ci397-ordinary-qualification-20261024.json",
+      "sha256": "f4115b8047d041dcf9c9a482dffb9b7083f5eae8fa66ed93c10dd6ffeda32b19",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-ci398-cu126-qualification-20261024.json",
+      "sha256": "bbc83441dd2268dec49e99be79c6a47b169184e45ce1eee1f065022dfc15276b",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-ci399-cu130-qualification-20261024.json",
+      "sha256": "16ee7a980becaab2c400c4c764c1bc2218464467b434294fdd247b32c9722534",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-ci400-cu132-qualification-20261024.json",
+      "sha256": "04856c648a752c9a1f3e116576d0ad63b069555d9a76be50942db155a79ff477",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-final-coherent-readback-20261024.json",
+      "sha256": "e0f03d807e41b8f45f76b1df74f0f250e9733918aa7b0a70cbfdd37c72c93685",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-selected-host-reconciliation-20261024.json",
+      "sha256": "65bf3bc9b725cf613cc9266514fba8987f764dabb4fae59e028f0c631f287a8b",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-finished-private-inputs-retirement-20261024.json",
+      "sha256": "adc750c9b1bec4acd3503937bd68d0faa24dad03eda81c45591a2767b26c11e2",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-backup-retirement-disposition-20261024.json",
+      "sha256": "875e0168bb6737bc18ff0a178cc469ea1aed5b387caa94812a52074f86d6b865",
+      "storage": "LOCAL_RAW; not committed or remotely archived by this receipt"
+    }
+  ],
+  "limitations": [
+    "CI396 positive-gap failure and separate local40m timeout remain historical failures; no established causal fix",
+    "release installation remains UNAVAILABLE; local development activation is not an attested public release",
+    "main merge/publication and P2..P7 acceptance are separate"
+  ],
+  "next": "P2 pnpm baseline audit and exact-version/runtime/layout design; no advertised support before actual qualification"
+}

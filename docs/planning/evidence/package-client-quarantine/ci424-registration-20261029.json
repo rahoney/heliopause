@@ -1,0 +1,87 @@
+{
+  "source": "4ecf37bdac2b0846303f74c36f57e3653cfe6470",
+  "tree": "d88cd820e5eec28f1959f66b617d1b2cc95b5f98",
+  "tracked_files": 2909,
+  "runtime_files": 1295,
+  "remote_ref_verified_after_push": true,
+  "push_completed": true,
+  "run_id": 40721538953,
+  "number": 424,
+  "run_started_at": "2026-10-28T15:59:44Z",
+  "timer_session": null,
+  "first_due_at": "2026-10-28T16:19:44Z",
+  "later_B2e_source_excluded": true,
+  "whole_hosted_qualification": "QUALIFIED (named source4ec only)",
+  "status": "COMPLETED",
+  "last_actual_query_at": "2026-10-28T17:41:10Z",
+  "jobs": [
+    {
+      "id": 122933477133,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477664,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477712,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477791,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477884,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478017,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478086,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478246,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478344,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122986252054,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "completed8_same_checkout": "2823b654150df44f353c79bbd9617e2208dd394b",
+  "whole_checkout_tree_matches": true,
+  "decoded_partial_log_bytes": 443254,
+  "next_due_at": null,
+  "user_authorized_further_important_CI_and_milestone_push_without_reconfirmation": true,
+  "completed20min_polls": 5,
+  "final_qualification": "ci424-execution-foundation-hosted-qualification-20261029.json",
+  "decoded_final_log_bytes": 1263604
+}

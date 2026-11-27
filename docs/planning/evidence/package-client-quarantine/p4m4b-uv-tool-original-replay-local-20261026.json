@@ -1,0 +1,75 @@
+{
+  "scope": "P4-M4A2 bounded metadata-only original DATA replay and transport; no actual native query, ownership or upgrade approval claim",
+  "baseline": "28888af9cb270017cfc2d2a79563c2ccb26ade4f",
+  "implemented": "YES",
+  "wired": "YES (replay/transport/shared parser); NO (actual upgrade session)",
+  "qualified": "YES (named local)",
+  "acceptance_closed": "YES (A2 helper); NO (M4/P4)",
+  "checks": [
+    {
+      "receipt": "p4m4b-tool-original-replay-v3-quick.json",
+      "seconds": 239.5,
+      "log_sha256": "fce04c3924381c281fa3069a4073d960e773de94a14a655a736ac84d273fad64"
+    },
+    {
+      "receipt": "p4m4b-tool-original-replay-v3-security.json",
+      "seconds": 14.192,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "receipt": "p4m4b-tool-original-replay-v3-docs.json",
+      "seconds": 0.28,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "receipt": "p4m4b-tool-original-replay-v3-full-affected-race.json",
+      "seconds": 26.057,
+      "log_sha256": "8835c58a45f8fb3671c407a0f96bec63b28253d1a20b99ec49f5e83040d97632"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/artifact/pypi/uv_installed_controls.go",
+      "sha256": "6dc506193c4b4bea021a4e773264b906d002b50eb607854d5fd4ec464800452c"
+    },
+    {
+      "path": "internal/artifact/pypi/upgrade_input.go",
+      "sha256": "bbe6dd49cce35a678020c59367f794d414062c75f1bf5cd25a5fe5ee6baac924"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_tool_replay_controls.go",
+      "sha256": "ecbbb81232ea45a6181931596bd28d52f65a4ebec4d7cc37b8337663c25760ee"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_tool_replay_controls_test.go",
+      "sha256": "6010398736278ed050633f03fc0536c074526b8923f4ab2d3e55b31594fff117"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_output.go",
+      "sha256": "581f94a52857cb1d359291592ec7ae52f9120b4c8003ca25eb5250649a490a54"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_replay.go",
+      "sha256": "380e4db5cfd4eaf409dc8ab40b78db036cdb95b67317a1fcdf101086ab2b14fd"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_replay_test.go",
+      "sha256": "c4c242b92ef2fb155c890126abdcc255206ab82e436b816f0fdbe93c873f49c3"
+    }
+  ],
+  "verified": [
+    "only exact original METADATA/WHEEL and generated nonexecutable scaffold/RECORD transported",
+    "strict membership, fixed Python, tag compatibility, aggregate and raw size bounds",
+    "same allocation regression before/after 1061300 to4209 B/op; not historical RSS/OOM proof",
+    "existing common header parser/cfg mechanical reuse; unchanged aggregate/candidate and scanner rejection rules",
+    "deterministic sorted tar/strict type/path/mode/uid/gid; fixed stdin transport; invalid input zero transfer"
+  ],
+  "first_failure": "p4m4b-first-check-assessment.json; fixture WHEEL2.0 already supported and auxiliary native lock mode mismatch; reader contracts unchanged",
+  "mechanical_reuse": "p4m4b-replay-mechanical-reuse-v3.json",
+  "allocation": "p4m4b-replay-allocation-assessment.json",
+  "missing": [
+    "actual native upgrade/query/whole archive binding",
+    "current full inspection/update workflow/public CLI/native adoption/pipx/final profiles"
+  ],
+  "remote_ci": "CI414 source294 only failed Quick fixture cleanup; local scoped mitigation remote OPEN; no new push"
+}

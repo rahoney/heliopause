@@ -281,3 +281,52 @@ func TestObservationCommandTerminalDoesNotRelaxTrustedEvidence(t *testing.T) {
 		})
 	}
 }
+
+func TestObservationCommandCombinesBothFreshEnvironments(t *testing.T) {
+	for _, nonzero := range []bool{false, true} {
+		now := time.Now()
+		original := observationUnit{id: "DIRECT_IMPORT:" + strings.Repeat("a", 64), kind: observationDirectImport, candidate: "pkg.cli", coverage: artifactpypi.PostInstallCommandObservation, ownerDigest: strings.Repeat("b", 64)}
+		units := pythonEnvironmentUnits([]observationUnit{original})
+		if len(units) != 2 || units[0].id == units[1].id || units[0].environment == units[1].environment || units[0].originalID != original.id || units[1].originalID != original.id {
+			t.Fatal("environment unit identities are missing or shared")
+		}
+		for _, limit := range []int{1, 2} {
+			tx, err := newObservationTransaction(testObservationPolicy(now), units, now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			tx.preparationOK, tx.anchorAlive = true, true
+			if err := tx.sampleCPU(100, now.Add(time.Millisecond)); err != nil {
+				t.Fatal(err)
+			}
+			for index, unit := range units[:limit] {
+				id := strings.Repeat(string(rune('c'+index)), 64)
+				if err := tx.beginUnit(unit.id, id, now.Add(time.Duration(2+index*2)*time.Millisecond)); err != nil {
+					t.Fatal(err)
+				}
+				outcome := observationZeroExit
+				if nonzero && index == 1 {
+					outcome = observationNonzeroExit
+				}
+				if err := tx.finishUnit(externalUnitEvidence{unitID: unit.id, containerID: id, terminalOutcome: outcome, observerComplete: true, containerGone: true, cgroupDrained: true, closureUnchanged: true, events: 1, bytes: 10, cumulativeCPUUsec: uint64((index + 1) * 1000)}, now.Add(time.Duration(3+index*2)*time.Millisecond)); err != nil {
+					t.Fatal(err)
+				}
+			}
+			tx.anchorAlive, tx.cleanupOK = false, true
+			err = tx.finalize(uint64(limit*1000), now.Add(7*time.Millisecond))
+			if limit == 1 {
+				if err == nil {
+					t.Fatal("one fresh environment falsely finalized both")
+				}
+				continue
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			commands := tx.commandObservations()
+			if len(commands) != 1 || commands[0].UnitID != original.id || commands[0].OwnerSHA256 != original.ownerDigest || commands[0].ZeroExit == nonzero {
+				t.Fatalf("combined command outcome changed identity or semantics: %+v", commands)
+			}
+		}
+	}
+}

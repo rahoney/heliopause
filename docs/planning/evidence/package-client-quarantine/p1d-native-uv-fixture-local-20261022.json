@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "scope": "C3d native fixture transport repair; inert local data only, actual public/native ownership qualification pending",
+  "production_change": "none; fixture-only guest stdin/stdout data transport and explicit exec for fixed verified UV path; separate REQUESTED comment/doc correction changes no executable statement",
+  "source": [
+    {
+      "path": "internal/bootstrap/uv_native_fixture_test.go",
+      "bytes": 11783,
+      "sha256": "34594f41b4818714a7468f4c94272897eeeb464aa8d7b84b9004e30746732320"
+    }
+  ],
+  "first_local_attempt": {
+    "exit": 1,
+    "seconds": 9.487,
+    "failure": "guest UV execution denied because fixture tmpfs had no explicit exec",
+    "host_before_after_identical": true,
+    "raw": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/native-fixture-transport-first.log",
+      "bytes": 623,
+      "sha256": "871b7bb6ac4c036037c796b74a29e36eaad7f4e2546893468e88191168c49895"
+    }
+  },
+  "corrected_local_attempt": {
+    "scope": "local inert fixture transport only; no public old-wheel ownership or product ALLOW qualification",
+    "exit": 0,
+    "seconds": 6.509,
+    "host_before_after_identical": true,
+    "go_tmp_entries": 0,
+    "preflight_notice": "initial ordinary-user protected pod-init hash query denied; no test/container began; fixed root read-only file-hash query used without changing Go test UID"
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/native-fixture-transport-exec.log",
+      "bytes": 493,
+      "sha256": "5a2e619f2aeeb6c65b3d009d5224e818770e8398442748e4faafd9850e3cb82d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/native-fixture-transport-before.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/native-fixture-transport-after.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/native-fixture-transport-exec-before.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/native-fixture-transport-exec-after.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/native-fixture-transport-local-cleanup.json",
+      "bytes": 1073,
+      "sha256": "c1f638c35aae3121975966ec0a7c3ddff161793257910752526cd6b4625fa4e0"
+    }
+  ],
+  "cleanup": {
+    "scope": "completed local fixture-only transport regression; all Go children exited; fixture asserts exact label/image removal and successful absence; two Host snapshots equal",
+    "removed": [
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/source/internal/bootstrap/uv_native_fixture_transport_local_test.go",
+        "bytes": 1775,
+        "preserved": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv_native_fixture_transport_local_test.go.txt",
+        "sha256": "e73f055a80e749c3a7045027efbccc66647e702043555f7d3f433537f27bb4aa"
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/native-fixture-transport-local.py",
+        "bytes": 3625,
+        "preserved": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/native-fixture-transport-local.py",
+        "sha256": "a3d79a0e3e08dac9d263d9ec17a4b7b36ff048d5a4cab261bf9c3494aebdf8d5"
+      }
+    ],
+    "empty_client_directory_removed": true,
+    "go_tmp_entries": 0,
+    "kept": "permanent source, active SDK/quality/runtime and small raw/reproduction source"
+  },
+  "MISSING": [
+    "same-source actual native UV old-wheel proof/adopt/replay and full Required CI"
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.336,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-format.json",
+        "bytes": 110,
+        "sha256": "38e88131e2e4d3b752fa994e7b29a8451ad5f20c66cbb3559be70b18ed8be65e"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 50.051,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-quick.json",
+        "bytes": 110,
+        "sha256": "d1bffb311f0289727deb4485454e5dfc59ae9867df08e4cb14ec6750f985efba"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-quick.log",
+        "bytes": 1354,
+        "sha256": "0b349059bdf36f7f7343e31c1092480d3a30369880752660aefcc2576e4f2336"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 6.497,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-security.json",
+        "bytes": 112,
+        "sha256": "993da3b5b964a4127c335245dbb228b856e5489874aee1e3c2f01d19fa7acaaa"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.232,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-docs.json",
+        "bytes": 108,
+        "sha256": "849a34feaad680ca4b3e72b817cb2dbe5fe8ce615b66f9d689ec478124165e2b"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.916,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-workflow.json",
+        "bytes": 112,
+        "sha256": "2e2a607b7b49988987622b66b3c86a609f2a32d30013eb181c563f1e18cb60ab"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-workflow.log",
+        "bytes": 1071,
+        "sha256": "696161449cc6f3991c34c69e6e64b75c85dab30df6c05e90b3156fa2aa52c8c3"
+      }
+    },
+    {
+      "profile": "bootstrap-race",
+      "exit": 0,
+      "seconds": 8.806,
+      "scope": "bootstrap default Race; actual fixture uses separate inert transport regression; promotion/CLI/Application bodies unchanged from full related Race130.026s",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-bootstrap-race.json",
+        "bytes": 205,
+        "sha256": "434aaf7016f59392121d09ee55454d12aafc1ad32d671075eda999c2df0f41fe"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-fixture-final-bootstrap-race.log",
+        "bytes": 61,
+        "sha256": "4372360747b91d87b60edf310db3e6ffcffa657e5b2b006c4ffd857e9df1dce2"
+      }
+    }
+  ]
+}

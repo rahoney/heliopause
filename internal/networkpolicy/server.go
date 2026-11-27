@@ -49,6 +49,8 @@ func (s *Server) Serve(ctx context.Context) error {
 		<-ctx.Done()
 		_ = s.Close()
 	}()
+	var requests sync.WaitGroup
+	defer requests.Wait()
 	for {
 		connection, err := s.listener.AcceptUnix()
 		if err != nil {
@@ -57,7 +59,13 @@ func (s *Server) Serve(ctx context.Context) error {
 			}
 			return errors.New("accept network policy client")
 		}
-		go s.handle(ctx, connection)
+		requests.Add(1)
+		go func() {
+			defer requests.Done()
+			stop := context.AfterFunc(ctx, func() { _ = connection.Close() })
+			defer stop()
+			s.handle(ctx, connection)
+		}()
 	}
 }
 
@@ -80,7 +88,7 @@ func (s *Server) handle(ctx context.Context, connection *net.UnixConn) {
 		return
 	}
 	reader := bufio.NewReaderSize(connection, maxMessageBytes+1)
-	body, readErr := reader.ReadBytes('\n')
+	body, readErr := reader.ReadSlice('\n')
 	if readErr != nil || len(body) < 2 || len(body) > maxMessageBytes {
 		return
 	}

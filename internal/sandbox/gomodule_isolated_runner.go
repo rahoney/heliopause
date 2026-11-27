@@ -75,7 +75,32 @@ func newIsolatedGoModuleRunner(runner CommandRunner, endpoints NamedEndpointReso
 	return &IsolatedGoModuleRunner{admissionAwareRunner(runner), endpoints, observer, probe, policy}, nil
 }
 
-func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, environment []string, arguments ...string) (output []byte, resultErr error) {
+func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, environment []string, arguments ...string) ([]byte, error) {
+	if strings.Join(arguments, "\x00") == "mod\x00tidy" {
+		return nil, errors.New("go tidy requires explicit frozen source")
+	}
+	return r.runGo(ctx, workspace, environment, nil, arguments...)
+}
+
+func (r *IsolatedGoModuleRunner) RunGoProject(ctx context.Context, workspace string, environment []string, arguments ...string) (output []byte, resultErr error) {
+	key := strings.Join(arguments, "\x00")
+	if key != "mod\x00tidy" && key != "mod\x00download\x00-json\x00all" && key != "mod\x00graph" {
+		return nil, errors.New("go source resolver command is unsupported")
+	}
+	source, err := CaptureGoProjectSource(ctx, workspace)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		resultErr = errors.Join(resultErr, source.Close())
+		if resultErr != nil {
+			output = nil
+		}
+	}()
+	return r.runGo(ctx, workspace, environment, source, arguments...)
+}
+
+func (r *IsolatedGoModuleRunner) runGo(ctx context.Context, workspace string, environment []string, source *GoProjectSource, arguments ...string) (output []byte, resultErr error) {
 	if r == nil || r.runner == nil || ctx == nil || !validGoResolverCommand(arguments) {
 		return nil, errors.New("go resolver command is unsupported")
 	}
@@ -101,7 +126,7 @@ func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, en
 		return nil, err
 	}
 	entries, err := os.ReadDir(workspace)
-	if err != nil || len(entries) != 2 {
+	if err != nil || source == nil && len(entries) != 2 {
 		return nil, errors.New("go resolver accepts private controls only")
 	}
 	capability, err := r.probe(ctx)
@@ -161,6 +186,9 @@ func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, en
 		if !primaryFailed && cleanupErr != nil {
 			phase = "CLEANUP"
 		}
+		if resultErr == nil && source != nil {
+			resultErr = source.Verify(ctx)
+		}
 		if resultErr == nil {
 			phase = "PUBLISH_CONTROLS"
 			resultErr = storeGoResolverControls(workspace, beforeMod, beforeSum, selectedMod, selectedSum)
@@ -209,6 +237,7 @@ func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, en
 	if strings.TrimSpace(string(version)) != "go version go"+capability.Runtime.GoVersion+" linux/amd64" {
 		return nil, errors.New("go resolver toolchain identity mismatch")
 	}
+
 	phase = "CONTROLS"
 	for _, control := range []struct {
 		name string
@@ -219,6 +248,17 @@ func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, en
 			return nil, errors.New("copy go resolver control failed")
 		}
 	}
+	if source != nil {
+		phase = "SOURCE"
+		archive, err := source.Archive()
+		if err != nil {
+			return nil, err
+		}
+		if err := input.RunInput(ctx, bytes.NewReader(archive), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "tar -xf - -C "+goResolverGuestProject)...); err != nil {
+			return nil, errors.New("copy Go tidy frozen source failed")
+		}
+	}
+
 	operationCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	phase = "COMMAND"
@@ -240,11 +280,16 @@ func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, en
 }
 
 func validGoResolverCommand(arguments []string) bool {
+	if len(arguments) == 3 && arguments[0] == "get" && arguments[1] == "-u" {
+		for _, selector := range arguments[2:] {
+			return artifactgomodule.ValidateUpgradeSelector(selector) == nil
+		}
+	}
 	if len(arguments) == 2 && arguments[0] == "get" {
 		_, err := artifactgomodule.ParseReference(arguments[1])
 		return err == nil
 	}
-	return strings.Join(arguments, "\x00") == "mod\x00download\x00-json\x00all" || strings.Join(arguments, "\x00") == "mod\x00graph"
+	return strings.Join(arguments, "\x00") == "mod\x00download\x00-json\x00all" || strings.Join(arguments, "\x00") == "mod\x00graph" || strings.Join(arguments, "\x00") == "mod\x00tidy"
 }
 
 func (r *IsolatedGoModuleRunner) boundedOutput(ctx context.Context, containerID string, command ...string) ([]byte, error) {

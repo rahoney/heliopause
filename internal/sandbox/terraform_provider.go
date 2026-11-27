@@ -15,8 +15,8 @@ import (
 // cloud operation or Host/provider execution outside the isolated lifecycle.
 type TerraformProviderBackend struct{ elf *GitHubELFBackend }
 
-func NewLinuxTerraformProviderBackend(intake string, executor TrustedExecutor, observer TraceObserver) (*TerraformProviderBackend, error) {
-	elf, err := newLinuxGitHubELFBackend(intake, executor, observer)
+func NewLinuxTerraformProviderBackend(intake string, executor TrustedExecutor, observer TraceObserver, resources ObservationResourceClient) (*TerraformProviderBackend, error) {
+	elf, err := newLinuxGitHubELFBackend(intake, executor, observer, resources)
 	if err != nil {
 		return nil, err
 	}
@@ -52,28 +52,6 @@ func (b *TerraformProviderBackend) probeTerminal(ctx context.Context, container 
 		return "terraform-help-exit-1", nil
 	}
 	return "", err
-}
-
-// The collector's bounded kind counts contain accepted records before a fault.
-// Preserve only suspicious facts; the caller retains INCOMPLETE and the first
-// observer failure. These partial counts cannot attest coverage or completion.
-func retainedELFProbeFacts(counts map[string]uint64) []domain.SandboxObservation {
-	var facts []domain.SandboxObservation
-	for _, kind := range []string{"filesystem-outside-workspace", "honeytoken-access", "network-attempt", "process-exec-unexpected"} {
-		count := counts[kind]
-		if count == 0 || count > domain.MaximumObservationSummaryCount {
-			continue
-		}
-		category, subject, ok := traceObservation(kind)
-		if !ok {
-			continue
-		}
-		fact, err := domain.NewCountedSandboxObservation(category, subject, count)
-		if err == nil {
-			facts = append(facts, fact)
-		}
-	}
-	return facts
 }
 
 func (b *TerraformProviderBackend) introduce(ctx context.Context, container string, artifact domain.AcquiredArtifact) error {

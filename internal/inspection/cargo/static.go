@@ -11,6 +11,8 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+const checkProfileName = "cargo-crate-static-v1"
+
 type StaticInspector struct{ intakeRoot string }
 
 func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
@@ -36,7 +38,8 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		return domain.InspectionReport{}, err
 	}
 	checkID, _ := domain.NewCheckID("cargo-crate-static")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	evidenceID, _ := domain.NewEvidenceID("cargo-crate-static-result")
 	summary := "Bounded archive paths, types, compression integrity and normalized Cargo manifest identity checked without execution. Rust source and build-time execution require the isolated observed compiler workflow."
 	if archiveErr != nil {
@@ -55,4 +58,20 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		findings = append(findings, finding)
 	}
 	return domain.NewInspectionReport(check, findings, []domain.Evidence{evidence})
+}
+
+func (p *StaticInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if p == nil || ctx == nil || kind != domain.CheckInspection || artifact.Identity().Source() != artifactcargo.Source() {
+		return nil, errors.New("cargo check declaration requires its configured source")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID("cargo-crate-static")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	requirement, err := domain.NewCheckRequirement(id, domain.CheckInspection, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
 }

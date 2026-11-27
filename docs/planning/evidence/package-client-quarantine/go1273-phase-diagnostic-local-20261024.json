@@ -1,0 +1,120 @@
+{
+  "scope": "test-only bounded phase timing; not a performance/security fix or full CUDA qualification",
+  "production_baseline": "c34365e443b0c0171b9b44c2ba32a9ce4d937342",
+  "source": [
+    {
+      "path": "internal/bootstrap/pytorch_linux_integration_test.go",
+      "sha256": "a4c90dc6d73cf733727c4f485d2d87a2199a731db1850fb0c1f19ca53eaa8771"
+    },
+    {
+      "path": "internal/bootstrap/pytorch_pressure_test.go",
+      "sha256": "520099689f4cd5a7a6afb3667db2d8afc74f7bca227a42d2eac9c0b187160dfa"
+    }
+  ],
+  "baseline_audit": {
+    "pipeline_and_guards": "IMPLEMENTED/WIRED YES; reused unchanged",
+    "phase_diagnostic_before": "IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED NO",
+    "phase_diagnostic_now": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "actual full profile stage observations on new candidate"
+      ]
+    }
+  },
+  "local_checks": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-phase-diagnostic-host-20261024-quick.json",
+      "sha256": "943aad12a374a555d9786078dfb0d347797c3eb708c9a47fd9dff3d5852beaad",
+      "result": {
+        "profile": "quick",
+        "exit": 0,
+        "seconds": 142.914,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      }
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-phase-diagnostic-host-20261024-security.json",
+      "sha256": "0168b7e0afd44a87c71880bd919baa34966671bbd8d89f879ace9efb8dc791f8",
+      "result": {
+        "profile": "security",
+        "exit": 0,
+        "seconds": 4.91,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      }
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-phase-diagnostic-host-20261024-docs.json",
+      "sha256": "7bde8bc9ca38b40b65335fe33e579196b66bb4b903d8b36bd6a38252a4b96643",
+      "result": {
+        "profile": "docs",
+        "exit": 0,
+        "seconds": 0.225,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      }
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-phase-diagnostic-race-20261024.json",
+      "sha256": "3aef50e9e16e0c6c4f2624d479e479446f6e1ca18f79033bfab277b90e36fa48",
+      "result": {
+        "exit": 0,
+        "seconds": 15.848,
+        "command": [
+          "/tmp/haa-go1273-yzyvqne9/final-capture/sdk/go/bin/go",
+          "test",
+          "-race",
+          "-count=1",
+          "-v",
+          "-run",
+          "^TestPyTorch(StageDiagnostic|PressureDiagnostic)",
+          "-timeout=2m",
+          "./internal/bootstrap"
+        ],
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+        "log_sha256": "12c4584c7c1f9aeabc21bd3b3091331d53d132847ad029f266a560cfb8fad489"
+      }
+    }
+  ],
+  "first_quick_failure_preserved": {
+    "raw": "go1273-phase-diagnostic-20261024-quick.log",
+    "cause": "restricted executor socket EPERM",
+    "correction": "authorized host executor and existing short owned TMPDIR; same source, profile and limits"
+  },
+  "local_trial": {
+    "status": "FAILURE/40m timeout preserved",
+    "journal_started_near_minutes": 38,
+    "not_proven": "40min spent in promotion or Go27 regression; phase file mtime is not exact stage duration",
+    "host_original12": "RESTORED; bytes/SHA/UID/GID/mode and root audit PASS",
+    "recovery": "first restore live-consumer guard preserved; independent drain/lock/inode audit and exact4 stale endpoint cleanup, unchanged restore guard PASS"
+  },
+  "retirement": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/go1273-local-cu126-completed-payload-retirement-20261024.json",
+    "logical_bytes": 17647185607,
+    "retained_control_files": 97,
+    "raw_logs_stack_and_failure_preserved": true,
+    "claim": "logical removed bytes, not physical VHD shrink"
+  },
+  "invariants": "production source/resource/poll/deadline/coverage/approval/restore unchanged; no old Evidence or ALLOW reuse; only fixed stage names and elapsed time, capped128 transitions, repeated chunks omitted",
+  "G127": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "cu126 first-late cause/disposition and same final tuple full qualification",
+      "cu130/cu132",
+      "controlled activation/readback/old-owned retirement"
+    ]
+  },
+  "remote_next": "one diagnostic source candidate; actual source/head/run and timer from same profile; no blind rerun or claim that instrumentation fixes historical failure",
+  "inactive_quality_retirement": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/go1273-inactive-go12610-quality-retirement-20261024.json",
+    "sha256": "14158f24b473c0a091e4f7768678fac305fb624f0289a7d14800304eeadde91e",
+    "logical_bytes": 27567200108,
+    "references": 0,
+    "query_errors": 0,
+    "active_Go27_cache_and_default_SDK_and_original_backups": "retained"
+  }
+}

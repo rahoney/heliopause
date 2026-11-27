@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "baseline": "ab54d4abe873ac1e7318e4c1529c49b9b9b061d5",
+  "scope": "P1c C2 exact UV direct-root system hosts read classification; public rerun pending",
+  "sources": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "712a150033fe02953927673a7cdcb1199e7e218a95225ccd2414bdb5c1dcdab1"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "1a1315c20fa2e4de3f821be95209bba48330daf94f5edd8fc69acf7ad3832982"
+    }
+  ],
+  "observer_build": {
+    "recipe": "scripts/build-gvisor-observer-release.sh",
+    "seconds": 300.099,
+    "exit": 0,
+    "latch_passes": 106,
+    "binary": {
+      "role": "candidate-observer",
+      "sha256": "a30f4ed0f923a3734dc87f11bab86257584603fff736d13fafdb8c18f7cd75e9"
+    },
+    "completed_workroots_absent": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/tmp/helox-release-observer.7slyXl"
+    ],
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-public-hosts-observer-build.log"
+  },
+  "checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 38.408,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 8.088,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.272,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.967,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "qualification": "local predicate positive/negative matrix and canonical checks only; public UV/HTTP pending",
+  "host_activation": false,
+  "p1_acceptance_closed": false
+}

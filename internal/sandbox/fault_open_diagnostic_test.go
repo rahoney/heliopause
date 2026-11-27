@@ -1,6 +1,7 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"strings"
@@ -9,6 +10,8 @@ import (
 
 func TestFaultRawDiagnosticIsBoundedAndPreservesFailure(t *testing.T) {
 	raw := FaultRawDiagnostic{Check: "DESCRIPTOR", Sysno: 46, FD: ^uint64(0), KernelImage: "CARGO", Role: "CONTROL", Provenance: "DIRECT_EXEC_ROOT", ExecutableLocator: ^uint64(0), SocketpairObserved: true, SocketpairFDMatch: true, SocketpairDomain: -2147483648, SocketpairType: ^uint32(0), SocketpairSource: "GUEST_RETURN_BUFFER"}
+	raw.FDLastOperation, raw.FDPreviousOperation = "CLOSE_RANGE", "CLOSE_RANGE"
+	raw.FDLastFamily, raw.FDPreviousFamily = -2147483648, -2147483648
 	record := helperRecord{ContainerID: strings.Repeat("a", 64), Kind: "stream-fault", Reason: "FD_STATE_UNKNOWN", FaultSite: "RAW", FaultRaw: &raw}
 	body, err := json.Marshal(record)
 	if err != nil || len(body) > maximumHelperRecordBytes {
@@ -28,6 +31,10 @@ func TestFaultRawDiagnosticIsBoundedAndPreservesFailure(t *testing.T) {
 		func(r *helperRecord) { r.FaultRaw.Provenance = "artifact claimed" },
 		func(r *helperRecord) { r.FaultRaw.SocketpairSource = "TRUSTED" },
 		func(r *helperRecord) { r.FaultRaw.SocketpairObserved = false },
+		func(r *helperRecord) { r.FaultRaw.FDLastOperation = "/private/descriptor" },
+		func(r *helperRecord) { r.FaultRaw.FDPreviousOperation = "TRUSTED" },
+		func(r *helperRecord) { r.FaultRaw.FDLastOperation = "" },
+		func(r *helperRecord) { r.FaultRaw.FDPreviousOperation = "" },
 	} {
 		copyRecord, copyRaw := record, raw
 		copyRecord.FaultRaw = &copyRaw
@@ -44,6 +51,9 @@ func TestFaultRawDiagnosticIsBoundedAndPreservesFailure(t *testing.T) {
 	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{err: fault})
 	if len(observations) != 0 || limitation != "M3_DYNAMIC_OBSERVER_FAILED" || diagnostic.SessionComplete || diagnostic.Reason != record.Reason || diagnostic.FaultRaw != raw || !strings.Contains(diagnostic.String(), "raw_check=DESCRIPTOR raw_sysno=46 raw_fd=18446744073709551615 raw_kernel_image=CARGO raw_role=CONTROL raw_provenance=DIRECT_EXEC_ROOT") {
 		t.Fatal("raw diagnostic repaired or hid the original failure")
+	}
+	if !strings.Contains(diagnostic.String(), "raw_fd_last=CLOSE_RANGE raw_fd_last_family=-2147483648 raw_fd_previous=CLOSE_RANGE raw_fd_previous_family=-2147483648") {
+		t.Fatal("bounded prior FD mutations lost")
 	}
 }
 
@@ -64,6 +74,8 @@ func TestFaultOpenDiagnosticIsBoundedAndDoesNotRepairFailure(t *testing.T) {
 		func(r *helperRecord) { r.FaultOpen.KernelImage = "/private/secret" },
 		func(r *helperRecord) { r.FaultOpen.RustcArgc = 34 },
 		func(r *helperRecord) { r.FaultOpen.Subject = "/private/secret" },
+		func(r *helperRecord) { r.FaultOpen.Subject = "PROC_SELF_COMM_24" },
+		func(r *helperRecord) { r.FaultOpen.Subject = "PROC_PARENT_COMM_24" },
 		func(r *helperRecord) { r.FaultOpen.Role = "TRUSTED" },
 		func(r *helperRecord) { r.FaultOpen.Provenance = "artifact claimed" },
 		func(r *helperRecord) { r.FaultOpen.Mount = "/private/mount" },
@@ -131,7 +143,7 @@ func TestFaultOpenKernelImageRemainsDiagnostic(t *testing.T) {
 }
 
 func TestFaultOpenFixedKernelMetadataRemainsDiagnostic(t *testing.T) {
-	for _, subject := range []string{"PROC_SELF_MAPS", "PROC_SELF_STATM", "VM_OVERCOMMIT_MEMORY", "DEV_NULL"} {
+	for _, subject := range []string{"PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_COMM", "PROC_THREAD_COMM", "PROC_PARENT_COMM", "VM_OVERCOMMIT_MEMORY", "DEV_NULL"} {
 		t.Run(subject, func(t *testing.T) {
 			open := FaultOpenDiagnostic{Image: "OTHER", KernelImage: "CARGO", Role: "CONTROL", Provenance: "DIRECT_EXEC_ROOT", Subject: "PROC_SELF_MAPS", Mount: "system", Flags: 557056}
 			open.Subject = subject
@@ -191,5 +203,81 @@ func TestFaultBudgetDiagnosticPreservesLimitFailure(t *testing.T) {
 	}
 	if !strings.Contains(diagnostic.String(), "budget_charged=10000 budget_limit=10000 budget_close=3000 budget_fcntl=6900") {
 		t.Fatal("budget cause lost")
+	}
+}
+
+func TestFirstOutsideDiagnosticRetainsPrimaryFaultWithinExistingEnvelope(t *testing.T) {
+	first := FaultOutsideDiagnostic{Image: "PYTHON", Role: "ARTIFACT", Provenance: "CLONE_CHILD", Subject: "OTHER", Mount: "workspace", Flags: 624640, PathLocator: ^uint64(0)}
+	latest := FaultOpenDiagnostic{FirstOutside: &first, Image: "OTHER", KernelImage: "UNKNOWN", Role: "ARTIFACT", Provenance: "CLONE_CHILD", Subject: "OCI_IMAGE", Mount: "oci-root", Flags: 557056, PathLocator: ^uint64(0), ExecutableLocator: ^uint64(0), MountpointLocator: ^uint64(0)}
+	record := helperRecord{ContainerID: strings.Repeat("a", 64), Kind: "stream-fault", Reason: "STREAM_FAULT", FaultSite: "OPEN_RESULT_CLASSIFICATION_IMAGE", FaultImageLocator: ^uint64(0), FaultOpen: &latest}
+	body, err := json.Marshal(record)
+	if err != nil || len(body) > maximumHelperRecordBytes {
+		t.Fatal("first finding exceeded unchanged envelope", err, len(body))
+	}
+	validPayload := append([]byte(nil), body...)
+	decoded, err := decodeHelperRecord(body)
+	if err != nil || decoded.FaultOpen == nil || decoded.FaultOpen.FirstOutside == nil || *decoded.FaultOpen.FirstOutside != first {
+		t.Fatal("nested first finding lost", err)
+	}
+	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{err: observerFault{reason: record.Reason, site: record.FaultSite, open: latest, firstOutsideOpen: first.openDiagnostic()}})
+	if len(observations) != 0 || limitation != "M3_DYNAMIC_OBSERVER_FAILED" || diagnostic.SessionComplete || diagnostic.FaultOpen != latest || diagnostic.FaultFirstOutsideOpen != first.openDiagnostic() || !strings.Contains(diagnostic.String(), "first_outside_flags=624640") {
+		t.Fatal("earlier finding repaired or replaced primary fault", diagnostic)
+	}
+	for _, mutate := range []func(*helperRecord){
+		func(r *helperRecord) { r.Kind = "stream-end" },
+		func(r *helperRecord) { r.Reason = "EVENT_LIMIT" },
+		func(r *helperRecord) { r.FaultOpen.FirstOutside.PathLocator = 0 },
+		func(r *helperRecord) { r.FaultOpen.FirstOutside.Subject = "/private/secret" },
+		func(r *helperRecord) { r.FaultOpen.FirstOutside.Role = "TRUSTED" },
+		func(r *helperRecord) { r.FaultOpen.FirstOutside.Mount = "/private/mount" },
+	} {
+		changed, copyFirst, copyLatest := record, first, latest
+		copyLatest.FirstOutside = &copyFirst
+		changed.FaultOpen = &copyLatest
+		mutate(&changed)
+		body, err := json.Marshal(changed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := decodeHelperRecord(body); err == nil {
+			t.Fatal("misplaced or unbounded nested first finding admitted")
+		}
+	}
+	for _, extra := range []string{"kernel_image", "first_outside"} {
+		var wire map[string]any
+		decoder := json.NewDecoder(bytes.NewReader(validPayload))
+		decoder.UseNumber()
+		if err := decoder.Decode(&wire); err != nil {
+			t.Fatal(err)
+		}
+		baseline, err := json.Marshal(wire)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := decodeHelperRecord(baseline); err != nil {
+			t.Fatal("unaltered diagnostic roundtrip failed before mutation", err)
+		}
+		nested := wire["fault_open"].(map[string]any)["first_outside"].(map[string]any)
+		nested[extra] = "UNREVIEWED"
+		invalid, err := json.Marshal(wire)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := decodeHelperRecord(invalid); err == nil {
+			t.Fatal("unbounded/recursive first finding accepted")
+		}
+	}
+	old := latest
+	old.FirstOutside = nil
+	record.FaultOpen = &old
+	previous, err := json.Marshal(record)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(previous), "first_outside") {
+		t.Fatal("ordinary fault shape changed")
+	}
+	if _, err := decodeHelperRecord(previous); err != nil {
+		t.Fatal("previous fault envelope rejected", err)
 	}
 }

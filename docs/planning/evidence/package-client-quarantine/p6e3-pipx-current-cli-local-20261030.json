@@ -1,0 +1,307 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-E3",
+  "source_base": "2dcc1ad",
+  "scope": "Pipx primary/sole-console choice, current approved original application and public CLI; existing UV consumer preserved",
+  "audit": {
+    "pipx_current_application_and_CLI": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "named local YES",
+      "ACCEPTANCE_CLOSED": "named local slice YES",
+      "MISSING": []
+    },
+    "new_source_hosted_and_whole_P6": {
+      "IMPLEMENTED": "partial",
+      "WIRED": "named hosted cohorts YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "new-source grouped Required/checkout/full logs",
+        "remaining bunx/pnpm dlx native aliases and hostile/equivalence coverage",
+        "whole affected profile/support/final acceptance"
+      ]
+    }
+  },
+  "source_identity": [
+    {
+      "path": "internal/artifact/pypi/pipx_execution_entry.go",
+      "sha256": "41ee84015c041ff520c6cd9833e3f98547299f21c1e68024e06ad92eb7012103"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_execution_entry_test.go",
+      "sha256": "29b2c175fbcefd06afcbb13c1a617434350876e2e74bed33954c58612225be3e"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "b164d8e5256b68d0f219e8e3a9ac03c0319d110a19ba6f090c319fe733e1c462"
+    },
+    {
+      "path": "internal/bootstrap/python_execution_prepare.go",
+      "sha256": "6e78aee24231d52c12733a76ec954519d32f24de5659107c8f461ad413250429"
+    },
+    {
+      "path": "internal/bootstrap/python_pipx_run_cli.go",
+      "sha256": "8ec08dbf9ffbfdc379159e65e401e6549147b707495dd9840ba3eab43792d40e"
+    },
+    {
+      "path": "internal/bootstrap/python_pipx_run_execution.go",
+      "sha256": "4d8abe17c5592f6043b6c00097ecf5360659a208852bdbae437b7cf05726e1ba"
+    },
+    {
+      "path": "internal/bootstrap/python_pipx_run_execution_test.go",
+      "sha256": "02e2758df99721155b8ca229db5d9c5377d74cce7e40364e83d1ca3414ec5e8c"
+    },
+    {
+      "path": "internal/bootstrap/python_pipx_run_integration_test.go",
+      "sha256": "3cdf4194b16f6aa7ba268ace1cf3055b375db468f79c2b768a2ce13b917a0fb6"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_cli.go",
+      "sha256": "e1f5e05b6eb5610f605783c40b12ace7f9e3cf2eaf819ddcc12a261be153347e"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_cli_integration_test.go",
+      "sha256": "a544829c23e6b00745aa63d77406c89b2cc0c697d4012cf6f8067d70e2f0a441"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_execution.go",
+      "sha256": "5d5c611eded69dd92dd33885387d836f1c93e0d1f5804dc1894407006c0ed468"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_execution_integration_test.go",
+      "sha256": "f6a6de302c18f79bfff8ee5d76415a42d8cac13928c20647a761285a65957fc9"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "4e0e5140ea097cf1adfd57e294bbbb61673875a084aa70bef895396f0a6ec02b"
+    },
+    {
+      "path": "internal/cli/pipx_execution.go",
+      "sha256": "e87edddeb417a49cbb84af048957f69749cb7945ca318e82b81524cb68e78ce6"
+    },
+    {
+      "path": "internal/cli/pipx_execution_test.go",
+      "sha256": "661d0f84a49d58c9ca4fb1b530b03fa0267e2a10b13458a8b34b4431c02d1320"
+    },
+    {
+      "path": "internal/cli/python_execution.go",
+      "sha256": "c6f3c6b0e344198cd1efdbfc14c1c9aef575b236fc2d8ea3ed3393c4ed5beda1"
+    },
+    {
+      "path": "internal/cli/python_execution_test.go",
+      "sha256": "ba8a311e6b96d58b3a7f1c5c68b16c054747326ea8e0eaba752238c0b55d1fc3"
+    },
+    {
+      "path": "internal/sandbox/pipx_run_resolver.go",
+      "sha256": "718a32cf6f4edc1be13e80827d04c2bb75bb75be72a514ce00d6861efe0fd5fb"
+    },
+    {
+      "path": "internal/sandbox/pipx_run_resolver_test.go",
+      "sha256": "cf2753ac46133f9d227452eb1af60699332a2a61c7a6e17664fa2e9962a393e7"
+    },
+    {
+      "path": "internal/sandbox/uv_run_console_binding.go",
+      "sha256": "b0c2897dbf3f0b0cb0d3eb9ce8b3b89b041e84519d6a0683cd8342e8c5c2339d"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver.go",
+      "sha256": "42d9fdb7e134d23e5212f39fcf2246da7f3d12e80863122dcedf9db942baf742"
+    },
+    {
+      "path": "internal/cli/pipx_tool_test.go",
+      "sha256": "0c156f808d71f1cb5330d881f391f7f2f08314c653e27407a1b1d8611dc16ba9"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "8ff01a292c0d4705f182699ba924c65624259b102297f1134f40913a81792649"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow_test.go",
+      "sha256": "c4a7a476f4ae8ee4682df25e465dfdc8e0a5e853eb685f6d36c6aa552004c53e"
+    },
+    {
+      "path": "scripts/check/pipx_runtime_workflow.go",
+      "sha256": "77234fe67bca3400877ee8a70b581e9c9ed7ef42472dce27491886b75e5cf1e1"
+    },
+    {
+      "path": "scripts/check/pipx_tools_workflow.go",
+      "sha256": "706507c4dcfbef2d4c18ae6892ef10beffb5c4bb0e97309fa64b8b0d092522e0"
+    },
+    {
+      "path": "scripts/ci-uv-tools.sh",
+      "sha256": "96bcb4d428963207880731673eb709a7e6bd0b7542633fe5233edd375712078c"
+    },
+    {
+      "path": "scripts/ci-pipx-tools.sh",
+      "sha256": "fe1b2acb57b0a69206e7e58a9a1cf9bb335e9046ae79a85cd367587d0bd0112d"
+    },
+    {
+      "path": "scripts/ci-pipx-runtime.sh",
+      "sha256": "0c9d8d6f29e20c92780bb0c5414fcc0d773e354e9ee29182eff9a7eccb1577d6"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "8b68764748cf733651754ff6e386e90a52dbd1112cf7669bfcc9a32181383436"
+    }
+  ],
+  "canonical_checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 1.417
+    },
+    {
+      "step": "workflow",
+      "exit_code": 0,
+      "seconds": 1.819
+    },
+    {
+      "step": "checker-race",
+      "exit_code": 0,
+      "seconds": 73.525
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 81.012
+    },
+    {
+      "step": "tagged-vet",
+      "exit_code": 0,
+      "seconds": 1.318
+    },
+    {
+      "step": "tagged-staticcheck",
+      "exit_code": 0,
+      "seconds": 2.32
+    },
+    {
+      "step": "affected-bootstrap-race",
+      "exit_code": 0,
+      "seconds": 15.959
+    }
+  ],
+  "initial_affected_five_package_race": {
+    "exit_code": 0,
+    "seconds": 86.008,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e3-local-qualification/inventory.json"
+  },
+  "final_tagged_test_oracle_checks": [
+    {
+      "step": "tagged-vet",
+      "exit_code": 0,
+      "seconds": 3.223
+    },
+    {
+      "step": "tagged-staticcheck",
+      "exit_code": 0,
+      "seconds": 3.372
+    },
+    {
+      "step": "build",
+      "exit_code": 0,
+      "seconds": 3.982
+    }
+  ],
+  "shared_owners": {
+    "generic_console_selector_application_ports_Core_CPP_unchanged": true,
+    "proof": "docs/github-logs/package-client-quarantine-20261021/p6-e3-final-checks/unchanged-boundaries.json",
+    "actual_app_final_product_identity": "docs/github-logs/package-client-quarantine-20261021/p6-e3-final-checks/app-final-product-identity.json",
+    "existing_native_source_session_and_whole_binding_reused": true,
+    "current_inspection_Policy_approved_original_runtime_records_reused": true,
+    "native_cache_metadata_remains_unapproved_DATA": true,
+    "product_runtime_observation_and_argv_output_limits_unchanged": true
+  },
+  "actual": {
+    "pipx_application": {
+      "parent": "TestLinuxPythonPipxRunExecutionWorkflowIntegration",
+      "cases": 3,
+      "seconds": 143.1,
+      "result": "PASS",
+      "whole_operator_result": "FAIL at subsequent CLI test oracle; not whole PASS",
+      "cases_scope": [
+        "fresh whole ALLOW/normal0",
+        "fresh whole ALLOW/typed guest2",
+        "configured command mismatch denied before runtime/records"
+      ],
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e3-current-final/inventory.json",
+      "test_label_caveat": "RuntimeIdentity was asserted pipx; diagnostic selector label was fixed UV. Final test-only formatter derives the asserted identity. Stored original is unchanged; modified-label guard DATA is not an actual runtime replay."
+    },
+    "pipx_CLI": {
+      "parent": "TestLinuxPipxRunExecutionCLIIntegration",
+      "cases": 6,
+      "source_markers": 7,
+      "seconds": 283.94,
+      "result": "PASS",
+      "scope": [
+        "JSON private default",
+        "typed guest2 Korean/ASCII opt-in",
+        "literal help human Korean",
+        "explicit --spec different package/console graph2",
+        "missing console denied/no runtime/no records",
+        "primary-name sole-console graph2"
+      ],
+      "fresh_operation_records": 5,
+      "fresh_subject_runs": 7
+    },
+    "existing_UV_CLI": {
+      "parent": "TestLinuxUVRunExecutionCLIIntegration",
+      "cases": 5,
+      "source_markers": 5,
+      "seconds": 217.4,
+      "result": "PASS"
+    },
+    "final_CLI_operator": {
+      "exit_code": 0,
+      "seconds": 503.702,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e3-final-test-oracle/inventory.json",
+      "host_protected5_and_Docker_unchanged": true,
+      "helpers_wait_zero": true,
+      "helpers_and_observer_and_containers_absent_after": true,
+      "same_inode_original_profile_restored": true
+    },
+    "same_CPP_not_retested": true,
+    "final_default_code_unchanged_by_two_tagged_test_corrections": true
+  },
+  "CI_wiring": {
+    "existing_acquired42_ZIP_and_private_installed_fixture": "scripts/ci-pipx-runtime.sh run -> scripts/ci-pipx-tools.sh run -> scripts/ci-uv-tools.sh pipx-run-workflow/pipx-run-cli",
+    "one_supply_preparation_for_both_consumers": true,
+    "Required_jobs": 10,
+    "Linux_job_timeout_minutes": 120,
+    "expected_new_top_level_parents": 2,
+    "new_jobs": 0,
+    "exact_parent_unique_case_no_SKIP_primary_status_guards": true,
+    "actual_guard_DATA": "docs/github-logs/package-client-quarantine-20261021/p6-e3-final-checks/cli-guards-actual-data.json"
+  },
+  "first_failures": [
+    {
+      "kind": "obsolete unsupported-run expectation",
+      "scope": "first Quick310.522s failed; obsolete row removed, positive/unsafe tests preserved",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e3-first-quick/inventory.json"
+    },
+    {
+      "kind": "operator126 before product",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e3-current-operator-v1/inventory.json"
+    },
+    {
+      "kind": "new mode missing native-fallback exclusion; empty filter is not PASS",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e3-first-current-v2/inventory.json"
+    },
+    {
+      "kind": "primary name incorrectly explicit to application; whole ALLOW then preparation denied",
+      "red_seconds": 43.88,
+      "green_seconds": 53.16,
+      "raw_red": "docs/github-logs/package-client-quarantine-20261021/p6-e3-default-red/inventory.json",
+      "raw_green": "docs/github-logs/package-client-quarantine-20261021/p6-e3-default-green/inventory.json",
+      "operator_red_summary_KeyError": "saved product FAIL and Host restoration precede missing build metadata; no rerun for receipt generation"
+    },
+    {
+      "kind": "tagged CLI subtest conversion return instead of existing-record continue",
+      "whole_command": "FAIL; child PASS cannot replace aggregate",
+      "correction": "original continue restored; affected CLI and unreached UV only replayed",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e3-current-final/inventory.json"
+    }
+  ],
+  "remaining": "Grouped new-source hosted, remaining aliases/equivalence/hostile/profile and whole P6/P7 acceptance; no main merge or release"
+}

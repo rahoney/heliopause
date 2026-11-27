@@ -17,15 +17,15 @@ func NewLinuxBackendWithExecutor(intakeRoot string, executor interface {
 	Executor
 	CommandRunner
 	inputCommandRunner
-}, observer TraceObserver) (*Backend, error) {
-	return newLinuxBackend(intakeRoot, executor, observer)
+}, observer TraceObserver, resources ObservationResourceClient) (*Backend, error) {
+	return newLinuxBackend(intakeRoot, executor, observer, resources)
 }
 
 func newLinuxBackend(intakeRoot string, executor interface {
 	Executor
 	CommandRunner
 	inputCommandRunner
-}, observer TraceObserver) (*Backend, error) {
+}, observer TraceObserver, resources ObservationResourceClient) (*Backend, error) {
 	if intakeRoot == "" || observer == nil {
 		return nil, errors.New("sandbox intake root and process-scoped observer are required")
 	}
@@ -40,5 +40,6 @@ func newLinuxBackend(intakeRoot string, executor interface {
 	if err != nil {
 		return nil, err
 	}
+	backend.resources = resources
 	return backend, nil
 }

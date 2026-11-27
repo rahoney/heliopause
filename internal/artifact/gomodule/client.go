@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // Client acquires only exact canonical public proxy URLs, without ambient
@@ -80,19 +81,22 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 			return result, err
 		}
 	}
+	var required []RequiredModReference
+	if resolved.DeclaredIntegrity() != "" {
+		required, err = RequiredModReferences(resolved.DeclaredIntegrity())
+		if err != nil {
+			return result, err
+		}
+	}
+	if err := ValidateRequiredModReferences(resolved.Identity(), required); err != nil {
+		return result, err
+	}
+	if len(required) > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 120*time.Second)
+		defer cancel()
+	}
 	modURL, err := ProxyURL(resolved.Identity().Name(), resolved.Identity().Version(), ".mod")
-	if err != nil {
-		return result, err
-	}
-	mod, err := c.read(ctx, modURL, MaxModBytes)
-	if err != nil {
-		return result, err
-	}
-	archive, err := c.read(ctx, zipURL, MaxZipBytes)
-	if err != nil {
-		return result, err
-	}
-	body, err := encodeBundle(mod, archive)
 	if err != nil {
 		return result, err
 	}
@@ -115,13 +119,91 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if err := root.Mkdir(run.String(), 0o700); err != nil {
 		return result, err
 	}
+
+	allocation, err := root.Lstat(run.String())
+	if err != nil {
+		return result, err
+	}
+	directory, err := root.OpenRoot(run.String())
+	if err != nil {
+		return result, err
+	}
+	defer directory.Close()
+	allocated, err := directory.Stat(".")
+	if err != nil || !os.SameFile(allocation, allocated) {
+		return result, errors.New("intake directory changed")
+	}
+	var lease ports.StorageLease
 	defer func() {
 		if err != nil {
-			err = errors.Join(err, root.RemoveAll(run.String()))
+			current, cleanupErr := root.Lstat(run.String())
+			if cleanupErr == nil && os.SameFile(allocation, current) {
+				// Never recursively remove members whose completed ownership
+				// and last-use have not been established.
+				cleanupErr = root.Remove(run.String())
+				if cleanupErr == nil {
+					parent, err := root.Open(".")
+					cleanupErr = err
+					if err == nil {
+						cleanupErr = errors.Join(parent.Sync(), parent.Close())
+					}
+				}
+			} else {
+				cleanupErr = errors.Join(errors.New("intake cleanup ownership is unknown"), cleanupErr)
+			}
+			if lease != nil && cleanupErr == nil {
+				cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+				cleanupErr = lease.Abort(cleanupCtx)
+				cancel()
+			}
+			err = errors.Join(err, cleanupErr)
 			result = domain.AcquiredArtifact{}
 		}
+		if lease != nil {
+			err = errors.Join(err, lease.Close())
+		}
 	}()
-	f, err := root.OpenFile(run.String()+"/module.bundle", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: uint64(len(bundleRequiredHeader) + 8 + MaxModBytes + MaxZipBytes), Files: 1})
+		if err != nil {
+			return result, err
+		}
+	}
+	mod, err := c.read(ctx, modURL, MaxModBytes)
+	if err != nil {
+		return result, err
+	}
+	var controls []RequiredModControl
+	remaining := int64(MaxModBytes - len(mod))
+	for _, ref := range required {
+		if remaining <= 0 {
+			return result, errors.New("required Go controls exceed combined bound")
+		}
+		endpoint, err := ProxyURL(resolved.Identity().Name(), ref.Version, ".mod")
+		if err != nil {
+			return result, err
+		}
+		body, err := c.read(ctx, endpoint, remaining)
+		if err != nil {
+			return result, err
+		}
+		remaining -= int64(len(body))
+		controls = append(controls, RequiredModControl{ref.Version, body})
+	}
+	archive, err := c.read(ctx, zipURL, MaxZipBytes)
+	if err != nil {
+		return result, err
+	}
+	var body []byte
+	if len(controls) == 0 {
+		body, err = encodeBundle(mod, archive)
+	} else {
+		body, err = encodeBundleWithRequiredMods(mod, archive, controls)
+	}
+	if err != nil {
+		return result, err
+	}
+	f, err := directory.OpenFile("module.bundle", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return result, err
 	}
@@ -136,7 +218,16 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if err != nil {
 		return result, err
 	}
-	return domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), content, "intake:"+run.String()+":module", uint64(len(body)), resolved.DeclaredIntegrity())
+	result, err = domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), content, "intake:"+run.String()+":module", uint64(len(body)), resolved.DeclaredIntegrity())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	return result, nil
 }
 
 func (c *Client) read(ctx context.Context, endpoint string, limit int64) ([]byte, error) {

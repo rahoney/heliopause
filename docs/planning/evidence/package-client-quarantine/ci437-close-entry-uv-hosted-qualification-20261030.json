@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/CI436-close-entry-correction-and-D5-D8",
+  "status": "FROZEN_SOURCE_REQUIRED10_HOSTED_QUALIFIED",
+  "source": "f4f7abc50166a5e5b3a2743967674e7b89088678",
+  "whole_tree": "99e558c6bff0b18355de9eadcee4a334cfa3dcee",
+  "checkout_all10": "e5a153efd6be3dbecc7ddb9e4aca938aaa88a188",
+  "source_is_checkout_parent": true,
+  "run_id": 40992454633,
+  "run_number": 437,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40992454633",
+  "run_started_at": "2026-10-30T02:34:15Z",
+  "completed_run_updated_at": "2026-10-30T04:25:38Z",
+  "elapsed_start_to_final_update_seconds": 6683,
+  "jobs": [
+    {
+      "id": 123857831262,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831320,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831425,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831436,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831438,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831446,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831461,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831467,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123857831523,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123890761960,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "top_level_parents_pass": 109,
+    "parents_fail": 0,
+    "skip": 0,
+    "CPP_latches_pass": 132,
+    "CPP_latches_fail": 0,
+    "full_CPU_seconds": 285.18,
+    "Bun_peer_seconds": 64.88,
+    "new_UV_native_resolver_seconds": 39.67,
+    "new_UV_current_application_seconds": 94.97,
+    "new_UV_CLI_seconds": 163.19,
+    "helper_wait_zero": 18,
+    "final_cleanup_original0_confirmed_stopped": 4,
+    "original_client_and_runtime_restored": true
+  },
+  "source_and_raw_proof": {
+    "file": "docs/github-logs/package-client-quarantine-20261021/ci437-all10-source-proof.json",
+    "decoded_total_bytes": 1369998,
+    "new_logs_fetched": 2,
+    "old8_logs_not_refetched": true,
+    "all10_readback_and_checkout_proved": true
+  },
+  "timer": {
+    "actual_20min_queries": 5,
+    "final_query_after_expected_completion": "MCP jobs/run completion confirmed at 04:26 UTC, before next scheduled timer",
+    "worker_stop": "docs/github-logs/package-client-quarantine-20261021/ci437-monitor-stop.json",
+    "worker_exit_code": 143,
+    "natural_worker_exit0_not_claimed": true,
+    "next_due_at": null
+  },
+  "qualification_boundary": {
+    "fixed_close_enter_matching_observer_profile_and_existing_consumers": "QUALIFIED on frozen source",
+    "new_UV_D5_D6_D7_and_E1_sharing": "named hosted QUALIFIED",
+    "exact_historical_CI436_interleaving": "UNCONFIRMED",
+    "later_E2A_E2B_source": "NOT_IN_THIS_RUN; named local qualification separate",
+    "P6_generic_alias_matrix_whole_P7_signed_final": "OPEN",
+    "main_merge_release": "NOT_PERFORMED"
+  }
+}

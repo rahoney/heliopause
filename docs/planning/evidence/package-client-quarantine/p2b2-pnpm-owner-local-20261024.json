@@ -1,0 +1,182 @@
+{
+  "scope": "M13-004/P2b2 single pnpm runtime owner, current metadata and frozen maintenance only",
+  "baseline": "5139689",
+  "IMPLEMENTED": "YES — owner/metadata/maintenance subset",
+  "WIRED": "YES — generator/drift/metadata/maintenance consumers",
+  "QUALIFIED": "NO — native distribution/admission and remote qualification pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "local_status": "VERIFIED",
+  "tested_candidate_tree": "d5c9b768b480084b9dae480cd7587eb12ec7328e",
+  "checks": [
+    {
+      "name": "p2b2-owner-canonical-quick",
+      "exit": 0,
+      "seconds": 131.199,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-owner-canonical-quick.json",
+      "sha256": "df6d0bf8256295b956be3eac3268a57fd1c0568d2f402fc5caa1e768994ffb83"
+    },
+    {
+      "name": "p2b2-owner-canonical-security",
+      "exit": 0,
+      "seconds": 6.928,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-owner-canonical-security.json",
+      "sha256": "9d837535dfe1bebef6cb1ba04ecdc08429aa74a790711283630ccd2b841d3dbb"
+    },
+    {
+      "name": "p2b2-owner-canonical-docs",
+      "exit": 0,
+      "seconds": 0.224,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-owner-canonical-docs.json",
+      "sha256": "6000a973287cecd0a76fa54ff5d6d849dea5f8d92fe691411069693d7de343fb"
+    },
+    {
+      "name": "p2b2-owner-canonical-workflow",
+      "exit": 0,
+      "seconds": 0.713,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-owner-canonical-workflow.json",
+      "sha256": "1d5489a642e164d544b11cf73f8c18188b21e3cc8696cc6f43d67528109ca68f"
+    },
+    {
+      "name": "p2b2-owner-canonical-release-gate",
+      "exit": 0,
+      "seconds": 0.276,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-owner-canonical-release-gate.json",
+      "sha256": "d8983861cbc3ed10a0ca05e6005ab20275504400b81deb0b5b95cfd40e8232a9"
+    },
+    {
+      "name": "p2b2-owner-canonical-qualification-freshness",
+      "exit": 0,
+      "seconds": 0.115,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-owner-canonical-qualification-freshness.json",
+      "sha256": "25f324f5268517881f6c88da4a0710930ccc263696220b54cd21552074177a1e"
+    },
+    {
+      "name": "p2b2-owner-full-race",
+      "exit": 0,
+      "seconds": 42.209,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-owner-full-race.json",
+      "sha256": "dda91f0a4c17d66236e8daf47d6fb3ce20bb772de5ef78abf9dae56286a2b182"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "02805aedd22b78a5b4fdf924c0afc0e901eac2ad5b525a4f5bdf0c1b1f1e56c3"
+    },
+    {
+      "path": "scripts/version-support.lock.json",
+      "sha256": "e4f6d09ff2f8935b6bacbe55583020c0845f1963430f30aa9745a589d286ce1e"
+    },
+    {
+      "path": "tools/pnpm/release-proof.json",
+      "sha256": "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
+    },
+    {
+      "path": "scripts/generate-runtime-lock.go",
+      "sha256": "0bd03185a67279a2ed854a012d9e92f7f02669ab38094a4d625dbcd9fce91724"
+    },
+    {
+      "path": "scripts/generate-runtime-lock_test.go",
+      "sha256": "379e345b460d99dff42a7cc02f5a5ab2cf895974ed39061bd9c07aa134d4d6dd"
+    },
+    {
+      "path": "scripts/check/runtime_versions.go",
+      "sha256": "507dd26830b92589c204a80ec793c97da7e6fdd1f76d6ce6e9d325a352e61908"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "093a687545e93daca692ec42571d1b9f54fbe9b07fc043eee00e918b5ff877a2"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main.go",
+      "sha256": "3fb18146e19da4d05c5360baedb4288d9651356e8462cbfa4082738cf7e3f636"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main_test.go",
+      "sha256": "0a5cbfb6fdd26f4fd8222da6af5ff030a031c59eeb57a758e23489b8152ccd9e"
+    },
+    {
+      "path": "internal/releaseinstall/metadata.go",
+      "sha256": "b5bfc67c97409e558a81b3398e66d8e69746ab3aae30cb229d640b8f67cdb627"
+    },
+    {
+      "path": "internal/testutil/releasefixture/runtime.go",
+      "sha256": "46d31ddfdf3b81fedee5be6a6c546bd08ba51125ffe9c629c810f3449f25cd22"
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "sha256": "8a6e5b17144b361af7d96ebb4dcad933fb8641fb1377eb8372765ee54b7719ea"
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "sha256": "51cd0da986b42bcece9386147a26ccec67116dc56b2a825abf67bea68119175b"
+    },
+    {
+      "path": "scripts/release-manifest/bundle_test.go",
+      "sha256": "1a5f4386e1d88b755a4239e2e86d8003242fd369272b25f53d08115e1395935c"
+    },
+    {
+      "path": "scripts/update-runtime/gvisor.go",
+      "sha256": "19f013a8c787b0b621b212c236c8f269b11dbe90ae3e511317c7f593c93508b6"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "b974583f71725febf68cc2451b9aa676c8946ba8509bb3e8e14777050c48d339"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_supply.go",
+      "sha256": "bf4f618e7d2bf4a5230a88182c2971dd7b41841246ac40cfe8741e23d932929a"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_supply_test.go",
+      "sha256": "796321f3d564595ae51526f225b63c6bc4b5837d02de5e54754e9c8fd969ef17"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_supply_real_test.go",
+      "sha256": "0b20dab48a4d03d6b2e7bb4cf250c7aaf449df488f00a04b1601590b70c2fe3e"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_release.go",
+      "sha256": "ee86012aab3b094bf9921c8e78dad3c056b793d3673c25b079aec1729d037eb4"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_release_test.go",
+      "sha256": "a70802d316bb7ccbc6239f86a1062edb2fa0e36c92f9eb9bb45cea20bd6c8248"
+    },
+    {
+      "path": "scripts/update-runtime/metadata.go",
+      "sha256": "0ce9f5afeae81c422260ad6af6853ff5ea7a3d2f157967a5263c955840bc854c"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "3a69f11d22d49f6c7acd495c179b87dc30810bdbfb1507960cdff397c7a64a4a"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "8231fcf72a7ea23b8d8b0b09720410901aa7a489308c41a2e9c0b1a06ecfed09"
+    },
+    {
+      "path": "scripts/update-runtime/uv_supply.go",
+      "sha256": "64aff4110f8be897966a0a4e3d75b7c7016fa13662d0ef6ae9fd0d276e64e432"
+    },
+    {
+      "path": "scripts/update-runtime/supply_file.go",
+      "sha256": "c5155d32110f9e85e5a06f4f349a6728474c30eea7926ee246993893d8f41740"
+    },
+    {
+      "path": "scripts/update-runtime/update_test.go",
+      "sha256": "e784e01831d40b5c91094e4941a55a02cb5cfed79e152b0e4cdbea1a19083350"
+    },
+    {
+      "path": "internal/releaseinstall/metadata_test.go",
+      "sha256": "728d6cf97f3e9fa29f01ab7606701be06889f2baa52f2c04cc451e9496c99659"
+    }
+  ],
+  "remaining": [
+    "native materialization/release/installed role set",
+    "actual exact gVisor admission and startup/query/lock",
+    "public graph/layout/project transaction/CLI and affected remote qualification"
+  ],
+  "host": "No installed files, services, SDK or runtime activation changed",
+  "cleanup": "Go test temporary directories retired by testing; active official archive retained for next materialization consumer; no newly created container/image/volume"
+}

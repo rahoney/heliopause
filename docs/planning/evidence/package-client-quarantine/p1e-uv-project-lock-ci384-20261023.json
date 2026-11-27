@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "scope": "C3e1 primary-free complete/explicit-empty parser and independent binding; existing native/shared-consumer regression only",
+  "run_id": 39811986300,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39811986300",
+  "source_commit": "12d9a5094a469501f3e15166fec3352fcb243dc7",
+  "checkout": "7844c175d6f1937e89cae05807f0c0b261e9ee85",
+  "tree": "32e250ce9fcf97ba2137c8e167daac9f6b9c374f",
+  "source_checkout_full_tree_equal": true,
+  "conclusion": "success",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES within artifact adapter; production sync NO",
+  "QUALIFIED": "YES for C3e1 only",
+  "ACCEPTANCE_CLOSED": "YES for C3e1 only",
+  "MISSING": [],
+  "P1_remaining": [
+    "C3e2a source/intent codec and C3e2b native complete producer/reader fresh source qualification",
+    "C3e3 guarded exact sync staging/publication/CLI",
+    "actual whole dependency closure and whole P1 acceptance"
+  ],
+  "jobs": [
+    {
+      "id": 119940406443,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406547,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406631,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406676,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406719,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406736,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406758,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406798,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119940406809,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119964480831,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux_top_level_passes": 51,
+  "actual_uv_tests": [
+    {
+      "name": "TestUVActualIsolatedNativeStartup",
+      "seconds": 3.49
+    },
+    {
+      "name": "TestUVActualIsolatedEmptyTargetQuery",
+      "seconds": 3.35
+    },
+    {
+      "name": "TestUVActualIsolatedNativeLockCollection",
+      "seconds": 3.75
+    },
+    {
+      "name": "TestUVPublicNativeResolverIntegration",
+      "seconds": 20.57
+    },
+    {
+      "name": "TestUVPublicNativeUpdateResolverIntegration",
+      "seconds": 26.29
+    },
+    {
+      "name": "TestLinuxUVInstallCLIIntegration",
+      "seconds": 209.14
+    }
+  ],
+  "cpu_full_seconds": 289.19,
+  "macos": {
+    "actual_go": "1.26.10",
+    "production_build": "PASS",
+    "default_tests": "PASS"
+  },
+  "helper_reaped_count": 5,
+  "helper_waits": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+  "cuda_full": "NOT_RUN",
+  "scope_boundary": "This run does not include later codec0502a95 or dirty C3e2b native complete source. No sync deletion/CLI/wholeP1 qualification is inferred.",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci384-linux.log",
+      "bytes": 650420,
+      "sha256": "d0af1447730befb8a1cf3ca65935e1e494b40429af2d8244b8d666411f2db44e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci384-macos.log",
+      "bytes": 21742,
+      "sha256": "59e5e54006d6a06c1e61cf9de4db9045056555a00003587d0500b531e1e465f1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci384-vulnerability.log",
+      "bytes": 21649,
+      "sha256": "09f437ae3ec695718c57ada07a789ee7caa52ea3ee1deaaab7fda6936dad1816"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci384-docs.log",
+      "bytes": 20470,
+      "sha256": "5f2679c1e7061937a59c9ed8b60dd8d65554dd1b702e789d2abd23ca2b6a4423"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci384-required.log",
+      "bytes": 21528,
+      "sha256": "cfc06e4dd157500792ae8a83178cbe023c1965dff93118db68be9a524d317e52"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci384-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "38da0968e287d02f5bed0258f35ffd30922af688c1201d2f0a660989e9a3d37e"
+    }
+  ]
+}

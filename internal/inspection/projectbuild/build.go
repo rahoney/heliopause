@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 // BuildInspector interprets build observations. It cannot operate a runtime,
@@ -39,6 +40,14 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 		return domain.ProjectBuildReport{}, errors.New("project build observation is incomplete or substituted")
 	}
 	result := observation.SandboxResult()
+	states := result.EnvironmentStates()
+	if i.kind == "cargo" {
+		if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+			return domain.ProjectBuildReport{}, errors.New("project build environment observation is incomplete")
+		}
+	} else if len(states) != 0 {
+		return domain.ProjectBuildReport{}, errors.New("unexpected environment states in Go build observation")
+	}
 	checkID, _ := domain.NewCheckID("project-build-observation")
 	status, limitation := domain.ExecutionCompleted, ""
 	for _, fact := range result.Observations() {
@@ -50,7 +59,7 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 	if err != nil {
 		return domain.ProjectBuildReport{}, errors.New("project build observation summary is invalid")
 	}
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation, i.checkProfile())
 	observationID, _ := domain.NewEvidenceID("project-build-observation-result")
 	bindingID, _ := domain.NewEvidenceID("project-build-output-binding")
 	facts := make([]domain.Evidence, 0, 2)
@@ -63,6 +72,21 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 			return domain.ProjectBuildReport{}, err
 		}
 		facts = append(facts, evidence)
+	}
+	for _, state := range states {
+		summary, err := state.Summary()
+		if err != nil {
+			return domain.ProjectBuildReport{}, err
+		}
+		id, err := domain.NewEvidenceID("project-build-workspace-" + string(state.Profile))
+		if err != nil {
+			return domain.ProjectBuildReport{}, err
+		}
+		fact, err := domain.NewEvidence(id, checkID, inputs.Source().Identity(), inputs.Source().Digest(), "workspace-state", summary)
+		if err != nil {
+			return domain.ProjectBuildReport{}, err
+		}
+		facts = append(facts, fact)
 	}
 	seen := map[string]bool{}
 	findings := []domain.Finding{}
@@ -96,4 +120,23 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 		return domain.ProjectBuildReport{}, err
 	}
 	return domain.NewProjectBuildReport(observation, report)
+}
+
+func (i *Inspector) checkProfile() domain.ContentDigest {
+	if i.kind == "go" {
+		profile, _ := domain.CheckProfileDigest("project-build-observation-go-single-environment-v1", runtimeidentity.GoImageReference+"|"+runtimeidentity.GVisorPatchSHA256)
+		return profile
+	}
+	descriptor := runtimeidentity.RustImageReference + "|" + runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
+	profile, _ := domain.CheckProfileDigest("project-build-observation-environments-v3", descriptor)
+	return profile
+}
+
+func (i *Inspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.sandbox == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection || a.Identity().Source().String() != "project-local" || a.Identity().Variant() != i.kind+"-source" {
+		return nil, errors.New("project build declaration is invalid")
+	}
+	id, _ := domain.NewCheckID("project-build-observation")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, i.checkProfile())
+	return []domain.CheckRequirement{requirement}, err
 }

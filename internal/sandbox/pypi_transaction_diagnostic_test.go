@@ -2,9 +2,11 @@ package sandbox
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -50,6 +52,24 @@ func (c timedAccountingClient) Read(context.Context, string) (ObservationResourc
 	return c.lease, c.err
 }
 
+func TestPythonCPUSampleDoesNotUseTransportTimingForAuthorization(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
+		ledger, err := newObservationTransaction(testObservationPolicy(now), nil, now)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := ledger.sampleCPU(100, now); err != nil {
+			t.Fatal(err)
+		}
+		client := terminationDiagnosticClient{lease: ObservationResourceLease{UsageUsec: 101, ReadTiming: ObservationResourceReadTiming{StartedUnixNS: -1, IdentityNS: -1, ResponseNS: 1 << 62, TotalNS: 1 << 62}}}
+		watch := observationCPUWatch{client: client, transaction: "transaction", ledger: ledger}
+		if err := watch.sampleAccountingLocked(context.Background(), false, false); err != nil || ledger.failed || ledger.usageUsec != 101 {
+			t.Fatal("diagnostic changed valid accounting", err)
+		}
+	})
+}
+
 func TestPythonCPUWatchLateTimingPreservesFirstFailure(t *testing.T) {
 	for _, test := range []struct {
 		name             string
@@ -70,7 +90,7 @@ func TestPythonCPUWatchLateTimingPreservesFirstFailure(t *testing.T) {
 				if err := ledger.sampleCPU(100, now); err != nil {
 					t.Fatal(err)
 				}
-				client := timedAccountingClient{terminationDiagnosticClient: terminationDiagnosticClient{lease: ObservationResourceLease{UsageUsec: 101}}, delay: test.read, readReturned: make(chan struct{})}
+				client := timedAccountingClient{terminationDiagnosticClient: terminationDiagnosticClient{lease: ObservationResourceLease{UsageUsec: 101, ReadTiming: ObservationResourceReadTiming{StartedUnixNS: 12345, ResponseNS: 589410876, TotalNS: 589500000}}}, delay: test.read, readReturned: make(chan struct{})}
 				watch := &observationCPUWatch{client: client, transaction: "transaction", ledger: ledger}
 				time.Sleep(test.beforeRead)
 				err = watch.sampleAccountingLocked(context.Background(), false, false)
@@ -81,6 +101,7 @@ func TestPythonCPUWatchLateTimingPreservesFirstFailure(t *testing.T) {
 					"failed_before=false", "poll_ns=1000000000",
 					fmt.Sprintf("read_ns=%d", test.read.Nanoseconds()),
 					"ledger_lock_ns=0",
+					"transport_started_unix_ns=12345", "response_ns=589410876", "transport_total_ns=589500000",
 					fmt.Sprintf("before_read_gap_ns=%d", test.beforeRead.Nanoseconds()),
 				} {
 					if !strings.Contains(err.Error(), operand) {
@@ -344,6 +365,40 @@ func TestPythonCleanupPreservesPrimaryIncompleteResult(t *testing.T) {
 			t.Fatalf("primary=%s result=%s err=%v", primary, code, err)
 		}
 	}
+	t.Run("unknown-descendants-and-termination-failure", func(t *testing.T) {
+		withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+			switch request.Op {
+			case "profile":
+				_, _ = listener.Write(profileACK(request))
+			case "processes":
+				body, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "processes", "status": "unknown", "container_id": request.ContainerID, "session_generation": request.Generation})
+				_, _ = listener.Write(body)
+			}
+		})
+		id := strings.Repeat("a", 64)
+		registerAdmissionSession(t, id)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		drainErr := awaitObservedProcessDrain(ctx, id)
+		if drainErr == nil {
+			t.Fatal("unknown descendants accepted")
+		}
+		helperErr := errors.New("independent unit termination failure")
+		policy := artifactpypi.ResourcePolicyFromContext(ctx)
+		tx := &pythonTransactionExecutor{profile: "pypi-wheel", policy: policy, transaction: session.String(), started: time.Now(), requestCtx: ctx,
+			lease: ObservationResourceLease{CgroupParent: "parent"}, resources: terminationDiagnosticClient{lease: ObservationResourceLease{CgroupParent: "parent"}, err: helperErr},
+			runtimes: map[string]*pythonPhaseRuntime{id: {id: id, phase: phaseObservation, registered: true, trace: terminationDiagnosticTrace{err: io.EOF}}}}
+		terminationErr := tx.terminatePhase(id)
+		if terminationErr == nil || !strings.Contains(terminationErr.Error(), "helper=RESOURCE_ERROR") {
+			t.Fatal("termination failure lost", terminationErr)
+		}
+		failed, first := pythonIncomplete(session, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+		actual, err := pythonCleanupFailure(session, failed, errors.Join(first, tx.diagnostic("unit-descendants", drainErr)), tx.diagnostic("unit-termination", terminationErr))
+		code, _ := actual.LimitationCode()
+		if actual.Status() != domain.SandboxIncomplete || code != "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE" || !errors.Is(err, drainErr) || !errors.Is(err, terminationErr) || !strings.Contains(err.Error(), "stage=unit-descendants") || !strings.Contains(err.Error(), "stage=unit-termination") {
+			t.Fatal("first descendant failure or independent cleanup failure lost", err)
+		}
+	})
 }
 
 func TestPythonResourceDiagnosticRedactsTransportPayload(t *testing.T) {

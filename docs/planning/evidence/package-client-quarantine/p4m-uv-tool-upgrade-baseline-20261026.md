@@ -1,0 +1,414 @@
+# P4-M persistent tool upgrade baseline
+
+사전 감사 기준은 D commit294bb578c168baca86121d4ba75ce1afb30983c6다. E public fresh CLI는
+canonical/전체 CLI·Bootstrap Race와 actual317.049s의 새 CLI 네 subcase 및 기존 UV
+CLI 일곱 요청을 통과했다. 착수/단일 active work item은 Queue를 따르며 M13-004 하나다.
+Read: Queue/plan20/client09, Architecture Evidence/Staging/Promotion, Domain installed update/
+complete set, UV tool install·upgrade exact source, UV installed-selection transport, current
+installed snapshot/complete ownership, tool receipt/guard/publication, lessons 관련 항목을 확인한다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Fresh native UV tool/source/whole graph/current primary approval/atomic files | YES | YES | YES(D named local) | YES(named backend) | Public E named local PASS; 원격 checkpoint 별도 |
+| Existing PyPI installed snapshot/managed ownership/complete retire·backup | YES | YES | YES(named old UV/project) | YES(named scopes) | Tool receipt·exposed old links와 결합 |
+| UV0.13.4 native tool upgrade command | NO(adapter) | NO | NO | NO | Fixed original replay/query lifecycle·native selected output/source bind |
+| Managed original tool metadata/receipt/command identities before native | NO | NO | NO | NO | Whole inventory·old receipt/constraint/bin-root/interpreter/collision proof |
+| Old exposed links backup·retirement with complete venv publication | NO | NO | NO | NO | Retained/retired/new commands·no-replace·rollback/recovery |
+| Native original tool adoption / pipx production / public tool upgrade | NO | NO | NO | NO | 별도 original proof/native/runtime/CLI acceptance |
+
+## 확인된 native 의미
+
+Exact pinned source uv-tool-commands/src/upgrade.rs: upgrade_tool은 receipt를 읽고
+InstalledTools::get_environment를 호출한다. uv-tool/src/lib.rs는 이를
+PythonEnvironment::from_root로 이어 query한다. 기존 조사대로 interpreter query는 -I/-B/-c이고
+-S가 아니므로 원본 installed code의 startup을 CONTROL로 허용하지 않는다.
+
+Upgrade requirements는 existing_tool_receipt.requirements를 사용하고 positional 조건은
+추가 constraints로 처리한다. Outcome은 tool/dependency/environment/no-op를 구분한다.
+Exact version pin은 유지하며 version upgrade를 건너뛴다는 hint가 나온다. 정상 no-op도
+현재 HAA 전체 검사/승인·정확한 현재 반영을 생략하는 authority가 아니다.
+
+Tool/environment 변경 시 remove_entrypoints 뒤 finalize_tool_install을 호출하며 기존
+requirements와 python을 보존한다. 따라서 단순 UV pip upgrade alias나 selected wheel만의
+원복으로 외부 retired commands를 설명할 수 없다. Original receipt와 exposed links를
+같은 guarded publication에 참여시켜야 한다.
+
+## 다음 검증과 재사용 경계
+
+기존 UV pip installed resolver는 bounded METADATA-only 원본을 private guest에 전달한다.
+Native tool은 receipt/venv/commands와 original environment query가 더 필요하다. 먼저 고정
+UV/Python·inert synthetic wheels의 별도 offline diagnostic에서 metadata-only controlled
+original view로 native upgrade가 동작하는지, 어떤 파일/query·no-op/version-change/retired
+commands 의미가 필요한지 확인한다. 이 진단은 public source/Policy/Host upgrade qualification이
+아니며 원본 프로그램을 Host에서 실행하지 않는다.
+
+기존 구현을 복제·대체하지 않고 확인된 부족 부분에만 concrete adapter를 붙인다. 기존
+installed snapshot/managed inventory/whole ownership와 complete transaction을 재사용하되,
+원래의 unsafe/unknown/injected 상태를 receipt claim으로 덮지 않는다. Future generic interface나
+pipx/run placeholder는 만들지 않는다. 실제 diagnostic 뒤 source map·두 번째 검토와 validation
+범위를 확정하고 구현한다. Role/예산/지원/완료 기준의 변경은 이 문서에서 승인하지 않는다.
+
+## M1 진단 결과·입력 책임 지도·두 번째 검토
+
+Offline 고정 UV/Python 진단 v1(2.426s)은 원본 package code를 제거한 기존 native venv에서
+bounded1.0→1.1 및 haa-alt retirement/haa-new 노출, exact pin no-op, positional <1.1 no-op를
+확인했다. V2(1.515s)는 고정 runtime 구성과 METADATA만으로 새 환경을 만들었으나 native
+uninstall이 RECORD 부재로 실패했다. V3(2.324s)는 controller가 METADATA와 RECORD 두 경로만
+기록한 synthetic RECORD를 추가해 같은 세 시나리오·여섯 명령을 통과했다. 원본 RECORD나
+package/startup code를 전달하지 않았으며 세 번 모두 exact owner container 제거와 Docker
+inventory 동일을 확인했다. 원본 p4m-tool-upgrade-metadata-v{1,2,3}-*를 보존한다.
+이는 offline native 의미/최소 입력 진단이며 gVisor 관찰·public source·Policy·Host upgrade
+qualification은 아니다. 기존 fresh output parser는 retained WHEEL/명령 scaffold까지 요구하므로
+이 진단만으로 upgrade의 whole-output/source binding이 구현됐다고 하지 않는다.
+
+M1은 typed original/intent input만 구현한다. 기존 UpgradeInput의 METADATA identity/marker/
+source/수량·aggregate bound/정규화를 재사용하고 strict UV receipt parser도 유지한다.
+NewUVToolUpgradeInput은 원본 receipt 요구와 positional upgrade 조건을 별도로 보존하고
+같은 public root 및 원본 root version의 원래 조건 충족을 확인한다. 원본 installed version은
+새 positional 조건 밖이어도 되며 이것을 잘못된 원본으로 처리하지 않는다. Receipt의 inert
+options를 native에 그대로 전달하지 않도록 public index/copy/no-build/no-sources 고정 recipe만
+받고 find-links/no-index/다른 recipe는 before-native에서 거부한다.
+
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO였던 tool 전용 입력의
+MISSING은 canonical roundtrip, combined byte bound, root/receipt/request 결합, defensive copies와
+recipe 거부다. internal/artifact/pypi/uv_tool_upgrade_input.go와 해당 test만 추가하고 기존
+parser/resolver/transaction을 대체하지 않는다. 두 번째 검토: 기존 UpgradeInput은 재사용할 수
+있지만 tool receipt 및 원본 요구와 positional 조건 둘을 표현하지 않으므로 단독으로는 부족하다.
+신규 control은 데이터일 뿐 ownership/허용/입양/반입 권한을 부여하지 않는다. Native adapter,
+current original whole proof, old external links 및 complete publication, CLI는 이후 gap으로 남는다.
+
+M1 named input는 canonical Quick48.107s/security13.251s/docs0.252s와 전체 PyPI Race를
+통과했다. 최초 Quick216.538s는 mismatch fixture가 JSON의 HTML-escaped 조건을 plain text로
+치환해 assertion에 미도달한 실패이며 원본을 보존했다. Nested wire를 구조적으로 바꾸고
+combined encoded byte bound도 검사했다. 기존 receipt/UpgradeInput 구현은 변경하지 않았다.
+[M1 receipt](./p4m1-uv-tool-upgrade-input-local-20261026.json)가 정확한 source/check/미완료를
+소유한다. M2는 held original roots·receipt·전체 managed metadata/소유 script·외부 link guard다.
+
+## M2 original target guard baseline·수정 지도·두 번째 검토
+
+기존 beginToolFreshTarget의 Linux/고정 venv/분리된 storage·두 root lock/interpreter DATA
+fingerprint와 Close/recovery, pypi installed snapshot/managed inventory/checkBefore,
+anchored toolLinkMatches는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named local)다.
+Original receipt/metadata·소유 main scripts·노출된 old links를 같은 guard에 묶는 경로는
+NO/NO/NO/NO다. MISSING은 before-native original capture/원본 변경 거부·원본 native 불채택
+거부이며 publication/native/CLI를 이 단계에서 닫지 않는다.
+
+기존 fresh entry는 common beginToolTarget(..., original=false)를 호출하고 original entry는
+같은 root/lock/interpreter 구현에 original=true를 지정한다. Fresh site-empty/receipt-absence는
+유지하며 original은 receipt regular file을 기존 tx.before에 넣고 installed snapshot 및 기존
+managed inventory로 전체 distribution이 이미 소유됐는지 확인한다. Native adoption은 거부한다.
+M1 typed input이 원래 receipt 요구와 positional 조건을 구분하며 main script owners/version/
+artifact digest와 exact exposed symlink identity·target을 결합한다. 다른 tool의 bin 항목은
+보존하며 해당 명령의 대소문자 충돌·누락·다른 link는 거부한다. Interpreter는 실행하지 않는다.
+
+수정 범위는 tool_target.go의 공통 진입과 original verification 분기, 신규 tool_original.go 및
+해당 tests다. 기존 fresh publication이 original mode를 우회해 쓰이지 않도록 freezeCommands/
+commitTool에서 명시 거부한다. Common begin 본문은 receipt capture/마지막 verify mode 외에
+기준과 같은지 기계적으로 비교한다. 두 번째 검토: original guard는 현재 ledger의 파일 digest와
+고정 원본을 검증하는 pre-query guard이며 이전 ALLOW의 재사용이나 native receipt만의 adoption이
+아니다. 새 current full 검사·whole-output/source binding 및 old link retirement/rollback은 남는다.
+
+M2 named guard는 canonical Quick171.037s/security11.569s/docs0.247s·전체 Promotion
+Race160.938s와 기존 fresh CLI actual을 통과했다. Actual의 CLI78.29s는 JSON30.73s/human
+공백 root29.56s/두 foreign 거부1.61s·16.38s이며 NoSKIP/helperwait0/Host 보호 snapshot 동일이다.
+Native original upgrade나 Host command 실행으로 확대하지 않는다. Common begin 본문과
+fresh publication은 original mode capture/거부 분기를 제외하면 baseline과 byte-identical이고
+기존 transaction/snapshot/inventory/native resolver는 변경하지 않았다.
+[M2 receipt](./p4m2-uv-tool-original-guard-local-20261026.json)가 source·검증 범위를 소유한다.
+
+## M3 complete tool publication baseline·수정 지도·두 번째 검토
+
+기존 complete PyPI venv backup/journal/retirement·원복, C fresh native receipt/새 exposed link
+publication 및 M2 original guard는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named local)다.
+기존 old exposed links의 backup/retirement·원복과 원래 receipt 교체는 NO/NO/NO/NO다.
+MISSING은 retained/retired/new command 집합의 guarded 반영·원래 link inode 보존·두 filesystem
+경계의 recovery이며 current native upgrade/source/inspection/CLI는 이후 acceptance다.
+
+M3는 기존 toolPublication에 concrete optional original-link participant를 붙인다. Fresh nil
+경로는 유지한다. g.freezeCommands는 original mode에서 새 receipt가 원본 receipt 조건을
+유지하는지 확인하고 positional 요구도 실제 새 main version에 적용한다. 기존 명령은 M2의
+exact old link를, 신규 명령은 exact absence와 foreign/internal collision을 고정한다. 기존
+commitSelectionWithProject의 complete=true로 기존 owned files/retired scripts를 반영하고
+원래 receipt regular file도 같은 backup/rollback에 둔다. Ledger schema는 유지한다.
+
+외부 bin과 같은 filesystem의 소유0700 backup root에 old symlinks를 anchored/no-replace rename하고
+journal에 device/inode/target과 intent/result를 남긴다. New link publication 전 old 전체를
+고정하고 정상 readback에서 retired absence/new identities/old backups를 확인한다. Rollback은
+새 links를 제거한 다음 old link inode를 되돌리고 기존 venv 원복을 수행한다. Unknown/foreign
+link나 backup은 지우지 않으며 원본 journal·backup/두 lock을 보존한다.
+
+Old link backup은 rollback에 필요한 데이터이므로 기존 private workspace cleanup에서 삭제하지
+않는다. Common transaction의 post-rollback/private-cleanup 뒤 regular backup disposal 앞에서
+명시적으로 처분한다. 처분 불확실성은 false success나 사라진 old inode의 복원으로 표시하지
+않고 recovery error와 남은 regular backup/journal을 보존한다. 기존 fresh cleanup body는
+그대로 재사용한다. 수정은 tool publication/original helper, 필요한 optional disposal hook 및
+관련 tests에 한정하고 runtime/observer/권한·한도·native semantics를 변경하지 않는다.
+
+두 번째 검토: 기존 fresh guard만 우회해서 old file을 덮는 방식은 외부 retired links와 원본
+receipt를 설명하지 못한다. 별도 병렬 venv engine 대신 현재 complete engine을 사용하며
+외부 symlinks의 identity-aware 참여만 추가한다. Current new-set ALLOW/Manifest가 없는 공개
+호출 경로는 만들지 않는다. Fault/cancel/foreign/cleanup 실패 및 기존 fresh 실제 소비자를
+검증하고 synthetic helper 성공을 public upgrade qualification으로 확대하지 않는다.
+
+M3 named complete publisher는 canonical Quick176.358s/security11.439s/docs0.255s 및
+전체 Promotion Race162.792s가 PASS다. Changed/same-version·열 fault 원복·취소·foreign 보존·
+post-publication disposal recovery와 신규 명령/late case collision 거부를 확인했다. 기존
+complete venv engine은 optional original-link 처분 hook 하나 외에 baseline과 byte-identical이다.
+Actual80.336s의 기존 fresh CLI77.46s 네 case도 PASS이며 NoSKIP/helperwait0/Host 보호
+snapshot 동일이다. [M3 receipt](./p4m3-uv-tool-complete-publication-local-20261026.json)가 정확한
+source/검증 범위를 소유하며 native upgrade/current update pipeline/CLI는 미완료다.
+
+## M4 managed native upgrade baseline·수정 지도·두 번째 검토
+
+M1 original/positional control, M2 managed guard, M3 complete file/link publication은 named
+local 범위이며 native tool upgrade resolver/전송/current update pipeline/public CLI는
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. Fresh native session,
+whole output scanner, exact pylock/export, public source/whole wheel binding, primary current
+approval 및 prepared/update session은 구현되어 있으므로 대체하지 않는다.
+
+MISSING은 (A) controller-created metadata-only original replay와 receipt runtime relocation,
+(B) 실제 pinned UV tool upgrade와 bounded complete census/pylock·독립 archive binding,
+(C) held original/control/current whole approval를 complete publisher에 연결하는 prepared update,
+(D) public CLI와 실제 managed upgrade/no-op/failure·기존 fresh 회귀다. 한 단계의 helper/진단을
+다른 단계나 전체 P4의 qualification으로 확대하지 않는다.
+
+A는 기존 UpgradeInput의 METADATA와 guard가 같은 digest로 고정한 WHEEL만 사용한다. Native
+uninstall용 RECORD는 그 metadata 경로들만 controller가 생성하며 원본 RECORD/프로그램/.pth/
+startup/code/Host interpreter는 전송하지 않는다. Receipt는 strict parser와 public fixed recipe를
+유지하고 원본 control을 보존한 채 private tool/bin roots 및 고정 runtime Python으로만 projection한다.
+고정 pyvenv/alias와 비실행 command placeholder를 tar로 생성하며 이름·type·mode·UID/GID·수량·
+합산 bytes를 닫는다. Original WHEEL은 no-op retained native output의 후보 선택 데이터이고
+archive/source authentication이나 이전 ALLOW를 대신하지 않는다.
+
+B는 기존 fresh native session 안에서 actual uv tool upgrade positional 요구를 사용한다.
+원래 receipt 조건은 유지하며 추가 positional 조건을 selected main version에도 검사한다.
+선택 전체 versions를 freeze/export하고 기존 complete controls/whole source bind를 재사용한다.
+Native whole selection의 원본·receipt·links가 export 전후 달라지면 거부한다. 기존 pip upgrade
+alias나 current full inspection을 생략하는 native no-op 결과는 사용하지 않는다.
+
+고정 UV source의 original environment query는 -I/-B/-c이며 -S가 아니다. 따라서 query 전에
+view가 metadata-only라는 controller construction을 확인하며 실제 observer의 alias/venv read
+경계도 검증한다. 현재 IsExactUVPythonQuery는 execfn을 고정 OCI-root Python 경로로 제한한다.
+Target alias가 실제 execfn에 나타나는지는 아직 actual로 확인하지 않았다. Artifact startup을
+CONTROL로 허용하거나 broad workspace read/실행 권한을 추가하지 않는다. 실제 deny가 있으면
+exact producer/argv/mount/input 단계와 기존 역할을 대조하고 관련 latches/기존 실제 소비자를
+포함해 필요한 최소 경계만 검토한다. 이 baseline은 역할·예산 변경을 승인하지 않는다.
+
+두 번째 검토: existing fresh scanner는 WHEEL/명령 scaffold가 필요하므로 METADATA-only 진단
+성공만으로 호출을 연결하지 않는다. 원래 receipt·root links·metadata는 실제 query 전후 held
+state에 다시 대조하며 resolver는 private 입력만 받는다. 새 current Manifest가 정확한 선택과
+원본 control을 결합하고 현재 full Policy/inspection 뒤 같은 M3 complete publisher만 사용한다.
+Native adoption/pipx는 별도 acceptance로 남긴다. Future generic interface나 실행 runner
+placeholder는 추가하지 않는다.
+
+M4-A1 native receipt DATA projection은 canonical Quick250.828s/security13.770s/docs0.260s와
+전체 PyPI Race7.689s가 PASS다. 기존 Host projection 본문은 같은 interpreter 값을 wrapper에서
+전달하도록 바뀐 것 외에 byte-identical이며 원래 receipt/조건/options/command identity와
+고정 native Python·private exposure projection을 확인했다.
+[A1 receipt](./p4m4a-uv-tool-native-layout-local-20261026.json)가 source와 검증 범위를 소유한다.
+Metadata-only archive/native query/actual upgrade/current update pipeline은 아직 미완료다.
+
+### M4-A2 bounded original replay archive 착수 감사·수정 지도·재검토
+
+A1 receipt projection은 named local QUALIFIED다. 기존 UpgradeInput METADATA/strict native
+receipt, UV installed WHEEL header·tag grammar, fresh whole output scanner, archive stdin
+transport와 private native session은 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named scopes)다.
+Original METADATA/WHEEL의 exact membership와 controller-only replay archive는 NO/NO/NO/NO다.
+MISSING은 bounded canonical original controls, runtime/receipt/alias/비실행 command placeholder
+구성, generated-only RECORD, malformed/collision/zero-transfer 회귀다. Actual upgrade/query와
+current approval/Host publication은 이후 M4-B/C/D이며 이 helper 성공으로 닫지 않는다.
+
+기존 uv_installed_controls.go의 per-distribution header parser 본문을 private helper로
+기계적으로 추출해 fresh selector와 replay 검증이 공유한다. 기존 aggregate/lock/candidate
+선택은 유지한다. 새 replay 검증은 M1 original metadata와 정확히 같은 WHEEL controls만 받고
+기존 expanded tag/compatibility grammar·중복/aggregate bound를 사용한다. WHEEL은 후보 선택
+데이터이며 authentic old wheel·ownership/이전 ALLOW를 대신하지 않는다.
+
+Sandbox archive builder는 fixed current Python/UV cfg와 image Python aliases, A1 native receipt,
+받은 METADATA/WHEEL 및 controller가 생성한 metadata·placeholder 경로만 기록한 RECORD를
+생성한다. Old command는 실행 bit 없는 고정 placeholder이며 원본 프로그램/.pth/compiled
+code/원본 RECORD/Host interpreter를 담지 않는다. RECORD의 main command 경로는 생성한
+placeholder만 가리켜 native retirement가 inert 원본에도 동일하게 작동하도록 한다. 전체
+relative paths/type/link target/UID/GID/mode/수량·bytes를 닫고 docker cp --archive stdin만
+사용한다. User bytes가 executable 명령·tar 경로 또는 runtime alias가 되지 않는다.
+
+수정 지도는 기존 per-control parser 공유, replay validator 및 tar/전송 helper와 해당 tests다.
+기존 selector/scanner는 대체하지 않으며 cfg literal은 동일한 shared producer/validator로 묶는다.
+두 번째 검토: fake lock·unverified archive selection으로 기존 selector를 우회하지 않고 실제
+archive/source binding은 M4-B에 유지한다. Controller DATA construction과 actual gVisor query
+admission을 분리하고 역할·권한·예산을 넓히지 않는다. Local canonical/관련 전체 Race 및
+필요한 named offline native consumer를 검증한 뒤 실제 upgrade session 연결을 계속한다.
+
+A2 first Quick231.061s는 unsupported-WHEEL fixture가 이미 지원된2.0을 사용한 것과
+controller tools/.lock0600이 기존 pinned native reader의 empty0666 규칙과 다른 두 오류였다.
+Fixture를99.0으로, private0700 tool home의 빈 auxiliary만 native와 같은 mode로 교정했다.
+기존 supportedWheelVersion·whole reader의 거부 규칙은 유지한다.
+
+별도 검토에서 새 replay validator가 raw bound 전에 bytes.Clone하는 경로를 확인했다.
+같은 test SHA60103987의 focused before3.648s/FAIL은1,048,577B 입력 거부에1,061,300B/op를
+할당했고 raw bounds 선행 후 after3.434s/PASS는4,209B/op였다. Valid controls의 defensive
+copy와 모든 membership/tag 검사는 유지했다. 이는 새 prototype의 한정된 allocation 측정이며
+RSS/누수나 과거 Windows OOM 원인으로 쓰지 않는다. First assessment/allocation before·after
+및 shared parser/cfg mechanical reuse 원본을 보존하고 최종 canonical/전체 관련 Race를 확인한다.
+
+A2 final canonical Quick239.500s/security14.192s/docs0.280s와 PyPI/Sandbox 전체
+Race26.057s가 PASS다. Existing scanner가 controller replay를 DATA로 읽는 회귀와 fixed stdin
+transport/zero-transfer·primary cause/취소·membership/tag/bounds/collision/RECORD 경계를
+확인했다. Actual native query/upgrade, source binding/current update/CLI는 미완료이며
+[A2 receipt](./p4m4b-uv-tool-original-replay-local-20261026.json)가 named scope를 소유한다.
+같은 M13-004에서 M4-B actual resolver를 계속하며 helper별 push/CI는 추가하지 않는다.
+
+### M4-B actual resolver 착수 감사·수정 지도·재검토
+
+A2 replay는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(named helper)다.
+ResolveToolInstall/withUVNativeSessionForToolInstall/whole reader/정확한 version export와
+독립 source/archive BindWheels는 YES이며 다시 구현하지 않는다. 실제 ResolveToolUpgrade는
+NO/NO/NO/NO다. MISSING은 concrete M1+A2 입력을 같은 session에 전송하고 actual native
+upgrade positional 조건·원래 receipt 조건을 각각 검증하며 전체 결과/원본 controls를 묶는
+selection이다. Current update/public CLI/adoption/pipx는 별도 C/D 후속이다.
+
+Fresh public wrapper를 유지하고 기존 resolver 본문을 private shared selection으로 추출한다.
+Original branch만 typed replay와 tool upgrade를 선택하며 freeze/export/readback/public bind
+본문을 공유한다. Native receipt는 original 조건을 보존하고 selected main은 positional 조건도
+만족해야 한다. Provenance는 별도 upgrade runtime/intent, immutable M1 control 및 canonical
+original WHEEL body+METADATA digest를 결합해 교환을 막는다. Original WHEEL은 신뢰 권한이 아니다.
+
+두 번째 검토: no-op도 전체 native output과 독립 wheel 인증을 거친다. Invalid/canceled input은
+network/tool launch 전에 거부하고 primary cause를 보존한다. 실제 gVisor query가 기존 exact
+observer boundary에서 거부되는지 먼저 확인하며 C++/권한/예산을 선제 변경하지 않는다.
+Synthetic old cowsay metadata에서 실제 public 선택을 확인하는 소비자는 metadata 재구성/
+selection 범위만 증명하며 native adoption/managed Host upgrade라고 쓰지 않는다.
+
+B first actual8.010s는 bounded upgrade5.13s에서 pinned Python clone의 OCI libpython
+read를 OTHER/CONTROL로 분류해 실패했다. Image catalogue의 exact Python/libpython 경로와
+locator를 대조했다. Native original query alias는 현재 exact root-execfn predicate에 없으며
+이를 원인 후보로 실제 검증한다. Host snapshot 동일/helperwait0/CONFIRMED_STOPPED다.
+
+Observer 수정 지도: 고정 OCI Python binary·동일 exact native query argv/temp topology·
+실제 UV clone/세대에 한해서 controller tool-output 안의 canonical project/bin/python alias를
+추가한다. Alias는 trust를 주지 않으며 query는 기존처럼 ARTIFACT로 demote한다. Tool output
+mount/shadow를 검증하고, query와 후손의 /haa-site 접근은 그 env의 cfg/고정 directory 조회만
+남긴다. 일반 workspace read 이전에 .pth/sitecustomize/패키지 code/다른 env/쓰기 거부를
+강제해 post-install 재조회도 startup clearance로 쓰지 못하게 한다. Root-query 기존 소비자와
+모든 creator/세대/역할/argv/mount/shadow·clone/재exec 부정 latch를 함께 확인한다.
+C++ 전체 canonical builder 및 actual original/no-op/fresh/기존 UV 회귀 전에는 qualified가 아니다.
+
+Prequalification 검토에서 query 제한은 문자열 prefix만으로 적용하지 않고 kernel mount
+anchor/정규화된 경로까지 포함하도록 보완했다. /tmp/../haa-site 및 output symlink alias가
+일반 workspace 분류로 빠지지 않도록 같은 startup negative에 추가한다. 첫 canonical build
+중 Root에만 보완했고 frozen 첫 source와 최종 candidate를 구분한다. 최종 whole builder와
+실제 소비자는 보완된 source에서 다시 수행하며 첫 결과를 최종 source에 전용하지 않는다.
+
+First observer builder243.246s는120PASS/1FAIL이다. 새 test output anchor4가 기존 세
+shadow negative의 예약 id4와 겹쳐 map.emplace가 shadow를 넣지 못했다. 새 fixture만6으로
+옮기고 기존 shadow 거부는 유지한다. First latch assessment와 frozen sources/log를 보존하며
+최종 candidate의 whole builder/actual 전에는 해결 검증으로 기록하지 않는다.
+
+### M4-C current update 연결 사전 감사·수정 지도
+
+Existing InstallUpdateService/ports.InstallUpdateSession는 Reference와 일반 InstallSession을
+통해 current 전체 inspection/Evidence/Policy/Manifest/staging을 재사용할 수 있다. Fresh
+uvToolInstallSession과 M2/M3 guard/publisher는 IMPLEMENTED=YES이며 대체하지 않는다.
+Managed native tool upgrade preparation/factory는 NO/NO/NO/NO다. MISSING은 held original의
+ledger-owned WHEEL bytes를 같은 file snapshot/digest에 대조하고 B typed original에 전달하는
+update entry, 원본 controls의 exact equality, eight-control current Manifest/target 결합 및
+동일 complete publisher로의 인계다. B actual/query qualification에 의존하는 결과는 아직 없다.
+
+현재 fresh preparation/session의 선택 dispatch만 original branch로 확장하고 concrete update
+preparation은 기존 constructor/guard/현재 application update service를 사용한다. Original
+METADATA와 WHEEL은 같은 distribution/version/archive owner여야 하며 native receipt만으로
+소유권을 부여하지 않는다. Native original adoption은 이 managed lane에서 계속 거부한다.
+일반 target control은 held original일 때만 managed-upgrade intent를 사용하고 fresh bytes는
+보존한다. Fresh four native controls와 original six를 구분하고 M1/WHEEL 원문 및 별도 현재
+Host receipt/target을 current Manifest에 묶는다. No-op도 현재 full 검사/Policy를 거친다.
+
+두 번째 검토: update interface를 위해 fake graph/input을 만들지 않고 native positional
+requirement를 그대로 Reference로 보존한다. Root/bin 두 lock을 원본 capture 전부터 current
+승인/complete commit·cleanup까지 유지하며 실패/취소/foreign/recovery semantics는 M2/M3를
+사용한다. Runtime/Host interpreter와 설치 command는 실행하지 않는다. 로컬 source/guard
+부정 회귀·전체 Promotion/Bootstrap Race와 실제 managed update/no-op·현재 승인 누락/변조
+거부·기존 fresh 소비자 전에는 C를 닫지 않는다. CLI/native adoption/pipx는 계속 별도다.
+
+M4-B named local qualification: Quick230.455s/security14.157s/docs0.258s·PyPI/Sandbox
+전체 Race29.456s·workflow0.794s가 PASS다. Final unmodified observer builder241.514s/121PASS·0FAIL
+및 actual115.945s는 upgrade/no-op23.20s·fresh14.75s·기존 UV75.66s를 확인했다.
+원본 metadata는 synthetic DATA이며 선택 전체 public wheel은 각각 독립 인증했다.
+NoSKIP/helperwait0/CONFIRMED_STOPPED·Host 보호 snapshot 동일이다. Original source/ownership
+인증·current approval/Host update/public CLI·native adoption/pipx와 최종 profile는 아직 미완료다.
+[B receipt](./p4m4c-uv-tool-upgrade-resolver-local-20261026.json)와 first failure/latch assessment가
+exact source/범위를 소유한다. 같은 M13-004에서 M4-C current update를 계속하며 새 push/CI는
+그 backend/CLI 묶음의 필요한 경계까지 보류한다.
+
+C first canonical Quick214.628s/security11.472s/docs0.281s는 PASS다. Actual175.459s의
+기존 fresh CLI86.29s와 managed seed/upgrade/no-op86.64s가 모두 PASS이며 각 update는
+새 current Run/Evidence·Policy와 eight controls/Host receipt/원자 반영을 확인했다. Old public6.0
+files는 실제 현재 HAA 설치로 인증·소유했고 historical unversioned receipt 조건만 synthetic이다.
+Native exact pin을 실제로 풀었다고 주장하지 않는다. NoSKIP/helperwait0/Host 동일이다.
+Current Evidence failure 부정 actual과 Promotion/Bootstrap 전체 Race는 아직 진행 중이다.
+
+C final Promotion/Bootstrap 전체 Race173.315s와 별도 current Evidence failure actual56.766s
+(test54.17s)는 PASS다. Actual authentic public6.1 exact-pin no-op에서 현재 Record 실패의
+primary cause를 보존하고 Bundle/반입 없음·원본 inode/bytes/mode/links 불변을 확인했다.
+이 부정 test만 realcorpus tag 파일로 추가했으며 성공 actual의 production/positive test source는
+불변이다. Canonical format과 새 tagged test build/actual로 검증하고 unchanged default Quick을
+반복하지 않는다. Current Manifest exact verification 및 Promote/Close·native/observer·M2/M3
+등13 owner files와 기존 fresh assertion body는 byte-identical이다. Setup 추출은 동일한
+cleanup 의존 순서를 유지하고 TempDir 정리만 그 뒤에 오도록 등록했다.
+[C receipt](./p4m5-uv-tool-current-update-local-20261026.json)가 source/검증 범위를 소유한다.
+M4-C는 named backend/factory만 local qualified이며 public upgrade CLI/native adoption/pipx·
+remote/final profiles는 미완료다. Same M13-004에서 D 공개 명령/CI cohort 연결을 계속한다.
+
+### M4-D public upgrade CLI 착수 감사·수정 지도·재검토
+
+C native/current service와 fresh descriptor/parser/lazy bootstrap/presentation은
+IMPLEMENTED/WIRED/QUALIFIED=YES(named scopes)다. Public uv tool upgrade는 NO/NO/NO/NO다.
+MISSING은 exact upgrade leaf, 명시 target/bin preflight와 current update dispatch, JSON/human
+실제 managed upgrade/no-op/거부·기존 fresh 회귀 및 필요한 CI wiring/cohort qualification이다.
+
+같은 UVToolPackageClient에 upgrade descriptor를 추가하고 existing operation-aware registry를
+사용한다. 기존 addPackageClientInstall 본문은 operation만 parameter로 추출해 install wrapper와
+upgrade leaf가 공유하며 request/rendering/Policy 동작을 재작성하지 않는다. Upgrade는 항상
+current update mode이며 positional 조건을 보존한다. Target/bin 검사는 기존 syntax-only
+preflight를 공유하고 backend가 held managed 원본을 검증한다. Runtime 준비/Host interpreter
+실행/implicit target/adoption/추가 native option을 만들지 않는다. Help는 native가 원래 receipt
+조건을 유지하고 positional 조건을 추가한다는 점과 no-op도 재검사한다는 동작을 설명한다.
+
+두 번째 검토: root.Find와 selected operation이 같은 descriptor를 소비하고 lazy binding은
+선택된 leaf의 bin-dir만 읽는다. 기존 fresh JSON/human/foreign refusals와 다른 package
+install의 shared path를 회귀 검사한다. 새 actual tool consumers를 canonical CI scope/validator에
+묶을 때 기존 helper lifecycle/timeout/coverage와 원격 취소 정책을 유지한다. 전체 CI는 이
+cohort의 local end-to-end 뒤 한 번 시작하고 실측 기반 실제 timer로 결과를 소비하며 기다리는
+동안 native adoption/pipx의 같은 item 작업을 계속한다.
+
+D first workflow2.227s는 PASS이나 Quick97.701s는 runtimeOwnerFixture가 새
+ci-uv-tools.sh를 복사하지 않아 future-Go logical fixture의 workflow 검사에서 실패했다.
+실제 repository workflow와 product packages는 통과했고 current script 하나만 fixture closure에
+추가한다. Go/runtime pin·production validator·coverage는 유지하며 first assessment/log를
+보존하고 최종 canonical 검증을 확인한다. Public CLI/CI script actual은 아직 미완료다.
+
+D final default canonical Quick59.691s/security11.095s/docs0.261s/workflow0.744s와
+CLI/Bootstrap/checker 전체 Race45.340s는 PASS다. First actual CI bootstrap305.504s는
+fresh80.68s/current Evidence failure52.68s/managed backend83.62s 및 public upgrade
+JSON28.43s/human28.70s까지 통과한 뒤 unsupported --adopt의 preflight 거부를 backend JSON
+거부 helper로 검사해 실패했다. 기존 helper/production은 유지하고 새 assertion만 error/빈
+operation 출력/staging·원본 불변에 맞춘다. First raw/assessment/Host 동일/helperwait0를
+보존하며 전체 recipe의 최종 성공 전에는 이 첫 실행을 PASS라고 표시하지 않는다.
+
+D final unmodified CI bootstrap recipe304.877s가 네 actual function을 모두 통과했다.
+Fresh CLI79.06s/current Evidence failure52.21s/managed backend82.18s/public upgrade
+CLI87.47s(JSON28.50s/human28.43s와 unsupported option·unowned 원본 거부)다. 별도
+unmodified CI sandbox recipe40.537s의 fresh15.46s와 upgrade/no-op22.54s도 PASS다.
+두 실행 모두 NoSKIP/helperwait0/CONFIRMED_STOPPED·Host snapshot 동일이다. Final 교정은
+realcorpus test assertion뿐이며 default Quick/Race 대상 production은 불변이다. Canonical
+format과 corrected tagged build/full recipe로 확인했고 불필요한 default 검사는 반복하지 않았다.
+[D receipt](./p4m6-uv-tool-upgrade-cli-ci-local-20261026.json)가 source/범위를 소유한다.
+
+Shared CLI 본문은 operation lookup 두 곳을 parameter로 전달한 것 외에 byte-identical이고
+17 native/current/publication/helper/다른 client owner는 불변이다. CI는 기존 realcorpus client를
+재사용하며 새 bootstrap scope의 explicit client/helper 시작·sandbox 복원을 추가한다. 기존
+PNPM/Bun validator/source와 jobs/permissions/runtime pin/예산은 유지한다. Python fixture는
+정확한 pinned image의 never-started label-owned container에서 DATA로만 복사하고 consumer
+전에 제거하며, query 실패는 부재로 취급하지 않는다. 다음 ordinary remote는 이 end-to-end
+cohort 한 번이며 실제 timer와 함께 결과/원본을 소비한다. Remote/원본 native adoption/pipx 및
+최종 CPU/CUDA 지원 qualification은 미완료다. 같은 M13-004에서 N native tool ownership의
+기존 old-wheel/RECORD/generated-script/source proof 감사와 현재 guard 재사용을 계속한다.

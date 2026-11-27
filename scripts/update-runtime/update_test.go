@@ -28,13 +28,37 @@ func fixture(t *testing.T) (string, string) {
 	if err := os.MkdirAll(state, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	paths := []string{runtimeFile, supportFile, generatedFile, "scripts/tools.lock.json", "scripts/generate-runtime-lock.go", "tools/gvisor-observer/BUILD", "go.mod", "go.sum", ".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-security.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml"}
+	paths := []string{runtimeFile, supportFile, generatedFile, "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "tools/bun/SHASUMS256.txt.asc", "tools/bun/NOTICE", "README.md", "scripts/tools.lock.json", "scripts/generate-runtime-lock.go", "tools/gvisor-observer/BUILD", "go.mod", "go.sum", ".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-security.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml"}
 	for _, path := range paths {
 		body, err := os.ReadFile(filepath.Join(source, path))
 		if err != nil {
 			t.Fatal(err)
 		}
 		writeTest(t, filepath.Join(root, path), body)
+	}
+	var pipxFixture struct {
+		Pipx struct {
+			Inputs []struct {
+				Path string `json:"path"`
+			} `json:"inputs"`
+		} `json:"pipx_tool"`
+	}
+	lockBody, err := os.ReadFile(filepath.Join(source, "scripts/runtimes.lock.json"))
+	if err != nil || json.Unmarshal(lockBody, &pipxFixture) != nil {
+		t.Fatal("pipx fixture owner unavailable", err)
+	}
+	names := []string{"tools/pipx/NOTICE"}
+	for _, input := range pipxFixture.Pipx.Inputs {
+		if !strings.HasSuffix(input.Path, ".whl") {
+			names = append(names, "tools/pipx/supply/"+input.Path)
+		}
+	}
+	for _, name := range names {
+		body, err := os.ReadFile(filepath.Join(source, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		writeTest(t, filepath.Join(root, name), body)
 	}
 	root, err = filepath.EvalSymlinks(root)
 	if err != nil {
@@ -45,6 +69,10 @@ func fixture(t *testing.T) (string, string) {
 		t.Fatal(err)
 	}
 	gitTest(t, root, "init", "-q")
+	// Keep this disposable repository's Git writers inside the command lifetime.
+	// Background maintenance must finish before TempDir removes its object store.
+	gitTest(t, root, "config", "--local", "maintenance.autoDetach", "false")
+	gitTest(t, root, "config", "--local", "gc.autoDetach", "false")
 	gitTest(t, root, "add", "--all")
 	commitTest(t, root)
 	return root, state
@@ -166,7 +194,7 @@ func futurePlan(t *testing.T, root, state, component string) plan {
 }
 
 func TestSameVersionPlanAndApply(t *testing.T) {
-	for _, component := range []string{"go", "node", "python", "rust"} {
+	for _, component := range []string{"go", "node", "python", "rust", "uv"} {
 		t.Run(component, func(t *testing.T) {
 			root, state := fixture(t)
 			p := noopPlan(t, root, state, component)
@@ -218,7 +246,7 @@ func TestCoordinatedComponentFixtures(t *testing.T) {
 			}
 			want := []string{generatedFile, runtimeFile, supportFile}
 			if component == "go" {
-				want = []string{".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml", ".github/workflows/heliopause-security.yml", "go.mod", generatedFile, runtimeFile, "scripts/tools.lock.json", supportFile}
+				want = []string{".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml", ".github/workflows/heliopause-security.yml", "README.md", "go.mod", generatedFile, runtimeFile, "scripts/tools.lock.json", supportFile}
 			}
 			if !reflect.DeepEqual(paths, want) {
 				t.Fatalf("unexpected consumer inventory: %v", paths)

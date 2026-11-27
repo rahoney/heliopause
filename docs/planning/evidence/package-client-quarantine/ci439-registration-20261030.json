@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-F1-F2-F3-grouped-hosted",
+  "source": "0eeefcacd6000edafc9c3a2a552ac4a475de747b",
+  "whole_tree": "5b7a0a21bacc08793a0713a6c6822d7d62b75f99",
+  "previous_remote": "31acbfe46bb860279fc3005d7104518fa5614010",
+  "normal_fast_forward": true,
+  "outgoing_commits": 3,
+  "outgoing_paths": 49,
+  "remote_ref_matches": true,
+  "run_id": 41030454824,
+  "run_number": 439,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41030454824",
+  "started_at": "2026-10-30T09:01:54Z",
+  "initial_status": "in_progress",
+  "initial_jobs": 9,
+  "initial_MCP_run_jobs_read_verified": true,
+  "timer": {
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "session_id": 68297,
+    "host_pid": 424488,
+    "uid": 1000,
+    "process_start_ticks": "2666295",
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "config": "/tmp/haa-ci439-autopoll-config.json",
+    "state_file": "/tmp/haa-ci439-autopoll/state.json",
+    "first_due_at": "2026-10-30T09:21:54+00:00",
+    "first_due_KST": "2026-10-30 18:21:54 KST",
+    "actual_queries_at_registration": 0,
+    "future_execution_not_claimed": true,
+    "actual_queries": 6,
+    "next_due_at": null,
+    "worker_state": "COMPLETED",
+    "worker_exit_code": 0
+  },
+  "expected_qualification": {
+    "new_native_cold_parent": 1,
+    "new_current_application_cases": 2,
+    "new_CLI_alias_cases": 3,
+    "new_current_entry_refusals": 2,
+    "multi_node_default": "rimraf 12nodes/13edges named local; exact live native selection retained and independently authenticated",
+    "Linux_top_level_parents": 115,
+    "CPP_latches": 132,
+    "Required_jobs": 10,
+    "Linux_job_timeout_minutes": 120,
+    "new_jobs": 0,
+    "new_client_rebinds": 0,
+    "product_budgets_permissions_Core_Policy_unchanged": true
+  },
+  "duration_estimate_basis": {
+    "CI438_seconds": 6383,
+    "new_cold_local_seconds": 10.67,
+    "new_current_local_seconds": 67.72,
+    "new_CLI_local_seconds": 151.83,
+    "new_refusal_local_seconds": 49.6,
+    "arithmetic_seconds": 6662.82,
+    "estimate_only": true
+  },
+  "result": "Required and all10 SUCCESS",
+  "independent_local_next": "P6-G Bun one-off cold native cache/source/Node-Bun runtime baseline; reuse P3/P5 owners, no speculative permissions or helper/doc push cancelling CI439",
+  "authorization": "User conditionally authorized CI at important complete validation boundaries; native/current/CLI group and shared complete input binding qualify. Normal milestone branch push only; no main merge/release.",
+  "latest_actual_poll": {
+    "number": 6,
+    "due_at": "2026-10-30T11:02:01.725998+00:00",
+    "query_started_at": "2026-10-30T11:02:01.726136+00:00",
+    "api_get_only": true,
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 123978679257,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679451,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679498,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679527,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679549,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679599,
+        "name": "gVisor Linux Integration",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679629,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679703,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 123978679748,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124020424543,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      }
+    ],
+    "query_ended_at": "2026-10-30T11:02:02.755517+00:00",
+    "next_due_at": null
+  },
+  "completed8_source_proof": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/ci439-completed8-proof.json",
+    "bytes": 441514,
+    "checkout": "63f66bdfd1907e5c5da4f26bcbbbf32e13d95f42",
+    "whole_tree_matches": true,
+    "already_preserved_logs_will_not_be_refetched": true
+  },
+  "qualification": "docs/planning/evidence/package-client-quarantine/ci439-pnpm-current-hosted-qualification-20261030.json"
+}

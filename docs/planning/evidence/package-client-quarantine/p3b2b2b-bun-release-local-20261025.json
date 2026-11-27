@@ -1,0 +1,207 @@
+{
+  "schema": "p3b2b2b-bun-release-tuple-local/v1",
+  "baseline": "3eaeaa1cf5b208e3acae47e685f8b0b0e4686fa8",
+  "status": {
+    "IMPLEMENTED": "YES (Bun complete release/installed native tuple)",
+    "WIRED": "YES (producer, metadata, packages, inspection, promotion, bootstrap/install/activation)",
+    "QUALIFIED": "YES (named local producer/tuple and disposable file mechanics only)",
+    "ACCEPTANCE_CLOSED": "NO (B2c gVisor and whole P3 remain)"
+  },
+  "scope": "Exact Bun native/notices records joined to existing release and installed tuple; no engine replacement or new permission. Runtime manifest current2tools/SBOM/native6/current13assets/wire10/bootstrap11/inspection11subjects28checks; historical8/9/11 structure remains readable and current admission requires complete tuple.",
+  "source_inventory": [
+    {
+      "path": ".github/workflows/heliopause-release-build.yml",
+      "sha256": "47aebd12f0301dd8f9fb2f7273dcc65cb27701a570b56e93fc42e78eb37540d3"
+    },
+    {
+      "path": "internal/runtimeidentity/native_paths.go",
+      "sha256": "9e39a2fe3c0ea2a92cf4ce5fe684cb1acf7ff17218a75ffdcf20e3205719473f"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main.go",
+      "sha256": "80427c11d9df31198a2ee92a4fd9d4c034b6b268932955dcfbc7fd4dae6af536"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main_test.go",
+      "sha256": "bd7f3d0c09d7d5a954bbc2883925514f18a0426d12e2cc8328f188a4334b55c8"
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "sha256": "688e4fd4722d0f675ac81f0d218f6ea3c6ceb22f2d82faa9228a9ede6d96616b"
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "sha256": "e67a615386f40dbf1b2e21adc1b2b2395c6bff9f8530a50b3ee4c99ff792b39f"
+    },
+    {
+      "path": "scripts/release-manifest/bundle_test.go",
+      "sha256": "d03cfb87a352ace63ab4748522bdedbf011c4a9af27634529a1499a9e01cda13"
+    },
+    {
+      "path": "scripts/release-packages/main.go",
+      "sha256": "7c4ecb1dc2d90580c8a44d74bb98968002af31177abf86253a16ac9a3014d5b8"
+    },
+    {
+      "path": "scripts/release-packages/main_test.go",
+      "sha256": "1f71f09c83766d354bf935c9acc4fee4d53fecc3e47f58b5d189edecc3c6273e"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "8b24e44a011c6d63a3ed99d925b64c197432bb427600fae3c13891e354c2b71d"
+    },
+    {
+      "path": "scripts/check/bun_release_workflow_test.go",
+      "sha256": "251ce3dbad1a743d975a1896441c6d46f2b0e3f86db0c5570c7774931901dea4"
+    },
+    {
+      "path": "internal/releaseinstall/manifest.go",
+      "sha256": "9dec4fe65ba0af54088c6e73720a9af670eae4cf179cad437d429e3c7fd0d1f8"
+    },
+    {
+      "path": "internal/releaseinstall/manifest_test.go",
+      "sha256": "0aa15086935ca1a89bbfb6208302919ab9c4eeeb6f7571a54123b93e2ae941b0"
+    },
+    {
+      "path": "internal/releaseinstall/metadata.go",
+      "sha256": "99eba3871b43e990398aa2e8436b56b3088c06d94ab30e8f59cc643ccf222f3f"
+    },
+    {
+      "path": "internal/releaseinstall/metadata_test.go",
+      "sha256": "848e6ea245f9dff394fa5e39969d1ee658dd77888ce1dd163d1e1084aaa1554c"
+    },
+    {
+      "path": "internal/releaseinstall/installer.go",
+      "sha256": "b2dacc3c25b157d981116866b7afd18446e85a907c2c8017fd1a2c4a525a95ec"
+    },
+    {
+      "path": "internal/releaseinstall/system_namespace_linux_test.go",
+      "sha256": "edf1d4c286754fe53811c11315f5bf2789738ff1117262b9f7cbf7acf0f2096f"
+    },
+    {
+      "path": "internal/releaseactivation/installed_linux.go",
+      "sha256": "bf93782a2854c5f211eac2e17d881a76cfd8fa734303e69f507fd8cd42f9f433"
+    },
+    {
+      "path": "internal/releaseactivation/stage_linux.go",
+      "sha256": "ed4873e944e198fe30b2788cef716496cfcb22ecee2dac5328c88c9c4094ba5c"
+    },
+    {
+      "path": "internal/releaseactivation/bootstrap_files_linux.go",
+      "sha256": "3aa7ce460d242559eedad358564988e268ad9f72080f862a390f1405f03ef66e"
+    },
+    {
+      "path": "internal/releaseactivation/wire_linux.go",
+      "sha256": "0784cd8d7e4b346ccb97e2dab54a43bf3dc594197e286e7691aa0a6b124ab88b"
+    },
+    {
+      "path": "internal/releaseactivation/wire_linux_test.go",
+      "sha256": "f9fceb13abcd841e6fbf1a0c1f00c8d47fb4eaa0dd268ae3a1946308617537ee"
+    },
+    {
+      "path": "internal/releasebootstrap/preparation_linux.go",
+      "sha256": "df04d6657dbf848c5d3e54374a1b33a0fd38c047d2c3e4069aeedd12d31fb89f"
+    },
+    {
+      "path": "internal/releasebootstrap/preparation_linux_test.go",
+      "sha256": "1b79694f64e84103f8fdc0012d8def43ee02ebdc9d23383bbef24c69e70d2c1a"
+    },
+    {
+      "path": "internal/testutil/releasefixture/runtime.go",
+      "sha256": "84783fbc56028b626edb8276652b30ce8cd49e34ba586cefd66c6b9b15473de9"
+    },
+    {
+      "path": "internal/promotion/native_release_linux.go",
+      "sha256": "0d07d60f5157d807dc82306c7d943a85220df00c6c43a83f692f87f2235cc959"
+    },
+    {
+      "path": "internal/promotion/native_release_linux_test.go",
+      "sha256": "35bb81fafbdbe96d8d5851eb7d407eed64820d8ae57b4713f3e046d555f86214"
+    },
+    {
+      "path": "internal/promotion/native_release_cleanup_linux_test.go",
+      "sha256": "1bf6d6a6b86ee14d432b9c260bc3c6cfcebcc79227d596785fd44ce15db4c344"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_unix_test.go",
+      "sha256": "d07fdf8c5f9b87498df1b4b280aff3dcc65c08ed7c5a5edb3548424df6e679b1"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_integration_unix_test.go",
+      "sha256": "dafa487baf34e62a5b628c617b8f0a4d49ad800fd3a07298e1fe4aa7056e1f28"
+    },
+    {
+      "path": "internal/inspection/githubrelease/release_set.go",
+      "sha256": "e3dd6a26c5768eeb08dc5d6aa5bafc0cd0ca146a1b2dc649e4270f3f1085649a"
+    }
+  ],
+  "checks": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-bun-final-quick.json",
+      "exit": 0,
+      "seconds": 109.377,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-bun-final-security.json",
+      "exit": 0,
+      "seconds": 13.242,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-bun-final-docs.json",
+      "exit": 0,
+      "seconds": 0.237,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-bun-final-workflow.json",
+      "exit": 0,
+      "seconds": 0.703,
+      "log_sha256": "a9c0d2e05f0e4bb55c3375883f6a0311942cf97ffef57f4c3739b92b0b139ca6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-bun-final-affected-race.json",
+      "exit": 0,
+      "seconds": 41.833,
+      "log_sha256": "eb0e3e4e2729f5cf9c4c57d0f39208b7d49583f57c5d72fd6db0ad16247fbe49"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-existing-pnpm-production-regression.json",
+      "exit": 0,
+      "seconds": 6.347,
+      "log_sha256": "5bbf215ab0e6c5c6b2d58cd25de18eb43f3bb7118e2ca58244c3b81715699c3e"
+    }
+  ],
+  "race": {
+    "first_full_run": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-bun-full-race.json",
+    "first_run_status": "FAIL only producer asset-count expectation and missing passive notice inspector route; other eight whole packages PASS; fixture utility has no tests",
+    "reuse_scope": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-race-reuse-scope.json",
+    "final_three_affected_whole_packages": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-bun-final-affected-race.json",
+    "qualification": "eight unchanged PASS packages have no compiled test dependency on last inspector edit; changed producer/source/inspector whole Race PASS; canonical whole quick PASS"
+  },
+  "actual_namespace": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-distribution-namespace-result-20261025.json",
+    "cases": 12,
+    "all_exit0": true,
+    "protected_host_snapshot_identical": true,
+    "scope": "existing protected copy/read/peer/stage/locks/services/proof/activation/recovery/bootstrap mechanics with current six native roles plus two passive notices; synthetic signatures/native payloads remain explicit; no real PNPM/Bun execution or signed distribution qualification",
+    "note": "static source-built executables in separate mount/network namespaces; synthetic native payloads/proofs; not real Bun execution or signed-release qualification"
+  },
+  "cleanup": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-completed-namespace-cleanup.json",
+    "references": 0,
+    "query_errors": 0,
+    "logical_regular_bytes": 75007792,
+    "removed_roots": 2,
+    "note": "only completed namespace binary copies; active SDK/quality/private source/CPP observer/Bun and PNPM input preserved; not an RSS recovery claim",
+    "first_parent_guard": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-cleanup-target-layout-correction.json"
+  },
+  "first_failures": "docs/github-logs/package-client-quarantine-20261021/p3b2b2b-first-failures-assessment.json",
+  "remaining": [
+    "B2c exact Bun installed supply/guest volume and gVisor observer startup/version/lock admission",
+    "Bun native lock/public graph/full context inspection/current Policy/cache/records/transaction/native ownership/CLI",
+    "whole Bun end-to-end/affected remote matrix and support closure",
+    "public distribution/signature qualification remains separately gated"
+  ],
+  "ci": "No extra push/CI for this local unit. Same remote9410 cu132411 remains active, first timer04:22:46UTC; all local Bun commits excluded from P2 remote claims."
+}

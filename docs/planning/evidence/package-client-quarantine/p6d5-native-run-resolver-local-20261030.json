@@ -1,0 +1,580 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D5",
+  "status": "NAMED_PRODUCTION_RESOLVER_LOCAL_QUALIFIED",
+  "baseline": "3dff66eec849505d7459788672999319cc6337ff",
+  "runtime_inputs": 1384,
+  "existing1374_unchanged": true,
+  "modified_paths": [
+    "internal/artifact/pypi/execution_entry.go",
+    "internal/sandbox/uv_resolver.go",
+    "internal/sandbox/uv_tool_run_public_real_test.go",
+    "internal/sandbox/uv_runtime_real_test.go",
+    "internal/sandbox/uv_tool_run_census_real_test.go"
+  ],
+  "new_paths": [
+    "internal/sandbox/uv_run_native_input.go",
+    "internal/sandbox/uv_run_resolver.go",
+    "internal/sandbox/uv_run_native_input_test.go",
+    "internal/sandbox/uv_run_resolver_test.go",
+    "internal/sandbox/uv_run_resolver_real_test.go"
+  ],
+  "source_identity": [
+    {
+      "path": "internal/sandbox/uv_resolver.go",
+      "sha256": "9edab84afc6c091e0571c65a802707c958bb1f4f6d25bcbaf639ed5703fcf6f5",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_real_test.go",
+      "sha256": "5bf1de87d13810bb8c61db91e0d7320c8a4e7be475b4da30dfbfdda0f65e8305",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/pypi/execution_entry.go",
+      "mode": "100644",
+      "sha256": "cdeacef78578688e7e4650239773e6ab51e05ebbc82a751ba963c2b4067b8da9"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_run_public_real_test.go",
+      "mode": "100644",
+      "sha256": "8b2203f47e9bc7686994737dbd0558764d2b0d8a7cfc22c45b792a0da63a4476"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_run_census_real_test.go",
+      "sha256": "467caab281042c26256f6123335912723453b4795063baeadaadcd4e364b51bb",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_run_native_input.go",
+      "sha256": "b73cb7a269ce161d1801846eecef28ef80a495fb60982a7b16df488f5eb0e7cd",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver.go",
+      "sha256": "30b9cc5b354948262aa495b838b9c651f2651888bd46e052c97678f04be6168d",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_run_native_input_test.go",
+      "sha256": "24bf105acedbfd18f8f49790a250f4b57e4c478a75a1c9e69af2003c96c533b0",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver_test.go",
+      "sha256": "7d8650ec1b0d38d4602b526ea7611efbf23b3834796de8d96167e8cf7488a57f",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver_real_test.go",
+      "sha256": "418bc7c8a150eebff2a7dd8be2822eaa951d6270404667251e4d01a21aaa2283",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.967
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "./internal/sandbox",
+        "-run",
+        "^TestUVRun(Preparation|Fixed|Selection|Resolver|Frozen)",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 7.736
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.218
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 89.765
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./internal/sandbox",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 32.605
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 12.648
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d5-v5-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.368
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.35
+    }
+  ],
+  "CPP_exact_input_reuse": {
+    "original": "/tmp/haa-p6-d4b2-v1-observer",
+    "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5",
+    "named_latches": 132,
+    "UV_cases": 195
+  },
+  "Go_original_binaries": [
+    {
+      "role": "sandbox",
+      "path": "/tmp/haa-p6-d5-v5-sandbox.test",
+      "sha256": "0774136c973af10b620ef99e68f9e434e1a3d4370992ede23ba9c6d6063f7894",
+      "bytes": 28123260
+    }
+  ],
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 51.797,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "f60fc8291bd218909fd16bf925fdb119cf3730c5555bf77edc08701b7e7dfb17",
+    "sources": [
+      {
+        "path": "/tmp/haa-p6-d5-production-resolver-actual-v1/protected-client",
+        "sha256": "0774136c973af10b620ef99e68f9e434e1a3d4370992ede23ba9c6d6063f7894"
+      },
+      {
+        "path": "/tmp/haa-p6-d5-production-resolver-actual-v1/observer",
+        "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_census_real_test.go",
+        "sha256": "467caab281042c26256f6123335912723453b4795063baeadaadcd4e364b51bb"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_public_real_test.go",
+        "sha256": "8b2203f47e9bc7686994737dbd0558764d2b0d8a7cfc22c45b792a0da63a4476"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_runtime_real_test.go",
+        "sha256": "5bf1de87d13810bb8c61db91e0d7320c8a4e7be475b4da30dfbfdda0f65e8305"
+      }
+    ],
+    "scope": "Actual current production UV isolated-run resolver normal+incomplete-observation refusal; no Policy/program/runtime-adapter/generic aliases/CLI qualification",
+    "passed_named_tests": [
+      "TestUVPublicToolRunResolverIntegration"
+    ],
+    "fixture_source": "ACTUAL_PUBLIC_COWSAY_6_1",
+    "native_solver": "ACTUAL UV proposal + independent whole originals + offline native tool run",
+    "public_authentication": "ACTUAL independent release/archive binding",
+    "current_verification_inspection_Evidence_Policy": "NOT_RUN",
+    "named_pass": true,
+    "observer_directory_entries_after": [],
+    "observer_directory_empty_after": true,
+    "owned_native_workspaces_absent": true,
+    "normal_selection_bound": true,
+    "incomplete_selection_refused": true,
+    "actual_recorded_traces": [
+      {
+        "case": "normal",
+        "phase": "uv-pip-resolver",
+        "raw_complete": true,
+        "delivered_complete": true,
+        "injected_incomplete": false,
+        "events": 19,
+        "bytes": 2184,
+        "kinds": {
+          "filesystem-workspace-access": 158,
+          "process-exec-expected": 18
+        }
+      },
+      {
+        "case": "normal",
+        "phase": "pypi-wheel",
+        "raw_complete": true,
+        "delivered_complete": true,
+        "injected_incomplete": false,
+        "events": 23,
+        "bytes": 2622,
+        "kinds": {
+          "process-exec-expected": 23
+        }
+      },
+      {
+        "case": "normal",
+        "phase": "frozen-offline",
+        "raw_complete": true,
+        "delivered_complete": true,
+        "injected_incomplete": false,
+        "events": 16,
+        "bytes": 1842,
+        "kinds": {
+          "filesystem-workspace-access": 124,
+          "process-exec-expected": 15
+        }
+      },
+      {
+        "case": "incomplete-refused",
+        "phase": "uv-pip-resolver",
+        "raw_complete": true,
+        "delivered_complete": true,
+        "injected_incomplete": false,
+        "events": 19,
+        "bytes": 2184,
+        "kinds": {
+          "filesystem-workspace-access": 158,
+          "process-exec-expected": 18
+        }
+      },
+      {
+        "case": "incomplete-refused",
+        "phase": "pypi-wheel",
+        "raw_complete": true,
+        "delivered_complete": true,
+        "injected_incomplete": false,
+        "events": 23,
+        "bytes": 2622,
+        "kinds": {
+          "process-exec-expected": 23
+        }
+      },
+      {
+        "case": "incomplete-refused",
+        "phase": "frozen-offline",
+        "raw_complete": true,
+        "delivered_complete": false,
+        "injected_incomplete": true,
+        "events": 16,
+        "bytes": 1842,
+        "kinds": {
+          "filesystem-workspace-access": 124,
+          "process-exec-expected": 15
+        }
+      }
+    ],
+    "all_real_traces_complete": true,
+    "two_offline_native_traces_bound": true,
+    "offline_forbidden_events_zero": true,
+    "one_expected_incomplete_injected": true
+  },
+  "actual_parent_seconds": 49.68,
+  "actual_originals": "docs/github-logs/package-client-quarantine-20261021/p6-d5-production-resolver-actual-v1-original-inventory.json",
+  "human_review": "Existing UV native session, whole source/startup freeze, exact PyPI command grammar, RO mirror/anchor and source-console census binder reused. Old online branch retains pins/arguments/coverage. New frozen branch has network none/no DNS/policy creation, exact input/output/runtime topology and before/after input readback. Complete trace/cleanup/context failure clears selection. Native null-device EACCES is preparation DATA; no installed receipt/Host ownership/Policy/program authority. Full observed native DATA including generated RECORD is hashed but not authenticated as original ownership. Test-only recorder forwards real observer and trace budget; controlled incompleteness only refuses result.",
+  "first_failures": {
+    "compile": "Moved mirror omitted domain import; first focused compile failed before Quick/tagged/native actual. Original source retained.",
+    "request": "UpgradeRequirement.Reference intentionally retains bare project; corrected new consumer to reparse canonical requirement text, preserving shared parser semantics.",
+    "command": "Generic Domain single-name and PyPI console grammar differ; exported immediately-used wrapper shares the unchanged canonical PyPI condition before network.",
+    "v4_counterexample": "Canonical9/Quick269.803s/Race38.582s PASS was not final acceptance. Same-source conjunction test RED8.088s proved == prefix admitted bounded conjunction. Same canonical ParseReference roundtrip now denies it; v5 focused/Quick89.765s/full affected Race32.605s/tagged checks PASS. No production actual launched until v5 complete.",
+    "originals": [
+      "docs/github-logs/package-client-quarantine-20261021/p6-d5-first-compile-original-source.json",
+      "docs/github-logs/package-client-quarantine-20261021/p6-d5-first-request-original-source.json",
+      "docs/github-logs/package-client-quarantine-20261021/p6-d5-first-command-original-source.json",
+      "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-conjunction-RED.json"
+    ]
+  },
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (production ResolveToolRun and current actual normal/refusal caller)",
+    "QUALIFIED": "YES (named local resolver only)",
+    "ACCEPTANCE_CLOSED": "YES (same named local source/selection scope)",
+    "MISSING": [
+      "new native-run selector factory with current whole inspection/Evidence/Policy/runtime application",
+      "general native selection/closure/cleanup fault matrix and aliases/CLI",
+      "grouped new-source hosted/final CPU/three CUDA/signed qualification"
+    ]
+  },
+  "cleanup": {
+    "completed_duplicate_ELFs": 2,
+    "logical_bytes": 31356900,
+    "cumulative_ELF_files": 243,
+    "private_completed_cache_dirs": 6,
+    "combined_logical_bytes": 11554812728,
+    "root_processes": 103,
+    "references": 0,
+    "query_errors": 0,
+    "Windows_VHD_physical_shrink_claimed": false
+  },
+  "CI435_scope": "Still frozen b0f4cbc/treeeebd72a1. Poll01 actual18:11:42UTC confirms8SUCCESS/macOS89.114949s marker interval/default reached; Linux/Required pending. Eight decoded443620B/22chunks/checkout334e96 whole tree bound. New D5 is outside that source; no push while active.",
+  "CI435_progress_original": "docs/github-logs/package-client-quarantine-20261021/ci435-progress8-source-proof.json",
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-plan.py",
+      "bytes": 7299,
+      "sha256": "8ac89fe98e2f3177c4c63b665b9c2976e6c5fc829628e1991ac91a51c3cf269b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-session-edit.py",
+      "bytes": 7719,
+      "sha256": "2a2656673273aa1ad57fbd954d0408be78561f1d0247a763f6cfc17b607cb71f"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-session-edited.json",
+      "bytes": 739,
+      "sha256": "d5585e14fc1d2672ff862ebea8de92637f868388422ca0efabde6fb588f6d43e"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-resolver-edit.py",
+      "bytes": 7996,
+      "sha256": "19ee09a36a8d786c52609b047b1210399f147964d3d821660ce380ad13f028a2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-tests-edit.py",
+      "bytes": 13493,
+      "sha256": "1b3a268889618f870863e8de3e770ed5c022c943f862d85b725d577080db911d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-import-fix.py",
+      "bytes": 1787,
+      "sha256": "7e9ff2a9aff606e894c2c9d5fd6fbb69dc26db5fd2f3596afe90a7b866c1e2cd"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-request-fix.py",
+      "bytes": 1970,
+      "sha256": "a35b6f9800838c2810526a976cc3f4f8d7386b106e9d50540ef2fe83e8289e90"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-trace-actual-edit.py",
+      "bytes": 5888,
+      "sha256": "c751f37f04c17fc137bfa9944b2d8492e03d50cf839c8faa8f27d6f0a6765fb0"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-command-validation-fix.py",
+      "bytes": 4926,
+      "sha256": "c51b80aea967b45b51a1373ae05d2f723dd7a9ff5602f18738c3d1989747faad"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-conjunction-fix.py",
+      "bytes": 3084,
+      "sha256": "5b2ecf051d39eb64b46a545deafd507bd3aa44579f8e34983428acf841c6977d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-check-v4.py",
+      "bytes": 3653,
+      "sha256": "48ebaa3095d975648eefce4b5a13377a9407b12eb156ed803be181724ac1dc7f"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-check-v5.py",
+      "bytes": 3653,
+      "sha256": "26f4950681f3a775f55a9011a1c8559812f42890ed436e05df10207191774a57"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-checks.json",
+      "bytes": 1803,
+      "sha256": "d0d94efc8fb561e048e9c1d12bde75788cd4062ccb55a27eb0b3d238b278b970"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-build-identity.json",
+      "bytes": 252926,
+      "sha256": "2ee33c7d758fadd27ef947ba844fae64866fde71e798e32d4900be9d54ccddda"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-actual-producer.py",
+      "bytes": 4579,
+      "sha256": "22a47e03811c2c052b56c7f17985c79cc4f5631b1b69711902ce432159a40ec6"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-production-resolver-actual-v1.py",
+      "bytes": 12548,
+      "sha256": "224ff79421ceff666c6a9735258bbc423dc7d70b4e2255b44dbb22a0ae39f321"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-cleanup-producer.py",
+      "bytes": 1938,
+      "sha256": "3594319395bb33b9b0b7b145a859cabfb2b178cefb7f8a7c51ea1baa7e055318"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-freeze-actual.py",
+      "bytes": 1068,
+      "sha256": "c280fa4b3ef67f3d6ba3377554007b4fdb936ac8e78cc3a60da68ba8449abfe3"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-focused.log",
+      "bytes": 59,
+      "sha256": "7e40a80e3db8969889c66fad89e9a441782222a71f4c573683a2577ba4a1cee6"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-quick.log",
+      "bytes": 1354,
+      "sha256": "2e9726fcfbeee5e8aa2c636acd936e20136dee992835845d03a255566b9e2e27"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-affected-race.log",
+      "bytes": 186,
+      "sha256": "e694d7590c7dc0040562c1d06ca59053ea55ea340ed46c0afb563a6e1e058400"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-sandbox-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v4-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-focused.log",
+      "bytes": 59,
+      "sha256": "cbdbed06891cd075365b01cda44b14f13e72cd57fabbaf2a46000d282c03aa2d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-quick.log",
+      "bytes": 1354,
+      "sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-affected-race.log",
+      "bytes": 186,
+      "sha256": "7aaa126dc89d822aac6d08938e3bcd7cf4f78ee73c82a2be816ad55d6679c8d5"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-sandbox-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-v5-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-completed-inventory.py",
+      "bytes": 3888,
+      "sha256": "39c9727b1310f526e3d1c37e4f895f1280f8cb506854c73d178579102a24706b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-completed-cleanup.py",
+      "bytes": 6123,
+      "sha256": "31381d07fd41f7db002f7749e83b730f2554b80202da37e4b0eebdedabfc61d1"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-completed-candidate.json",
+      "bytes": 2534,
+      "sha256": "fcbb0191f5efc775d59a09df25a681584d43eb5b9cc48505d4aebf672e94d4d2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-completed-zombie-proof.json",
+      "bytes": 1629,
+      "sha256": "6d65a5cc5b039fad32f7c1bb274bc5a47b9e795805de39f4bbfd5d9ca29ba3e0"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-completed-preflight.json",
+      "bytes": 4222,
+      "sha256": "a1489fd4ba6662e92355eaf798fd14da396a3781c4e9eb4e036cd2e0c4baa4fb"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-completed-result.json",
+      "bytes": 3264,
+      "sha256": "93f449aee599bf636740bce336c0ef1762356e9a8a0f7fcbd5c66ebfb64fdcd5"
+    }
+  ]
+}

@@ -74,6 +74,10 @@ func (d pypiDestination) key() string { return d.Scheme + "/" + d.Relative }
 type pypiVenvPlan struct{ root, site string }
 
 func discoverPythonVenv(root string) (pypiVenvPlan, error) {
+	return discoverPythonVenvWithVersion(root, pythonVenvConfigVersion)
+}
+
+func discoverPythonVenvWithVersion(root string, readVersion func([]byte) (string, error)) (pypiVenvPlan, error) {
 	p := pypiVenvPlan{root, filepath.Join(root, "lib", "python3.14", "site-packages")}
 	if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" || trustedExistingDirectory(root) != nil {
 		return p, errors.New("untrusted virtual environment root")
@@ -85,22 +89,9 @@ func discoverPythonVenv(root string) (pypiVenvPlan, error) {
 	if err != nil || !utf8.Valid(cfg) || bytes.IndexByte(cfg, 0) >= 0 {
 		return p, errors.New("invalid virtual environment configuration")
 	}
-	version := ""
-	for _, line := range strings.Split(string(cfg), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		key, value, ok := strings.Cut(line, "=")
-		if !ok {
-			return p, errors.New("malformed virtual environment configuration")
-		}
-		if strings.TrimSpace(key) == "version" {
-			if version != "" {
-				return p, errors.New("duplicate virtual environment version")
-			}
-			version = strings.TrimSpace(value)
-		}
+	version, err := readVersion(cfg)
+	if err != nil {
+		return p, err
 	}
 	parts := strings.Split(version, ".")
 	if len(parts) != 3 || parts[0] != "3" || parts[1] != "14" || parts[2] == "" || strings.Trim(parts[2], "0123456789") != "" {
@@ -120,6 +111,27 @@ func discoverPythonVenv(root string) (pypiVenvPlan, error) {
 		return p, errors.New("unsafe virtual environment headers root")
 	}
 	return p, nil
+}
+
+func pythonVenvConfigVersion(cfg []byte) (string, error) {
+	version := ""
+	for _, line := range strings.Split(string(cfg), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			return "", errors.New("malformed virtual environment configuration")
+		}
+		if strings.TrimSpace(key) == "version" {
+			if version != "" {
+				return "", errors.New("duplicate virtual environment version")
+			}
+			version = strings.TrimSpace(value)
+		}
+	}
+	return version, nil
 }
 func (p pypiVenvPlan) bind(d pypiDestination) (pypiDestination, error) {
 	root := ""
@@ -153,6 +165,9 @@ type pypiFileSnapshot struct {
 	Device uint64
 	Inode  uint64
 	info   os.FileInfo
+	// Zero preserves existing large managed-payload semantics. A bounded
+	// original keeps its bound through later backup/rollback comparisons.
+	readBound int64
 }
 
 // Fail closed if link-count evidence is unavailable on an unsupported Host.
@@ -191,7 +206,7 @@ func snapshotPyPIFile(path string) (pypiFileSnapshot, error) {
 	if !ok {
 		return pypiFileSnapshot{}, errors.New("file identity unavailable")
 	}
-	return pypiFileSnapshot{hex.EncodeToString(h.Sum(nil)), n, info.Mode(), device, inode, info}, nil
+	return pypiFileSnapshot{hex.EncodeToString(h.Sum(nil)), n, info.Mode(), device, inode, info, 0}, nil
 }
 
 func pypiObjectIdentity(info os.FileInfo) (uint64, uint64, bool) {
@@ -213,8 +228,18 @@ func pypiObjectIdentity(info os.FileInfo) (uint64, uint64, bool) {
 }
 
 func (s pypiFileSnapshot) matches(path string) bool {
-	now, err := snapshotPyPIFile(path)
-	return err == nil && os.SameFile(s.info, now.info) && s.Digest == now.Digest && s.Size == now.Size && s.Mode == now.Mode
+	var now pypiFileSnapshot
+	var err error
+	if s.readBound > 0 {
+		now, err = snapshotBoundedPromotionFile(path, s.readBound)
+	} else {
+		now, err = snapshotPyPIFile(path)
+	}
+	return err == nil && s.matchesSnapshot(now)
+}
+func (s pypiFileSnapshot) matchesSnapshot(now pypiFileSnapshot) bool {
+	return s.info != nil && now.info != nil && os.SameFile(s.info, now.info) &&
+		s.Digest == now.Digest && s.Size == now.Size && s.Mode == now.Mode
 }
 
 type pypiVenvState struct {
@@ -251,6 +276,10 @@ func (p pypiVenvPlan) readState() (pypiVenvState, bool, error) {
 	return state, true, nil
 }
 func (p pypiVenvPlan) verifyState(state pypiVenvState) error {
+	return p.verifyStateWithIdentity(state, nil)
+}
+
+func (p pypiVenvPlan) verifyStateWithIdentity(state pypiVenvState, verify func(string, pypiFileSnapshot) error) error {
 	for key, d := range state.Files {
 		bound, err := p.bind(d)
 		if err != nil || key != d.key() {
@@ -260,11 +289,17 @@ func (p pypiVenvPlan) verifyState(state pypiVenvState) error {
 		if err != nil || actual.Digest != d.Digest || actual.Size != d.Size {
 			return errors.New("HAA-owned file drift")
 		}
+		if verify != nil {
+			if err := verify(bound.Final, actual); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
 
 type pypiVenvGuard struct {
+	file     *os.File
 	path     string
 	identity os.FileInfo
 }
@@ -276,20 +311,25 @@ func acquirePyPIVenvGuard(root string) (pypiVenvGuard, error) {
 		return pypiVenvGuard{}, errors.New("virtual environment is already being mutated")
 	}
 	info, se := f.Stat()
-	err = errors.Join(se, f.Sync(), f.Close())
+	err = errors.Join(se, f.Sync())
 	if err != nil {
-		return pypiVenvGuard{}, err
+		return pypiVenvGuard{}, errors.Join(err, f.Close())
 	}
-	return pypiVenvGuard{path, info}, nil
+	return pypiVenvGuard{path: path, identity: info, file: f}, nil
 }
 func (g pypiVenvGuard) verify() error {
 	now, err := os.Lstat(g.path)
 	if err != nil || !os.SameFile(g.identity, now) || !now.Mode().IsRegular() || !pypiSingleLink(now) {
 		return errors.New("transaction guard identity changed")
 	}
-	return nil
+	return verifyPinnedMutationLock(g.file, g.identity, now)
 }
-func (g pypiVenvGuard) release() error {
+func (g pypiVenvGuard) release() (resultErr error) {
+	defer func() {
+		if g.file != nil {
+			resultErr = errors.Join(resultErr, g.file.Close())
+		}
+	}()
 	if err := g.verify(); err != nil {
 		return err
 	}
@@ -298,6 +338,8 @@ func (g pypiVenvGuard) release() error {
 
 // One guard, backup area and ledger cover all exact destinations.
 type pypiVenvTransaction struct {
+	project                                         *uvProjectFileTransaction
+	tool                                            *toolPublication
 	plan                                            pypiVenvPlan
 	guard                                           pypiVenvGuard
 	current                                         pypiVenvState
@@ -324,6 +366,10 @@ type pypiVenvTransaction struct {
 }
 
 func beginPyPIVenvTransaction(p pypiVenvPlan) (_ *pypiVenvTransaction, resultErr error) {
+	return beginPyPIVenvTransactionWithDiscovery(p, discoverPythonVenv)
+}
+
+func beginPyPIVenvTransactionWithDiscovery(p pypiVenvPlan, discover func(string) (pypiVenvPlan, error)) (_ *pypiVenvTransaction, resultErr error) {
 	g, err := acquirePyPIVenvGuard(p.root)
 	if err != nil {
 		return nil, err
@@ -333,8 +379,12 @@ func beginPyPIVenvTransaction(p pypiVenvPlan) (_ *pypiVenvTransaction, resultErr
 			resultErr = errors.Join(resultErr, g.release())
 		}
 	}()
-	if _, err := discoverPythonVenv(p.root); err != nil {
+	checked, err := discover(p.root)
+	if err != nil {
 		return nil, err
+	}
+	if checked != p {
+		return nil, errors.New("virtual environment discovery changed under guard")
 	}
 	t := &pypiVenvTransaction{plan: p, guard: g, directories: map[string]os.FileInfo{}, absentDirectories: map[string]bool{}, before: map[string]*pypiFileSnapshot{}}
 	entries, err := os.ReadDir(p.root)
@@ -379,10 +429,26 @@ func beginPyPIVenvTransaction(p pypiVenvPlan) (_ *pypiVenvTransaction, resultErr
 	}
 	return t, nil
 }
-func (t *pypiVenvTransaction) close() error {
+func (t *pypiVenvTransaction) close() (resultErr error) {
+	if t.project != nil {
+		projectErr := t.project.guard.verify()
+		if projectErr != nil {
+			t.recovery = true
+		}
+		defer func() {
+			if resultErr != nil {
+				t.recovery = true
+			}
+			resultErr = errors.Join(resultErr, projectErr, t.project.close(t.recovery))
+		}()
+	}
 	// Uncertain recovery retains both the guard and the recovery directory.
 	if t.recovery {
-		return t.guard.verify()
+		err := t.guard.verify()
+		if t.guard.file != nil {
+			err = errors.Join(err, t.guard.file.Close())
+		}
+		return err
 	}
 	return t.guard.release()
 }
@@ -412,6 +478,14 @@ func (t *pypiVenvTransaction) freezeParents(path string) error {
 	return nil
 }
 func (t *pypiVenvTransaction) verifyIdentity() error {
+	if err := t.tool.verifyBoundary(); err != nil {
+		return err
+	}
+	if t.project != nil {
+		if err := t.project.guard.verify(); err != nil {
+			return err
+		}
+	}
 	if err := t.guard.verify(); err != nil {
 		return err
 	}
@@ -458,6 +532,14 @@ func (t *pypiVenvTransaction) checkBefore() error {
 // Check the fixed roots and the current file's ancestry at each mutation;
 // full directory-set reconciliation remains at freeze and completion.
 func (t *pypiVenvTransaction) verifyPathIdentity(path string) error {
+	if err := t.tool.verifyBoundary(); err != nil {
+		return err
+	}
+	if t.project != nil {
+		if err := t.project.guard.verify(); err != nil {
+			return err
+		}
+	}
 	if err := t.guard.verify(); err != nil {
 		return err
 	}
@@ -533,7 +615,14 @@ func (t *pypiVenvTransaction) remove(path string) error {
 	return os.Remove(name)
 }
 func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvState, []pypiDestination, error) {
+	return t.prepareSelection(destinations, false, false)
+}
+
+func (t *pypiVenvTransaction) prepareSelection(destinations []pypiDestination, complete, dependencyFree bool) (pypiVenvState, []pypiDestination, error) {
 	desired := pypiVenvState{2, map[string]pypiDestination{}}
+	if complete && ((len(destinations) == 0) != dependencyFree) {
+		return desired, nil, errors.New("complete transaction empty intent differs from output")
+	}
 	t.outputs = map[string]pypiFileSnapshot{}
 	projects := map[string]string{}
 	finals := map[string]bool{}
@@ -568,7 +657,7 @@ func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvS
 		}
 		desired.Files[d.key()] = d
 	}
-	if len(destinations) == 0 {
+	if len(destinations) == 0 && !complete {
 		return desired, nil, errors.New("empty transaction")
 	}
 	obsolete := []pypiDestination{}
@@ -576,6 +665,7 @@ func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvS
 		anyReplaced, allReplaced := false, true
 		for _, owner := range old.owners() {
 			_, replaces := projects[owner.Distribution]
+			replaces = replaces || complete // Complete intent retires every proven old owner.
 			anyReplaced = anyReplaced || replaces
 			allReplaced = allReplaced && replaces
 		}
@@ -607,7 +697,7 @@ func (t *pypiVenvTransaction) createParents(path string) error {
 	if err := t.createParents(filepath.Dir(path)); err != nil {
 		return err
 	}
-	if err := t.journalIntent("mkdir", path); err != nil {
+	if err := t.journalAfterPublication(struct{ Action, Path string }{"mkdir", path}); err != nil {
 		return err
 	}
 	parent, name, err := t.openParent(path)
@@ -641,6 +731,8 @@ func (t *pypiVenvTransaction) persistLedger() error {
 			directories[path] = pypiFileSnapshot{Mode: info.Mode(), Device: dev, Inode: ino}
 		}
 		if err := t.appendJournal(struct {
+			Project           *uvProjectJournalControls `json:",omitempty"`
+			Tool              *toolPublicationJournal   `json:",omitempty"`
 			Root              string
 			Before            map[string]*pypiFileSnapshot
 			Current, Desired  pypiVenvState
@@ -648,7 +740,7 @@ func (t *pypiVenvTransaction) persistLedger() error {
 			Metadata          *pypiFileSnapshot
 			Directories       map[string]pypiFileSnapshot
 			AbsentDirectories map[string]bool
-		}{t.plan.root, t.before, t.current, t.desired, t.config, t.metadata, directories, t.absentDirectories}); err != nil {
+		}{t.projectJournal(), t.tool.journal(), t.plan.root, t.before, t.current, t.desired, t.config, t.metadata, directories, t.absentDirectories}); err != nil {
 			return err
 		}
 	}
@@ -708,10 +800,13 @@ func (t *pypiVenvTransaction) persistLedger() error {
 	}
 	return nil
 }
-func (t *pypiVenvTransaction) appendJournal(value any) error {
-	body, err := json.Marshal(value)
-	if err != nil {
-		return err
+func (t *pypiVenvTransaction) appendJournal(values ...any) error {
+	var buffer bytes.Buffer
+	encoder := json.NewEncoder(&buffer)
+	for _, value := range values {
+		if err := encoder.Encode(value); err != nil {
+			return err
+		}
 	}
 	flags := os.O_WRONLY | os.O_APPEND
 	if !t.journalStarted {
@@ -735,7 +830,7 @@ func (t *pypiVenvTransaction) appendJournal(value any) error {
 	if t.journalHash == nil {
 		t.journalHash = sha256.New()
 	}
-	line := append(body, '\n')
+	line := buffer.Bytes()
 	n, we := f.Write(line)
 	if we == nil && n != len(line) {
 		we = io.ErrShortWrite
@@ -754,12 +849,73 @@ func (t *pypiVenvTransaction) appendJournal(value any) error {
 func (t *pypiVenvTransaction) journalIntent(action, path string) error {
 	return t.appendJournal(struct{ Action, Path string }{action, path})
 }
-func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr error) {
-	desired, obsolete, err := t.prepare(destinations)
+
+// Identify the source inode even if its subsequent completion is missing.
+func (t *pypiVenvTransaction) journalPublishIntent(destination pypiDestination) error {
+	output, present := t.outputs[destination.Final]
+	if !present {
+		return errors.New("publication intent output identity missing")
+	}
+	intent := struct {
+		Action, Path string
+		Output       pypiFileSnapshot
+	}{"publish", destination.Final, output}
+	return t.journalAfterPublication(intent)
+}
+
+// Persist the prior rename completion before authorizing the next mutation.
+// Both records keep their original order in a single synchronized append.
+func (t *pypiVenvTransaction) journalAfterPublication(intent any) error {
+	switch len(t.published) - t.journalPublished {
+	case 0:
+		return t.appendJournal(intent)
+	case 1:
+		previous := struct{ Published pypiDestination }{t.published[t.journalPublished]}
+		if err := t.appendJournal(previous, intent); err != nil {
+			return err
+		}
+		t.journalPublished++
+		return nil
+	default:
+		return errors.New("publication intent follows multiple pending results")
+	}
+}
+
+func (t *pypiVenvTransaction) commit(destinations []pypiDestination) error {
+	return t.commitSelection(destinations, false, false)
+}
+
+// Only a guarded complete-project caller may retire every proven current owner.
+// This entry does not provide source, ownership, inspection or Policy approval.
+func (t *pypiVenvTransaction) commitComplete(destinations []pypiDestination, dependencyFree bool) error {
+	return t.commitSelection(destinations, true, dependencyFree)
+}
+
+func (t *pypiVenvTransaction) commitSelection(destinations []pypiDestination, complete, dependencyFree bool) error {
+	if t.project != nil {
+		return errors.New("held project controls require explicit project publication")
+	}
+	if t.tool != nil {
+		return errors.New("held tool controls require explicit tool publication")
+	}
+	return t.commitSelectionWithProject(destinations, complete, dependencyFree)
+}
+
+func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDestination, complete, dependencyFree bool) (resultErr error) {
+	desired, obsolete, err := t.prepareSelection(destinations, complete, dependencyFree)
+	if err != nil {
+		return err
+	}
+	projectControls, err := t.prepareProjectControls()
+	if err != nil {
+		return err
+	}
+	toolControls, err := t.prepareToolControls()
 	if err != nil {
 		return err
 	}
 	t.desired = desired
+	omitMetadata := complete && len(desired.Files) == 0
 	if err := t.step("before-mutation"); err != nil {
 		return err
 	}
@@ -780,6 +936,18 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			if re != nil {
 				t.recovery = true
 				resultErr = errors.Join(resultErr, re, errors.New("rollback incomplete; recovery state retained"))
+				return
+			}
+		}
+		if t.tool != nil {
+			if err := t.tool.cleanup(); err != nil {
+				t.recovery = true
+				resultErr = errors.Join(resultErr, err, errors.New("tool cleanup uncertain; recovery retained"))
+				return
+			}
+			if err := t.tool.disposeOriginal(); err != nil {
+				t.recovery = true
+				resultErr = errors.Join(resultErr, err, errors.New("original tool link cleanup uncertain; recovery retained"))
 				return
 			}
 		}
@@ -805,6 +973,8 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return err
 		}
 	}
+	ordered = append(ordered, projectControls...)
+	ordered = append(ordered, toolControls...)
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].key() < ordered[j].key() })
 	backups := append(append([]pypiDestination(nil), ordered...), obsolete...)
 	for _, d := range backups {
@@ -830,6 +1000,7 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return err
 		}
 	}
+	batchPublication := !complete && t.project == nil && t.tool == nil
 	for _, d := range ordered {
 		if err := t.createParents(filepath.Dir(d.Final)); err != nil {
 			return err
@@ -843,22 +1014,38 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 		if !t.outputs[d.Final].matches(d.Source) {
 			return errors.New("private output changed before publication")
 		}
-		if err := t.journalIntent("publish", d.Final); err != nil {
+		if batchPublication {
+			if err := t.journalPublishIntent(d); err != nil {
+				return err
+			}
+			if err := t.step("after-publish-intent:" + d.key()); err != nil {
+				return err
+			}
+		} else if err := t.journalIntent("publish", d.Final); err != nil {
 			return err
 		}
 		if err := t.rename(d.Source, d.Final); err != nil {
 			return err
 		}
 		t.published = append(t.published, d)
-		if err := t.persistLedger(); err != nil {
-			return err
+		if !batchPublication {
+			if err := t.persistLedger(); err != nil {
+				return err
+			}
 		}
 		if err := t.step("after-publish:" + d.Scheme); err != nil {
 			return err
 		}
 	}
-	if err := t.createParents(filepath.Join(t.plan.root, ".heliopause")); err != nil {
-		return err
+	if batchPublication {
+		if err := t.persistLedger(); err != nil {
+			return err
+		}
+	}
+	if !omitMetadata {
+		if err := t.createParents(filepath.Join(t.plan.root, ".heliopause")); err != nil {
+			return err
+		}
 	}
 	if err := t.step("metadata"); err != nil {
 		return err
@@ -882,32 +1069,38 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return err
 		}
 	}
-	body, err := json.Marshal(desired)
-	if err != nil || len(body) > pypiVenvStateBound {
-		return errors.New("ownership metadata exceeds bound")
+	var body []byte
+	if !omitMetadata {
+		body, err = json.Marshal(desired)
+		if err != nil || len(body) > pypiVenvStateBound {
+			return errors.New("ownership metadata exceeds bound")
+		}
+		parent, metadataPath, err := t.openParent(filepath.Join(t.backup, "next-metadata"))
+		if err != nil {
+			return err
+		}
+		writeErr := writePromotionFile(metadataPath, body)
+		closeErr := parent.Close()
+		if err := errors.Join(writeErr, closeErr); err != nil {
+			return err
+		}
+		if err := t.journalIntent("publish-metadata", meta); err != nil {
+			return err
+		}
+		metadataSnapshot, err := snapshotPyPIFile(filepath.Join(t.backup, "next-metadata"))
+		if err != nil {
+			return err
+		}
+		t.publishedMetadata = &metadataSnapshot
+		if err := t.rename(filepath.Join(t.backup, "next-metadata"), meta); err != nil {
+			return err
+		}
+		t.metadataPublished = true
+		if err := t.persistLedger(); err != nil {
+			return err
+		}
 	}
-	parent, metadataPath, err := t.openParent(filepath.Join(t.backup, "next-metadata"))
-	if err != nil {
-		return err
-	}
-	writeErr := writePromotionFile(metadataPath, body)
-	closeErr := parent.Close()
-	if err := errors.Join(writeErr, closeErr); err != nil {
-		return err
-	}
-	if err := t.journalIntent("publish-metadata", meta); err != nil {
-		return err
-	}
-	metadataSnapshot, err := snapshotPyPIFile(filepath.Join(t.backup, "next-metadata"))
-	if err != nil {
-		return err
-	}
-	t.publishedMetadata = &metadataSnapshot
-	if err := t.rename(filepath.Join(t.backup, "next-metadata"), meta); err != nil {
-		return err
-	}
-	t.metadataPublished = true
-	if err := t.persistLedger(); err != nil {
+	if err := t.tool.publishLinks(); err != nil {
 		return err
 	}
 	if err := t.step("sync"); err != nil {
@@ -931,15 +1124,24 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 	if err := t.verifyIdentity(); err != nil {
 		return err
 	}
-	if err := t.plan.verifyState(desired); err != nil {
+	if batchPublication {
+		if err := t.plan.verifyStateWithIdentity(desired, t.verifyOrdinaryFileIdentity); err != nil {
+			return err
+		}
+	} else if err := t.plan.verifyState(desired); err != nil {
 		return err
 	}
-	for _, d := range ordered {
-		if !t.outputs[d.Final].matches(d.Final) {
-			return errors.New("published file inode drift")
+	if err := t.tool.verifyPublished(); err != nil {
+		return err
+	}
+	if !batchPublication {
+		for _, d := range ordered {
+			if !t.outputs[d.Final].matches(d.Final) {
+				return errors.New("published file inode drift")
+			}
 		}
 	}
-	if !t.publishedMetadata.matches(meta) {
+	if !omitMetadata && !t.publishedMetadata.matches(meta) {
 		return errors.New("published metadata inode drift")
 	}
 	for _, d := range obsolete {
@@ -947,25 +1149,58 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return errors.New("obsolete owned output remains")
 		}
 	}
-	changed := map[string]bool{}
-	for _, d := range t.backed {
-		changed[d.Final] = true
-	}
-	for path, before := range t.before {
-		if before != nil && !changed[path] && !before.matches(path) {
-			return errors.New("retained managed file drift")
+	if !batchPublication {
+		changed := map[string]bool{}
+		for _, d := range t.backed {
+			changed[d.Final] = true
+		}
+		for path, before := range t.before {
+			if before != nil && !changed[path] && !before.matches(path) {
+				return errors.New("retained managed file drift")
+			}
 		}
 	}
-	actual, err := readBoundedPromotionFile(meta, pypiVenvStateBound)
-	if err != nil || !bytes.Equal(body, actual) {
-		return errors.New("ownership metadata reconciliation failed")
+	if omitMetadata {
+		if _, err := os.Lstat(meta); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("empty complete ownership metadata is not absent")
+		}
+	} else {
+		actual, err := readBoundedPromotionFile(meta, pypiVenvStateBound)
+		if err != nil || !bytes.Equal(body, actual) {
+			return errors.New("ownership metadata reconciliation failed")
+		}
+	}
+	// Controller private cleanup still belongs to the rollback boundary. Its
+	// failure must be observed before the deferred original backup disposal.
+	if t.project != nil {
+		return t.project.cleanup()
+	}
+	if t.tool != nil {
+		return t.tool.cleanup()
 	}
 	return nil
 }
+
+// Ordinary publication keeps newly published and retained file identities
+// alongside the ownership metadata. Check both against the same live snapshot.
+func (t *pypiVenvTransaction) verifyOrdinaryFileIdentity(path string, actual pypiFileSnapshot) error {
+	if published, ok := t.outputs[path]; ok {
+		if !published.matchesSnapshot(actual) {
+			return errors.New("published file inode drift")
+		}
+		return nil
+	}
+	retained := t.before[path]
+	if retained == nil || !retained.matchesSnapshot(actual) {
+		return errors.New("retained managed file drift")
+	}
+	return nil
+}
+
 func (t *pypiVenvTransaction) syncDirectories() error {
 	paths := []string{}
 	for path := range t.directories {
-		if path == t.plan.root || pathWithin(t.plan.root, path) {
+		if path == t.plan.root || pathWithin(t.plan.root, path) || t.project != nil && path == t.project.root || t.tool != nil && path == t.tool.guard.binRoot {
 			paths = append(paths, path)
 		}
 	}
@@ -982,6 +1217,9 @@ func (t *pypiVenvTransaction) rollback() error {
 		return err
 	}
 	if err := t.verifyIdentity(); err != nil {
+		return err
+	}
+	if err := t.tool.rollbackLinks(); err != nil {
 		return err
 	}
 	meta := filepath.Join(t.plan.root, pypiVenvMetadata)

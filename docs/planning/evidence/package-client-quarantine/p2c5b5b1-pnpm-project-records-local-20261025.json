@@ -1,0 +1,129 @@
+{
+  "schema": "helox.pnpm-project-records-local/v1",
+  "baseline": "fd3506b2d43fe80357795443a1e38de75e23e9fe",
+  "scope": "actual-operation project Manifest/SBOM and complete native PNPM root/package/instance provenance in sealed schema2 cache; no Host installation",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (existing actual bootstrap consumer)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/promotion/pnpm_cache.go",
+      "bytes": 12128,
+      "sha256": "60caf1cb80613d4e063df6e343df9c6e7ae33dce34b29ef438a97fdf6ba8e104"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_approval.go",
+      "bytes": 6989,
+      "sha256": "ead90dfcbabb78a7746fcd53d1b02a651f0b4f8097d254988b2457326f56f39a"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_records.go",
+      "bytes": 4021,
+      "sha256": "045d075448e48617e7b31a8c405fc615927c5d960a4018d0af29bb921f653aaa"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_test.go",
+      "bytes": 22312,
+      "sha256": "08e5f5bb716569bf29f65a95bbb75b4c32324bc447c8014b9b0cc6c93aeaaf14"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_cache_integration_test.go",
+      "bytes": 9963,
+      "sha256": "5ea9d1f5c3f25c2e6bc00a3e52fc741c9225a455c4549c4278349605eb1c0eb7"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.545,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-reviewed-format.json",
+        "bytes": 532,
+        "sha256": "11fae2c26c65a615ea02aff2e4fa0d267ce81883a20c647bcd0d886dc72a3397"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 197.931,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-reviewed-quick.json",
+        "bytes": 308,
+        "sha256": "f31ec2be4ac1e4e038f8965f14bbc4b84368d97dc22cfeb3724c0210835f2738"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 9.772,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-reviewed-security.json",
+        "bytes": 312,
+        "sha256": "85803b4cf653715065a4296d07419402d5c0a61565c8eb693899a5bde3762d9c"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.234,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-reviewed-docs.json",
+        "bytes": 304,
+        "sha256": "e241302fc687104b9f9dfa952d062ed9d0e41da1e6d5d48298f244d35b457c4f"
+      }
+    },
+    {
+      "profile": "race",
+      "exit": 0,
+      "seconds": 216.546,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-reviewed-race.json",
+        "bytes": 410,
+        "sha256": "da78a66d0ed1a99c856e0981bf5e90c7c7d699848cae276c0e4e5869b539abde"
+      }
+    }
+  ],
+  "actual": {
+    "seconds": 44.668,
+    "peer_archives": 4,
+    "empty_archives": 0,
+    "actual_operation_records_cases": 2,
+    "full_native_context_cases": 2,
+    "helper_wait": 0,
+    "host_unchanged": true,
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-project-records-result.json",
+      "bytes": 1462,
+      "sha256": "882f0c54704ae7504334216ad0e323959c3ad5b3bd92494dd254729f71b488c8"
+    }
+  },
+  "first_actual_compile": {
+    "status": "FAIL (test variable redeclaration)",
+    "native_execution": "NOT_EXECUTED",
+    "correction": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-actual-compile-correction.json",
+      "bytes": 568,
+      "sha256": "3e395978959925f2d1a0e396b6d7e9032407090c1d219acf90eb1d664a98d0ff"
+    },
+    "final_compile": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-final-actual-compile.json",
+      "bytes": 704,
+      "sha256": "e216ca48eef00554208d04ccc5ba297babe1fe85fdfb8c62a7744f33c9916d67"
+    }
+  },
+  "final_format": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b1-final-format.json",
+    "bytes": 308,
+    "sha256": "89f44d3749b2d3fd0e7a12ca5aa619ad5360e546f664826e62d0ebc035de9c91"
+  },
+  "not_qualified": [
+    "Host private extraction and independent retained state",
+    "PNPM transaction/adoption/rollback/CLI",
+    "whole P2 acceptance",
+    "this source remote qualification"
+  ]
+}

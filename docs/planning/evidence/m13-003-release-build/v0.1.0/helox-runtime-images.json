@@ -1,0 +1,39 @@
+{
+  "schema": "helox.runtime-image-manifest/v1",
+  "custom_ghcr_image": false,
+  "custom_image_decision": "upstream immutable image is sufficient; no HAA-owned runtime configuration is required",
+  "provenance": {
+    "required": true,
+    "verification": "release candidate attestation must bind this manifest and each exact image reference"
+  },
+  "images": [
+    {
+      "name": "node",
+      "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+      "repository": "docker.io/library/node",
+      "digest": "sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+      "runtime_version": "24.21.0"
+    },
+    {
+      "name": "python",
+      "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+      "repository": "docker.io/library/python",
+      "digest": "sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+      "runtime_version": "3.14.7"
+    },
+    {
+      "name": "golang",
+      "reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+      "repository": "docker.io/library/golang",
+      "digest": "sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+      "runtime_version": "1.26.9"
+    },
+    {
+      "name": "rust",
+      "reference": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+      "repository": "docker.io/library/rust",
+      "digest": "sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+      "runtime_version": "1.99.0"
+    }
+  ]
+}

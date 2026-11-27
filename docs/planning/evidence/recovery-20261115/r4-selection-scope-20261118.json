@@ -1,0 +1,857 @@
+{
+  "status": "IN_PROGRESS_SELECTION_SCOPE_BEFORE_APPLY",
+  "base_SHA": "1d4a64aa5ed856ba8859f647b0cb2bd7acc01d7a",
+  "base_tree": "c042bef717ff96623f8ead5747d5c705908c0819",
+  "responsibilities": "F6 exact38..47 plus144 diagnostics and148 observer descendant-drain hunks only",
+  "commits": [
+    {
+      "ordinal": "38",
+      "sha": "6a9be9e2b9dd5c92ad260039b931ce740d0ed12a"
+    },
+    {
+      "ordinal": "39",
+      "sha": "f25866953e97881804ec8c55258d7c0c548b66b1"
+    },
+    {
+      "ordinal": "40",
+      "sha": "7103cb97d7dd3b0fcf6f24f3377e659d718e540b"
+    },
+    {
+      "ordinal": "41",
+      "sha": "7cf8adc3723352dc94ddd559cd7ba3edecaf4261"
+    },
+    {
+      "ordinal": "42",
+      "sha": "93fd5a4c01bb6d27c3a3477586675958e60730a8"
+    },
+    {
+      "ordinal": "43",
+      "sha": "e51e5b0a760ffc56e7173d83b3fdafb95ffb0d32"
+    },
+    {
+      "ordinal": "44",
+      "sha": "44b5989934eb91d8c45ab1e9523d9a3e0e92de38"
+    },
+    {
+      "ordinal": "45",
+      "sha": "09fa67ca59e69f974a3674bec584f1fbc3f03b41"
+    },
+    {
+      "ordinal": "46",
+      "sha": "1e7b730add39cfd609d06980c72607ff461b6e58"
+    },
+    {
+      "ordinal": "47",
+      "sha": "7f4439aecf2b6eabe4d1db74a70f631281c7a50f"
+    },
+    {
+      "ordinal": "144",
+      "sha": "963872fbe03fafe018963b4e0410c1e228198662"
+    },
+    {
+      "ordinal": "148",
+      "sha": "8df85009e9b7381c26123acf7dd801d4ebe531a4"
+    }
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "before": "45e088a2d60516d449e3f9fa01ec09ac12b526f045a64286ded181a8f7bd7478",
+      "after": "a26f207b9a58fb522246e12ed357cebda596fc27f3b263ffc9dd69925f423452",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": ".github/workflows/heliopause-release-build.yml",
+      "before": "27e9ca25a508a3b91e46727215245c417497850f4ba21d0fa8fb382ec75a19fb",
+      "after": "322943c692f5be75968af9a838b002618b1408ee84228d47ba0c1202e8a57ba7",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "cmd/haa-sandbox-responder/main_linux.go",
+      "before": null,
+      "after": "471ecea1f4fae37fdb5d769eedf66123dad2b31d340570180384cc13f59ee19d",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "cmd/haa-sandbox-responder/main_linux_test.go",
+      "before": null,
+      "after": "212da2df6c053d6aef1b5cf84d1c3f76f839b81aee542d3b5a318bf0f4b3ee37",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "docs/planning/18-m13-production-release-operations-contract.md",
+      "before": "df71cc8edeeff0778c96590724b143fd29b06ce0b55e8c16e3351db74787095b",
+      "after": "b31c81595cc67812bbe3658d112689e9e9e2e1db8b78a1f5d1ac79afd162c9ac",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_pipx_data_unix_test.go",
+      "before": "02f2368a37708a2936f4ad870c50b508c652250ba48a3287cdec3988001fca61",
+      "after": "56942e9244aabed3da471dc908064ab89b2d0f9913968e662dd871993308eec2",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_integration_unix_test.go",
+      "before": "0e8a8f80de3434f90fb9f6b4cf62657721954581bfb0eb6fbd5e5e8b9e52a57f",
+      "after": "7305b74f9dd0bd38fcba8530db9ca96c1d8571f8ccf8514e9d383f17407d7a0a",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_unix.go",
+      "before": "59629886242ca499527841f73a6f9da5d12bef5bb30ae739ce64310d21a99444",
+      "after": "b066080c6e7be6eaa2cf77c9c2d86f0c5e59d0a0c965a586414f2444b9e8f355",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_unix_test.go",
+      "before": "d07fdf8c5f9b87498df1b4b280aff3dcc65c08ed7c5a5edb3548424df6e679b1",
+      "after": "0481f83f47f89bc986f829de05d5251b8067d5e79123f6becba600c9ef0d0559",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/bootstrap/cargo_build_cli_integration_test.go",
+      "before": "eb2b317e88c9d05f6aa85765060ed2059e10d47bc82bc2c97506ff421746d59f",
+      "after": "5874ddd410e3bbc70fd368453e31f1bb21bce62532d40eb804e384de3811bbb1",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/bootstrap/doctor_linux.go",
+      "before": "88c32a38ee5edeb3f538b4e6226ecb138a87066f7ddc1437423ed7029ea397b4",
+      "after": "c43563e7e397e792a0d495bdeeaa9416b732e9b081a5182848e6d206b08dab03",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/bootstrap/doctor_other.go",
+      "before": "3e8b8e62c453dc2f11954a2533d8d0560abbfe7560c80f5ccb879ca7ac2e09dc",
+      "after": "693ec2ac7e34f9c4f794c1e654d7f25c8e4b1bf9828c706bdd98f18d547b6b4b",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/bootstrap/node_execution_boundary_fixture_test.go",
+      "before": "d37768a3cc31b6c7fbba1dd84749b2c203534bfe89801f39ae7113d366b9b43e",
+      "after": "4ea735bd76036527e84f4a57437c349f291a6265617a0320dffc8c522f344399",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/bootstrap/npm_project_root_integration_test.go",
+      "before": "a59a0fd9f2338758eff12f4c376e4330bd7d421db20063a545ce710c442b0e7f",
+      "after": "4883df99da0019dbd182f6f0bce4d6e8bb264fa507b0cdc1e7889175f3bbc7a8",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/bootstrap/stimulus_corpus_integration_test.go",
+      "before": null,
+      "after": "d1df18868aadce88c87b83f52b755984d51c507322beef803e2d78c16356e8b9",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "internal/cli/presentation_catalog.go",
+      "before": "b3981cb7c676b18787395582d695403157773e732a84bc24016f37dbfc925d95",
+      "after": "d173b62114f59bcc34a1fb457e06bff25cd8fc12371a67dc04ecf64274ae44ba",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/hosttool/executor.go",
+      "before": "d8f99e322aaaf1c07345f89b4ced3388b97430935cdedbda6b2db9c6b78f32ad",
+      "after": "5dfa349d527d7ccd67b21fad37aebcecf7b71174a2ef6d23df1a01c15fcd69bf",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/githubrelease/dynamic.go",
+      "before": "e248859c114da93687a35289ec5cd234fcb6981ca30f72fafddef60d5793aaf4",
+      "after": "a4b3a829647bddc52b70b5513d3d9d2c1fc8f9ff08d51f0702e7d174e05c21f5",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/npm/dynamic.go",
+      "before": "bf87395e78d899025d98d58a53903f0282dae814ddfc50be11944d3d50aa799b",
+      "after": "a1ca36508b668084aa96c3f44d9e37f4f77090cba8ff4a6303d2b6209f705f2a",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/npm/dynamic_test.go",
+      "before": "30c28da585bf06fe97d428ac7a732842d59573d03b9adf1c76d6647c4204b044",
+      "after": "3c5589414736f602d4c741959c4114a95ef2f2cef00f4b989a638f6966890cbd",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/npm/npm_project_root.go",
+      "before": "792e923f11832e3c1313eb16bad8e20d9c25a6962eb1135492808b91824086cc",
+      "after": "256d6a970a60b29b3c4a9464a74c406458d51ef89fab2063b276f01b6e18c286",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_dynamic.go",
+      "before": "212addd3295f5ef31adfb2a2314d6be1d7cfc57cc75b6b10decfdca11b7007dd",
+      "after": "f8c84fc6ca75c226fe4046e2b458a792193d0198e5bd855f5dd4302194a0ab61",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/projectbuild/build.go",
+      "before": "41e600815f63d5534514ffaa2febbeb245c6789e49ae3d166c1affacdb3a03a0",
+      "after": "f729a41d40968761eda4255805a03d788e2c8f201724e2db4b6133d730823877",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/pypi/dynamic.go",
+      "before": "f54bf08f86cca38dc9f3c068d2071c13f81c7397595f8af633a0984312dcff29",
+      "after": "fa8b64f655427b41430c19ba157686be2e98ae7610c95beef9ca9a5b5d31f091",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/pypi/dynamic_test.go",
+      "before": "7fd6a05211e2b0af3f7e3efa33c9eecb8eb03eb4db625d38c7650886589a2566",
+      "after": "921288db251da308a5e9dceb5cb023207575a27171ef774248d89cd2801b9552",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/inspection/terraformprovider/inspection.go",
+      "before": "96a26328b37bfb0d45dec44f173901e2d8412850a7545ffa8764f63c99bb1ab6",
+      "after": "e2aaf416321d63a5efb3eeaff14d6d96e90735d7f6197dbaaf37c36c78cb64f2",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/releaseactivation/wire_linux.go",
+      "before": "ed1da22e8f3e79a4744cad035b4e36c443db72881a13744f338764f9c0b03855",
+      "after": "3d24553085ddd0118400361b833ea6354dcf8e905f072d5d24bac55385e05ae0",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/releaseinstall/installer.go",
+      "before": "13766fb01c70ff7cde95ccabef099ed1d0c0954ae37b53104ea5b6814e5f35e5",
+      "after": "aadd4768df0a4bdf5a0f69b0d9ebe45254acd4135b125f2d7a1cde59581f685b",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/releaseinstall/installer_test.go",
+      "before": "591962a4fe12dc57572f1ed1e5fd0e73502eb4df1653ff0ce56ddf3449a17083",
+      "after": "ca253037b80eddd6edc1f28c9a85f649247ddc03965d9aaaacbcb7c23e34e1b1",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/releaseinstall/manifest.go",
+      "before": "3ddccb0285bf74b20d13291563d2aa09a7e4382ab2438b42a7588b25ba2a5d7a",
+      "after": "682809a95f670dfd687582983be346498112e71a9ed1d3a762e166fddd719ba5",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/releaseinstall/manifest_test.go",
+      "before": "0aa15086935ca1a89bbfb6208302919ab9c4eeeb6f7571a54123b93e2ae941b0",
+      "after": "474442b415db00381147d9366c9f3719b9fde1c1e84d7a95a23888b5e494c48f",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/releaseinstall/metadata.go",
+      "before": "1c425021ce29ab665a107be19070f3b8e3b3dffc89af1fadfe02b3dfe2fa0cfb",
+      "after": "a260854ae025e6d980f7aa2e6eb52993bae6fb5beca2f0af360da40f7f7f7350",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/runtimeidentity/native_paths.go",
+      "before": "4480760b60f3910402904378a35f8ac62ce7c5c4baeb2fb0c2fb82d4eb33f906",
+      "after": "a4f893729f0e839cf2aa434c17573509136ca31f92931f8127a15a9a4e7ff8e1",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/backend.go",
+      "before": "c3501a4add10b1173172c5ccb86c1df121a30f8c835cb73a481c3a68b0455e83",
+      "after": "402cbc7922db935d2388592c284c74452b5fc681ad1cc319ee09d63e52c68e13",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/boundary_helper.go",
+      "before": "2449894e0a34d6475a8b29e85cb3d1067dbb2de88789c1cbac72a3fb98de5739",
+      "after": "ae7cf9bbb45d99786e86be0bd18492876889572a019aad8dcc7358f11dc3b5b1",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/bun_artifact_runtime_test.go",
+      "before": "05da9d216fb1d6d51dc9ae6675a7d39cda865a588ddb5bd4dddd9d5d99a187ae",
+      "after": "7606d93ba78014445ecdbf7b24234acbf3d9669cba6c302af29a2358854ded58",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/bun_instance_backend_test.go",
+      "before": "ae07f53f71d396a04b0f48f5708587d5217f574625e93367e9e0e1b458b1c194",
+      "after": "8192c43d06119e25e4be6d1af70470dd1be9a5f13a812f910d6d1ed13041afe9",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/cargo_observed_build.go",
+      "before": "3bca3abd16a0948edfcb62276be25379da0f798119c1c997ee5de2d929c42386",
+      "after": "8911e17dc97646598c215afcfe2e58ee4b2a418ff12a3bf1cecb4f391c6f1139",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/direct_exec_admission.go",
+      "before": "3be340729b5fdd002ab5ee7321c917209621f82684e3cfe768b323f341d0d8db",
+      "after": "469285c99f1bacba48c8e7fc27614b33ce9460bd9c92ed8c30359354ea1c917c",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/direct_exec_admission_test.go",
+      "before": "97c14ce151289e6b6cc85bc3d9fb742d99d66b909a3e2c7a5d347e340047fe9b",
+      "after": "50c87240336c4fa9de941f9f448ae2177a4debf6d56018e8deb9bc08fa34c6ef",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/environment.go",
+      "before": "cee3c69fe8f39fe2e6ae82e6667f0c7d89452a9a0d03b0ab89a76608f291e92b",
+      "after": "6774535fa76bbdcf90b6b77f5a30b8808099529ae94a4ca34abd80487eb288c3",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/environment_build.go",
+      "before": "0214359a9fabbec1a30d3806bf8e7c16bcdd2a76074be55f6103ece03b38bb89",
+      "after": "b4562e5bd6980baa0bae3e180615ebea747abd0d61c1efd0287242ad29e369ef",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/environment_elf.go",
+      "before": "6d9a38ccc17e8602b6ebe5200e4be3a721c70d208ae4fc27e46d937dd0891fb6",
+      "after": "25d23ecfacdd9433fb2c4b54189498c9d12e2eea02699cbb82e2497b65312734",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/environment_runtime.go",
+      "before": "04d1e3412c754e53f206b7f8c75b21b88c9d4aa5cbde4e72b67ca667434ea3b8",
+      "after": "d374399b9aa75f39700eecec70f8d26089c91f13f58ec4952ce7b9250d0bd816",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/environment_runtime_test.go",
+      "before": "afae294675cef69755c7d87d896cfb4ef1b1da382950f0ca912bcbeb5676c1b4",
+      "after": "1cde896145667eb14892b928365f0551380ca5b6e54ff70ff65fba79987e36ac",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/environment_test.go",
+      "before": "31840d2e4b859ec8846842a66efc2c5de6deacd2adae18fac94edc7989c3e286",
+      "after": "5f7038ef7bd52f6b22017f9c99a8bf943192f0d365888441601d97b44668aa81",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/github_elf.go",
+      "before": "0b0f6ddfd969e8a63a3224e9b6e81b60d7789c34c1b5729dfcd6409e5055103b",
+      "after": "7e1469c73c8b995642ea39c08b6e6eec6cea768c37129364ef07a79bc970ea44",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/github_release_integration_linux_test.go",
+      "before": "45138aac4784003ce8258fc15cd1751f75e38fb627153d97949be03196a1b66e",
+      "after": "9205f63fcb993c0ec18e86bd22e51af22a440298f8a46c4c7a064546d3a6d9a8",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/gomodule_observed_build.go",
+      "before": "cf85ec73e110adb9b09bbe6d6ebb37c96e7dd5131ee67303e0f1e726075021bb",
+      "after": "ba248c07ad70c6b59df86b1e19ab2dcfea108c3a62f4f8b371e8f0ef7e2548b8",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/linux_integration_test.go",
+      "before": "1925677fdb0f37a3ef13a3d1d93204d473d22041987b29a3e2c14b540393fe52",
+      "after": "acd0b47661d99ae5d5cf35143c60380f212fd2d0a1598731020377ff35126b53",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/native_installed_tool.go",
+      "before": "6234877a4916ec758b4e72408335671bb1db92a3a3e8116d9db8afa99fcd3d54",
+      "after": "e1fe95fda0b5ae668ba6775a45b81932f0a57959eeb1037dd6081768a723aaf7",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/native_tool_transport.go",
+      "before": "6312e07242e372d2a9a16fb4e9e15b9859047090fc91b413d5ef19a0fbbc6e4a",
+      "after": "31428fcf7f503c2d3943a6c3bc58d1a3fc76a87c00258a65ee6ab6079c978ced",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/npm_environment_integration_linux_test.go",
+      "before": "7d31f62ca09e6e1fd09e2b88fb0f0acbd48d87878d6d77b41766bf217c82b622",
+      "after": "5f05824da93a68557a93b662d3b4dec887da35d22d4462a054302bd26e4bd471",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/observation_resource_integration_linux_test.go",
+      "before": "05f9d9d483d6f5beeed1016902b1d1eadf2ba84a120faf880763647b811340d7",
+      "after": "6d52f997ec45332448f64924a9783105fe7240300ce901cda468c6c16abd49ee",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend.go",
+      "before": "25406c9df3d3ffbb4d211dcf6cfcec86682a3d81975f707ccdf31fa841fc32c6",
+      "after": "6e26213dfc01ca34b68d9b0577f10e445f7df45b7b22a4c8d23d2a0df821b539",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend_real_test.go",
+      "before": "27547f3e216d8ac14cc0ca94920b638091983d01d905d51e90211ef499b1fcf4",
+      "after": "82bac3933fcffb2c9574883a0233296faa8b889b79d9b6f9938d6fc51d72d489",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend_test.go",
+      "before": "b3e013fdff7ba6f3250426a1c002d20e5247c4b31d808f5e13b3ab3aaa53b90a",
+      "after": "188f87dc78cebb82410d18643f19975e3e2e67c75a275efb20338445a16969d6",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/pypi_dynamic.go",
+      "before": "a3c38dbeee4d21914404a93a1681a39cede4a44e64768af1d89783e315af9fd6",
+      "after": "d3adc821d8c688e075d23aa7abc150f641f9c8277437ade4cd0d88ae6a9cee3e",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/pypi_environment.go",
+      "before": "9ebb6dcd07afa2be381e0112a5579601658d90b0f492d6827663870a9305cf26",
+      "after": "0979f18817c9d9cb01b3766d1713b845c13c330ac7b691246960b835a1943d0f",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "before": "457aae30e18bdd4ea0ab13815ab54e9d194c00e6baf672cc9f95f9fd5b56cb76",
+      "after": "fe2818d7b8742b7d2ed5d9cb032f320c6ed28be19ea42bee99fa8178392fee74",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/sandbox/responder.go",
+      "before": null,
+      "after": "ad73d3f251166a0fe17eea5facf37fa24de854b5a806d0c33e09ba6c9f323ae3",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "internal/sandbox/responder_integration_linux_test.go",
+      "before": null,
+      "after": "ed98102f4457988b43f2a88ec955a8cfee7d53d0d3d475abf1e46ffee1fb4102",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "internal/sandbox/responder_test.go",
+      "before": null,
+      "after": "ec445ebd086c6ed49df3b18126e2a3efb56600d73b17dbe6f346ddfe13316ce2",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "before": "6cb58e05faf0bffe84fc45e10847c5b4be864fd96d04ff2e6acfaa2d70c99644",
+      "after": "c9ba40f1ecfee12e17f5d6b02237d71bfec25a2be48e025882ad6bcfa6d49e5e",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "internal/testutil/releasefixture/runtime.go",
+      "before": "7a09af647ab7c22f93288997c956830c7f04b835560bdd2873c4f03aa1e8e1b3",
+      "after": "b5af7a84d05a5404fd0cbaef860fe1b47a9a659a23e48b412cc696a6e7d88fa1",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow.go",
+      "before": "43f5dfe1836f6a5a2a10196bd72ed697f5c6eea4c64235e258a3ade67351391a",
+      "after": "8868afebf62730091d7dce0b78707bcd51d045de4feae080bfd3865d6fd91c6a",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow_test.go",
+      "before": "9987fb31fecf4fd9aa8c80459aca0a64e9023e6afd1915818c5193ea1decbec1",
+      "after": "31a9bf3595969bdb42d00704eb94a4a1577a8e1a284cac08b149ec47343f044e",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/pipx_tools_workflow.go",
+      "before": "706507c4dcfbef2d4c18ae6892ef10beffb5c4bb0e97309fa64b8b0d092522e0",
+      "after": "9da76484a26b7ce86d237755b33ac5ee88d938ac99d044c8c9dc8d750e6be97d",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/pipx_tools_workflow_test.go",
+      "before": "ee5c0c252de4886c78414628a789ba50c6115328858de8651833855f11c6316b",
+      "after": "0ceb8221a1942f13d4a8520ca2411ece8ad8d5d37f790654eb2722638a0b0fb3",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "before": "92e120a7cb5ecbe5c0eccfa4861f4261cb93a180bc6c9c2f4b3cf5dde9c0327d",
+      "after": "5cc4d1292b73c564091e5d7ef6a926567bd45c5818962c9e704cc85234c9bc9f",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "before": "4228d414846f0fafd8ff645b860ae98830bc09aa4e87e90f032e152fbb466553",
+      "after": "a4716128022165847e70768477911b64646fda0e6c8a66248a489bfaa658b28c",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/responder_source_workflow.go",
+      "before": null,
+      "after": "25ea66a91dd7ff29f0011970d2259567b050e918f97f3bdb8fb9d13159b12266",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "scripts/check/responder_source_workflow_test.go",
+      "before": null,
+      "after": "05170e803c7a57b52c44ec48cee53f8de260910eecffd7716d2719a515b3bf18",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "before": "b5f1583bfe6f22db6e2c087f22101978eb7484dab476461cc2ef52c22f003c84",
+      "after": "f849de27c803fd56b09d10564ba5a74f202d3fa9b9b339449314462c212d291c",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "before": "856a2796b11f449440fb5766506f917a10e767609201f4000bd9818880efc2ec",
+      "after": "86e4f7ebdca427ceb7ed9cc32f83c39d24ef9a7da2d29988d759ba217bb841d5",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "before": "07a13e005ae8baf8fe7156e59121c21a1e9d5d2c2f9d637f99b634109997d4e7",
+      "after": "e03533717001a3d99ed029f57e220be43c2c09f231e7fa7cc3aac118e2f77d7f",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/ci-bun-runtime.sh",
+      "before": "6519f9d0bd7dc3ba4ad531d79cdb9d4444ed15ee11fc3a15008c8016dfa74fa8",
+      "after": "8bf6e85754c2dadb1fba78d83ea2a278dc8ba55777ff6be4dbbe9f8c3bf80188",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/ci-npm-project.sh",
+      "before": "32ef34caecf3c883c24ae00d95693958a72d899ceb064214cadbf198a7bda928",
+      "after": "630d042a39f607b76a1d55e193adae369b8240f9cc6654bb10a7e7d1e8883a43",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/ci-pipx-tools.sh",
+      "before": "fe1b2acb57b0a69206e7e58a9a1cf9bb335e9046ae79a85cd367587d0bd0112d",
+      "after": "104b9b1545c03e45fea7ce410e41250e248a0d227d09da98cc92126e8b443b67",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "before": "b282e9f252c5853a9ec55f3e2a0bedc00ff6c15e3cd84853c1b66bc6cf20ec6f",
+      "after": "0c2b93301d81b2991d636c6cabf7fb9bff30bb674ebabbf4f22991f36f742de3",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/ci-responder-source.sh",
+      "before": null,
+      "after": "181186a5acfecbd9d6a47065ba1f7e8578728eff99145884fcb3dfcf4f0b52a0",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "scripts/ci-stimulus-corpus.sh",
+      "before": null,
+      "after": "d767f2a32200bc63e08579bfdc0657ae44030c32038bbd9a00abb9602ae2f9b3",
+      "mode": 420,
+      "new": true
+    },
+    {
+      "path": "scripts/release-manifest/bundle_test.go",
+      "before": "c3f8a8fd1c104cc503fbf0d299e1fdbce4747b47e7a10b13082580922eb134ae",
+      "after": "8af7fb8e1d820ab926e030ec22b11e69e83595c9df02309b069159d0b32ce42f",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "before": "949dd35b93bd18541984a04503953105cf5660fc6d848241d8fe5f3d6f7c15e1",
+      "after": "c0068c137aa65ec8c267c225d55297c6ad1655822561f672a847999beeae8ad6",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "before": "5a871f5a2ee2e60150790b1328927004fb0d90534bae39300707b91ec22d513a",
+      "after": "7df240c72c469709ed98561eeacb08f8485b191c27de0e1cac0f8334d7451791",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/release-manifest/pipx_data_realcorpus_test.go",
+      "before": "7f431c2e0a15ba43f85f40a1768661264da711f9de1d8f5f7da150543caaabd5",
+      "after": "33e2eddf66a92ce55b214e47e81d5c059e12806dd331d0b70abb77facf13059c",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/release-packages/main.go",
+      "before": "99edc0ecd90924ffb1cc5d33c83c06a4502868d0af261c916e4340e3a6d41bc7",
+      "after": "82e3d72b0b54498749baf5f3538337b6b7e001ef130f0caa57566114b5558f63",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "scripts/release-packages/main_test.go",
+      "before": "7efa80c1bce8a9eefcd8627e7fb70beaa64a8b04fb316c2b8595b54b8c212de2",
+      "after": "48ac01b01da0db5c3cad27a78113909efcbc40cae68c2bae3c742211df4d10af",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "before": "adaced3dcfab3737ac3ade43807f2bf50c99228b77e058788af12c01b9804c42",
+      "after": "035ac63831cece2708a4b48a867af10036a1d65d8048f081f02e2db5cdff2c56",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "before": "206e0e17a105f375f9e001850206debf03a57135f7bd40cde0f14e0921ef05a5",
+      "after": "e08cc92f8712586ba369ddd9c80a53a872d9a001e51c29737223e8403d0d53fc",
+      "mode": 420,
+      "new": false
+    },
+    {
+      "path": "tools/gvisor-observer/pod-init.json",
+      "before": "9a5c32539e6129d55c4fa1ce8f242b5c8e2b41a8f7b4e980afb35f902e74d058",
+      "after": "a6c358ea33bb5e8718baec39d54bee3b7465c2b78812ab4ec0e0f1bb9b2aaa0c",
+      "mode": 420,
+      "new": false
+    }
+  ],
+  "intended_added": [
+    "cmd/haa-sandbox-responder\tconst\tmaximumBody",
+    "cmd/haa-sandbox-responder\tconst\tmaximumBytes",
+    "cmd/haa-sandbox-responder\tconst\tmaximumLifetime",
+    "cmd/haa-sandbox-responder\tconst\tmaximumRequests",
+    "cmd/haa-sandbox-responder\tconst\tprobeBody",
+    "cmd/haa-sandbox-responder\tfunc\tallowedName",
+    "cmd/haa-sandbox-responder\tfunc\tdnsResponse",
+    "cmd/haa-sandbox-responder\tfunc\tmain",
+    "cmd/haa-sandbox-responder\tfunc\tserve",
+    "cmd/haa-sandbox-responder\tmethod\tresponder.charge",
+    "cmd/haa-sandbox-responder\tmethod\tresponder.httpResponse",
+    "cmd/haa-sandbox-responder\ttest-func\tFuzzDNSResponseBounded",
+    "cmd/haa-sandbox-responder\ttest-func\tTestDNSFixedResponsesAndMalformedInput",
+    "cmd/haa-sandbox-responder\ttest-func\tTestHTTPFixedStateAndLimits",
+    "cmd/haa-sandbox-responder\ttest-func\tTestResponderTransportAndControl",
+    "cmd/haa-sandbox-responder\ttest-func\tTestSharedProtocolBudget",
+    "cmd/haa-sandbox-responder\ttest-func\tdnsQuestion",
+    "cmd/haa-sandbox-responder\ttype\tresponder",
+    "internal/artifact/githubrelease\ttest-func\tTestHeliopausePipxDataGraphIncludesCurrentExactSubjects",
+    "internal/artifact/githubrelease\ttest-func\tTestHeliopauseSetFreezesCurrentMembersAndCleansOnlyOwnedAcquisitions",
+    "internal/bootstrap\ttest-func\tTestLinuxCargoSyntheticNetworkEnvironmentCLIIntegration",
+    "internal/bootstrap\ttest-func\tTestLinuxStimulusNodeEntryCorpusIntegration",
+    "internal/bootstrap\ttest-func\tTestLinuxStimulusNodePolicyCorpusIntegration",
+    "internal/bootstrap\ttest-func\tTestLinuxStimulusPythonEntryCorpusIntegration",
+    "internal/bootstrap\ttest-func\tTestLinuxStimulusPythonPolicyCorpusIntegration",
+    "internal/bootstrap\ttest-func\tnodeBoundaryFixtureSource",
+    "internal/bootstrap\ttest-func\treadConditionalCargoBuildObservation",
+    "internal/bootstrap\ttest-method\tstimulusSandboxCause.Execute",
+    "internal/bootstrap\ttest-type\tstimulusSandboxCause",
+    "internal/hosttool\tmethod\tExecutor.StartContainerInputOutput",
+    "internal/releaseinstall\tmethod\tReleaseManifest.HasSandboxResponder",
+    "internal/releaseinstall\ttest-func\tTestResponderIsCopiedAndDoctorRejectsMissingOrChangedBytes",
+    "internal/releaseinstall\ttest-func\tTestResponderManifestPreservesHistoryAndBindsCurrentNativeRole",
+    "internal/runtimeidentity\tconst\tSandboxResponderAssetName",
+    "internal/runtimeidentity\tconst\tSandboxResponderInspectionIdentity",
+    "internal/runtimeidentity\tconst\tSandboxResponderMaxBytes",
+    "internal/sandbox\tconst\tenvironmentResolverInspectTemplate",
+    "internal/sandbox\tconst\tnativeRuntimeResponder",
+    "internal/sandbox\tconst\tresponderGuestPath",
+    "internal/sandbox\tconst\tresponderGuestRoot",
+    "internal/sandbox\tconst\tresponderSupplyCapacity",
+    "internal/sandbox\tconst\tresponderSupplyLabel",
+    "internal/sandbox\tconst\tresponderToolName",
+    "internal/sandbox\tfunc\tCheckResponderSource",
+    "internal/sandbox\tfunc\tawaitLifecycleDescendants",
+    "internal/sandbox\tfunc\tawaitObservedProcessDrain",
+    "internal/sandbox\tfunc\tenvironmentResolverArguments",
+    "internal/sandbox\tfunc\tobservedDrainRequired",
+    "internal/sandbox\tfunc\tprepareResponderSupply",
+    "internal/sandbox\tfunc\tresponderContainerCommand",
+    "internal/sandbox\tfunc\tstartResponderInit",
+    "internal/sandbox\tfunc\tvalidResponderImage",
+    "internal/sandbox\tfunc\tverifyEnvironmentResolver",
+    "internal/sandbox\tfunc\tverifyEnvironmentResolverArchive",
+    "internal/sandbox\tmethod\tadmissionAwareCommandRunner.StartContainerInputOutput",
+    "internal/sandbox\tmethod\tinspectionResponder.Write",
+    "internal/sandbox\tmethod\tinspectionResponder.stop",
+    "internal/sandbox\tmethod\tinspectionResponder.waitAfterTermination",
+    "internal/sandbox\tmethod\tresponderSupply.close",
+    "internal/sandbox\tmethod\tresponderSupply.containerArguments",
+    "internal/sandbox\tmethod\tresponderSupply.expectedTopology",
+    "internal/sandbox\tmethod\tresponderSupply.mountArgument",
+    "internal/sandbox\tmethod\tresponderSupply.verify",
+    "internal/sandbox\tmethod\tresponderSupply.verifyReader",
+    "internal/sandbox\tmethod\tresponderSupply.verifyStager",
+    "internal/sandbox\ttest-func\tTestCIResponderSourceIntegration",
+    "internal/sandbox\ttest-func\tTestEnvironmentFixtureBindsResponderAndResolverConfiguration",
+    "internal/sandbox\ttest-func\tTestEnvironmentResolverRejectsAmbientOrWritableConfiguration",
+    "internal/sandbox\ttest-func\tTestLinuxGVisorDefaultResolverEnvironmentIntegration",
+    "internal/sandbox\ttest-func\tTestLinuxGVisorSyntheticNetworkEnvironmentIntegration",
+    "internal/sandbox\ttest-func\tTestLinuxPythonSyntheticNetworkEnvironmentIntegration",
+    "internal/sandbox\ttest-func\tTestLinuxResponderReleaseProbeIntegration",
+    "internal/sandbox\ttest-func\tTestLoopbackResponderDATAIntegration",
+    "internal/sandbox\ttest-func\tTestNPMResponderFailureAndCancellationCannotCompleteOrLeak",
+    "internal/sandbox\ttest-func\tTestObservedProcessDrainUsesOnlyObserverExitLedger",
+    "internal/sandbox\ttest-func\tTestResponderBootstrapPreservesArtifactDemotion",
+    "internal/sandbox\ttest-func\tTestResponderContainerRejectsChangedBootstrapWithoutMutatingInput",
+    "internal/sandbox\ttest-func\tTestResponderControllerCancellationClosesPipe",
+    "internal/sandbox\ttest-func\tTestResponderControllerRejectsForgedAndUnboundedFrames",
+    "internal/sandbox\ttest-func\tTestResponderControllerRequiresStopAndIndependentTermination",
+    "internal/sandbox\ttest-func\tTestResponderControllerTrailingFrameFaultCannotBecomeCompletion",
+    "internal/sandbox\ttest-func\tTestResponderRoleDATAIntegration",
+    "internal/sandbox\ttest-func\tTestResponderSourceMetadataRefusesForeignCodeAndPins",
+    "internal/sandbox\ttest-func\tTestResponderSupplyDATAIntegration",
+    "internal/sandbox\ttest-func\tintegrationResponderSupply",
+    "internal/sandbox\ttest-func\trunLinuxGitHubReleaseELFDynamicIntegration",
+    "internal/sandbox\ttest-method\tenvironmentBackendModel.StartContainerInputOutput",
+    "internal/sandbox\ttest-method\tenvironmentBackendModel.prepareResponder",
+    "internal/sandbox\ttest-method\tintegrationRunner.StartContainerInputOutput",
+    "internal/sandbox\ttest-method\tresponderControllerModel.Output",
+    "internal/sandbox\ttest-method\tresponderControllerModel.StartContainerInputOutput",
+    "internal/sandbox\ttest-type\tresponderControllerModel",
+    "internal/sandbox\ttype\tinspectionResponder",
+    "internal/sandbox\ttype\tresponderSupply",
+    "internal/sandbox\tvar\terrResponderSupply",
+    "scripts/check\tconst\tciResponderBuild",
+    "scripts/check\tfunc\tvalidateResponderSourceOrder",
+    "scripts/check\ttest-func\tTestResponderReleaseRequiresActiveBuildAndManifestBinding",
+    "scripts/check\ttest-func\tTestResponderSourceRequiresCurrentBuildAndEarlyPreparation",
+    "scripts/check\ttest-func\tTestResponderSourceShellPreservesForeignStateAndRejectsUnknownQueries",
+    "scripts/release-manifest\ttest-func\tTestResponderReleaseRefusesForeignOrOversizedProgram"
+  ],
+  "intended_removed": [
+    "internal/artifact/githubrelease\ttest-func\tTestHeliopausePipxDataGraphIncludesThirteenExactSubjects",
+    "internal/artifact/githubrelease\ttest-func\tTestHeliopauseSetFreezesElevenMembersAndCleansOnlyOwnedAcquisitions"
+  ],
+  "conflict_resolution": {
+    "release_count": "45=prior40+one new native member five evidence; checks31/native7/fullmembers12 match exact7cf8adc",
+    "Linux_test": "preserve approved OS file split; reuse exact F6 helper/probe in existing _linux_test.go, remove duplicate generic-file body",
+    "intervening_changes": "144/148 ONLY their exact parent-to-commit hunks, never later whole snapshots"
+  },
+  "U1_adopted": false,
+  "D3_approval": "REVISE / OPEN; no lease/flock/Pdeathsig/owner-label additions",
+  "prior_R3_tests": {
+    "pnpm_seconds": 277.583,
+    "bun_seconds": 304.698,
+    "mandatory_full_seconds": 812.737
+  },
+  "verification": {
+    "local": "mandatory rebuild-step --full, canonical workflow/security, actual normal/refusal/drain/controller regression; fixed offline SDK1.27.4 CPU2/RSS4GiB/private4GiB/group30m",
+    "runtime": "gVisor patch/lock exact existingR3 bytes reused; changed CPP observer rebuilt and full latch; changed responder canonical static stripped build; source-bound CLI/helper/test binaries",
+    "actual": "prior bounded10path/14restore authority retained; originalcurrent3 responder NOT overwritten. New exact responder supply/restore scope proposed before Host use; source/input missing => no download",
+    "K": "impact-based; affected native normal/refusal required; Required/CPU/CUDA3/largeGo/finalR8 OPEN"
+  },
+  "Host_changed": false,
+  "CI": false,
+  "private_evidence": "/tmp/haa-r4-existing-coai78y_",
+  "followup_P2": {
+    "scope": {
+      "status": "SCOPED_REVIEW_P2_CORRECTION_BEFORE_APPLY",
+      "cause": "original148 caller loses prior drainErr only if subsequent terminatePhase also fails; static confirmed, INCOMPLETE/Policy unchanged; unrelated to race disk stop",
+      "reuse": "existing pythonCleanupFailure and existing diagnostic/control/termination test owners; no new function/framework/model",
+      "verification": "existing UNKNOWN observer transport + fake termination failure + shared result/causes owner, human caller binding; not full Python transaction pipeline",
+      "paths": [
+        "internal/sandbox/pypi_trusted_transaction.go",
+        "internal/sandbox/pypi_transaction_diagnostic_test.go"
+      ],
+      "added_declarations": 0,
+      "removed_declarations": 0,
+      "source_before": "71df0e3cfb93e793cdf45f96eb46263dff8f1a65"
+    },
+    "after": [
+      {
+        "path": "internal/sandbox/pypi_trusted_transaction.go",
+        "sha256": "906e6e1916a5ea2e4b7ae531b10d437df05fee624d91c03b996665a6c2ea3963"
+      },
+      {
+        "path": "internal/sandbox/pypi_transaction_diagnostic_test.go",
+        "sha256": "e2a9fd4e737b08dcec4ff207c5a6a6054dbd5a6c2bd4b5d99fd4f0afdaf1e77a"
+      }
+    ],
+    "preservation": {
+      "status": "PRESERVATION_AND_ACTUAL_RESTORE_PASS",
+      "destination": "/home/winamp/haa-preserve-20261115/increments/20261118T034947.258484Z-r4-independent-python-first-cause-before",
+      "manifest_sha256": "88d8f62a1f4e1de929316e4689e8a27a66c302b26e8e9586655410510857a8bb",
+      "files": 6
+    },
+    "diagnostic_test_is_new_path_in_delta": true,
+    "code_paths_now": 92,
+    "existing_full71df": "PASS614.459s before narrow diagnostic fix, not final candidate qualification"
+  }
+}

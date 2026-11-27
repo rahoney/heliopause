@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D4B2+B3+B4 grouped native source/query/console hosted checkpoint",
+  "run_id": 40925338534,
+  "run_number": 435,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40925338534",
+  "source": "b0f4cbc3c0fbead822e4614093f48472d3ba6c85",
+  "source_tree": "eebd72a1dec35ca8240588c79488c4d2f7047050",
+  "tracked": 3097,
+  "runtime": 1379,
+  "normal_FF_from": "d81c444a34afa385053ff139fbb44c276dee7153",
+  "remote_ref_confirmed": true,
+  "active_branch_runs_before_push": {
+    "queued": 0,
+    "in_progress": 0,
+    "waiting": 0,
+    "requested": 0,
+    "pending": 0
+  },
+  "status": "in_progress",
+  "conclusion": null,
+  "started_at": "2026-10-29T17:51:42Z",
+  "monitor_session": 13791,
+  "monitor_pid": 3398839,
+  "monitor_state": "/tmp/haa-ci435-autopoll/state.json",
+  "first_due_at": "2026-10-29T18:11:42+00:00",
+  "first_due_KST": "2026-10-30 03:11:42 KST",
+  "poll_interval_minutes": 20,
+  "monitor_mode": "actual public unauthenticated GET run/jobs at each due, preserve originals/register next before model analysis; completion naturally stops worker",
+  "immediate_public_probe": {
+    "result": "KNOWN",
+    "public_unauthenticated_GET": true,
+    "run_id": 40925338534,
+    "source": "b0f4cbc3c0fbead822e4614093f48472d3ba6c85",
+    "status": "in_progress",
+    "conclusion": null,
+    "queried_at": "2026-10-29T17:53:00.981319+00:00",
+    "jobs": 9,
+    "originals": [
+      {
+        "path": "/tmp/haa-ci435-public-probe/run.json",
+        "bytes": 13059,
+        "sha256": "007c51cb934e4a2d1fd0ff2842ee1c83c17478745fa4de3c3660d70b273a47cc"
+      },
+      {
+        "path": "/tmp/haa-ci435-public-probe/jobs.json",
+        "bytes": 17288,
+        "sha256": "14e18fe2638941702badf514279ff2048534d587242f34ec22ac0c71fca7fa6d"
+      }
+    ]
+  },
+  "estimated_total_minutes": 108,
+  "estimate_basis": "CI434 server6438s/107m18s plus new native public2 local approximately55s; queue/runner variation unknown; Linux120min unchanged",
+  "qualification": "PENDING actual all10/Required/source checkout/tree/full logs",
+  "scope": "D3-E2 corrected read ABI/D4A whole pre-query source/B2 fixed exported cache query+CPP132/UV195/B3 source-console DATA/B4 two hosted native public parents; existing104 consumers preserved/expected106. Policy/selected program in native DATA tests remain NOT_RUN.",
+  "open": [
+    "new-source hosted/native macOS and exact two native parents",
+    "production UVx request/closure resolver and existing current runtime adapter",
+    "generic native equivalence/aliases/CLI/final CPU/three CUDA/signed support",
+    "CI434 macOS120s cause and prior CPU/drop/fork-only direct causes unconfirmed"
+  ],
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-ci435-autopoll.py",
+      "bytes": 4009,
+      "sha256": "6d9b0f1e96bc23d675be2b817b7d40f1eb5b70b1602f14747f5ba161f9108ab6"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-ci435-autopoll-registration.json",
+      "bytes": 175,
+      "sha256": "b3dbb936d943d8cc2e509dc0c50a5533d2993e0a508c70641d13873a40cee9a4"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-ci435-public-probe.py",
+      "bytes": 1647,
+      "sha256": "6db8c5f47c145a7bd07e775e0515c5c91e4c6ab90953936cbe588fb4f20eefc7"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-ci435-push.py",
+      "bytes": 2526,
+      "sha256": "3aebf7f9314a258831d8146db92e86ced384f0c93ca4b92b869ad68de8e0c1d2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-ci435-prepush-proof.json",
+      "bytes": 464,
+      "sha256": "77f70c9f3402e56ba18c39eb97f73fd850e1b5be727e260029d8a20559c5bf16"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-ci435-push.log",
+      "bytes": 111,
+      "sha256": "7812b511b279d65df01c5fa4ab430ac628611e52a7f6b65473f682663180db6c"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-ci435-push-result.json",
+      "bytes": 436,
+      "sha256": "567d7bb5fd724feaecd84d09f888320833f2a929e30de2377c0c0448334538ef"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-final-commit.json",
+      "bytes": 811,
+      "sha256": "1b2eca7d7d1474f5788ba06e57abe1a864f8ebf72e0c3aa4bbf98d2bfa80538a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b4-commit.py",
+      "bytes": 2472,
+      "sha256": "f21973ee1f026a6402bba32d5b560932477b68ece36bf9ec3886e6423f7ebcbb"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/ci435-public-probe-run.json",
+      "bytes": 13059,
+      "sha256": "007c51cb934e4a2d1fd0ff2842ee1c83c17478745fa4de3c3660d70b273a47cc"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/ci435-public-probe-jobs.json",
+      "bytes": 17288,
+      "sha256": "14e18fe2638941702badf514279ff2048534d587242f34ec22ac0c71fca7fa6d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/ci435-public-probe-result.json",
+      "bytes": 623,
+      "sha256": "573fb8f93d2256abd02eeba653fb591598ab77a20c1e6c6f7eb587c950756bd0"
+    }
+  ]
+}

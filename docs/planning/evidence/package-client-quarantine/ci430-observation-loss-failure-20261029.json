@@ -1,0 +1,121 @@
+{
+  "work_item": "M13-004",
+  "run_number": 430,
+  "run_id": 40816740622,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40816740622",
+  "status": "COMPLETED_FAILURE / NOT_QUALIFIED",
+  "source": "3c85d8271e2002f6e5cc5df89fd20145d72be719",
+  "source_tree": "82c911ab09da6f3bb1054630cc4059b67e25da5e",
+  "tracked_files": 3019,
+  "runtime_inputs": 1351,
+  "actual_checkout": {
+    "sha": "a84ae161db35ee54f54cad9cbef3733477467ed5",
+    "tree": "82c911ab09da6f3bb1054630cc4059b67e25da5e",
+    "parents": [
+      "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+      "3c85d8271e2002f6e5cc5df89fd20145d72be719"
+    ]
+  },
+  "all10_same_whole_source_tree": true,
+  "started_at": "2026-10-29T04:15:37Z",
+  "final_updated_at": "2026-10-29T05:00:43Z",
+  "queried_at": "2026-10-29 05:16:30 UTC",
+  "jobs": [
+    {
+      "id": 123259462588,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 123259462855,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 123259462862,
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "id": 123259462869,
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "id": 123259462919,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 123259462986,
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "id": 123259462990,
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "id": 123259462996,
+      "name": "gVisor Linux Integration",
+      "conclusion": "failure"
+    },
+    {
+      "id": 123259463081,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 123272735617,
+      "name": "Required",
+      "conclusion": "failure"
+    }
+  ],
+  "decoded_original_logs_bytes": 966355,
+  "previous8_logs_reused": true,
+  "originals": [
+    "docs/github-logs/package-client-quarantine-20261021/ci430-poll03-final-decoded.json",
+    "docs/github-logs/package-client-quarantine-20261021/ci430-decoded-partial-log-inventory.json",
+    "docs/github-logs/package-client-quarantine-20261021/ci430-final-log-inventory.json"
+  ],
+  "linux": {
+    "top_level_PASS": 56,
+    "top_level_FAIL": [
+      {
+        "name": "TestLinuxGoTransitiveBuildCLIIntegration",
+        "seconds": 16.22
+      }
+    ],
+    "top_level_SKIP": 0,
+    "failure_stage": "Install pinned runtime and run lifecycle integration / existing Go build CLI transitive fixture",
+    "reference": "google.golang.org/grpc@v1.76.0",
+    "first_error": "resolve exact Go graph: go module download failed; go-module-resolver COMMAND STREAM_FAULT; events31/bytes3534/session_complete=false/last_kind process-exec-expected/fault_site DROPPED_COUNT",
+    "verified_guard": "observer.cc Handle rejects nonzero remote Header.dropped_count as STREAM_FAULT before dispatch; guard is retained",
+    "cause": "transport-reported event loss confirmed; underlying loss trigger and relationship to source changes UNCONFIRMED",
+    "helper_wait_zero_count": 9,
+    "final_cleanup": "original=1 CONFIRMED_STOPPED/helper_stop0/client_error0/client_restore0/RESTORED",
+    "not_reached": [
+      "production Node execution preparation grouped step",
+      "current Node refusal2/Python preparation3 grouped step",
+      "kernel image/terminal grouped step"
+    ],
+    "no_whole_Linux_qualification": true
+  },
+  "observer": "CPP131 completed helper job; unchanged local b76 baseline",
+  "timer": {
+    "interval_minutes": 20,
+    "polls": 3,
+    "last_due": "2026-10-29T05:16:05Z",
+    "fired": "2026-10-29T05:16:06.029446Z",
+    "queried": "2026-10-29T05:16:30Z",
+    "state": "RETIRED_RESULT_CONSUMED",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci430-timer03-consumed-final.json"
+  },
+  "exclusions": [
+    "no qualification of skipped C7/P6-A3 hosted step",
+    "B1/source14487b8/runtime1355 not included",
+    "new user-run/UVx/CLI/final profiles/signed release acceptance remain OPEN"
+  ],
+  "next": "audit exact existing Go resolver/native remote send path and unchanged guard before any source correction; no blind rerun or loss suppression"
+}

@@ -1,0 +1,628 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D4B2",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "baseline": "373d6b9d87b5b0f6df52941ef5b487f5dd533581",
+  "runtime_inputs": 1372,
+  "existing1369_unchanged": true,
+  "modified_paths": [
+    "tools/gvisor-observer/observer.cc",
+    "tools/gvisor-observer/observer_latch_test.cc"
+  ],
+  "new_paths": [
+    "internal/sandbox/uv_tool_run_census_real_test.go"
+  ],
+  "source_identity": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "def84e07bcdae46f03dc0dd2fa1cbee4250dcdd45f8a3fb15000bdfd86859d01",
+      "mode": "100644"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "ca704165740a41cadb926a5a6adb6955cea708ddc7c6f0c8db17a171d5dd4b70",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_run_census_real_test.go",
+      "sha256": "1622b191d75cc9f102c86acb5d8bbce3cbd3ffc96ab3af67051b5ce200f6a563",
+      "mode": "100644"
+    }
+  ],
+  "delta": "Only fixed exported native UV cache exact query ABI and tagged current complete DATA census consumer. Existing TMP/tool branches and role/start/image/creator/readonly/clone/reexec restrictions preserved.",
+  "same_RED_GREEN_latch_sha256": "ca704165740a41cadb926a5a6adb6955cea708ddc7c6f0c8db17a171d5dd4b70",
+  "pinned_RED": {
+    "phase": "red",
+    "exit_code": 1,
+    "started_at": "2026-10-29T16:33:46.655254+00:00",
+    "seconds": 47.499,
+    "named_latches": 131,
+    "failed_cached_cases": [
+      "export-normal",
+      "export-id-alphabet",
+      "export-canonical"
+    ],
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "9037e9a31e1a24a94436b4df2eb4994537235f78c6340581c1e6971fe481bdfa"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "ca704165740a41cadb926a5a6adb6955cea708ddc7c6f0c8db17a171d5dd4b70"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "UV_scenarios": 195,
+    "log_sha256": "8c34b0da27c2e0e6decb7f3c62970dfdb795351feb069fba76d079f067a6510c",
+    "retained_work_root": "/tmp/haa-p6-d3e1-observer-build-v1",
+    "same_pinned_command_as_canonical": true,
+    "supplemental_replay_only": true,
+    "fresh_canonical_release_still_required": true,
+    "observer": null
+  },
+  "pinned_GREEN": {
+    "phase": "green",
+    "exit_code": 0,
+    "started_at": "2026-10-29T16:35:03.268407+00:00",
+    "seconds": 45.318,
+    "named_latches": 132,
+    "failed_cached_cases": [],
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "def84e07bcdae46f03dc0dd2fa1cbee4250dcdd45f8a3fb15000bdfd86859d01"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "ca704165740a41cadb926a5a6adb6955cea708ddc7c6f0c8db17a171d5dd4b70"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "UV_scenarios": 195,
+    "log_sha256": "e11f504e13c2044f4e2d190de5ac4e78810586294adc3a3dfab14f97c3506dc8",
+    "retained_work_root": "/tmp/haa-p6-d3e1-observer-build-v1",
+    "same_pinned_command_as_canonical": true,
+    "supplemental_replay_only": true,
+    "fresh_canonical_release_still_required": true,
+    "observer": {
+      "path": "/tmp/haa-p6-d4b2-green-observer",
+      "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5",
+      "bytes": 3233640
+    }
+  },
+  "fresh_canonical_CPP": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p6-d4b2-v1-observer"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-10-29T16:38:11.271923+00:00",
+    "seconds": 274.556,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "def84e07bcdae46f03dc0dd2fa1cbee4250dcdd45f8a3fb15000bdfd86859d01"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "ca704165740a41cadb926a5a6adb6955cea708ddc7c6f0c8db17a171d5dd4b70"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "qualified_latch_sha256": "ca704165740a41cadb926a5a6adb6955cea708ddc7c6f0c8db17a171d5dd4b70",
+    "named_latches": 132,
+    "UV_scenarios": 195,
+    "log_sha256": "56a9bb9e7b293d83c17ca937d72d635e089d101a23f930deed43a9823236cb2e",
+    "retained_failed_work_root": [],
+    "observer": {
+      "path": "/tmp/haa-p6-d4b2-v1-observer",
+      "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5",
+      "bytes": 3233640
+    }
+  },
+  "fresh_canonical_and_replay_binary_byte_identical": true,
+  "checks_current_or_exact_input_reuse": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.967
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.622
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 11.698
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d4b2-v1-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.469
+    },
+    {
+      "step": "sandbox-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 24.106
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.365
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.308
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 324.179,
+      "reused_from": "/tmp/haa-p6-d3-v1-build-identity.json",
+      "reuse_reason": "Only CPP2 changed; all Go/lock/checker/scripts compiler inputs identical. All Go tests reading observer.cc are in sandbox and full sandbox Race is rerun here. CPP qualification is separate pending.",
+      "reused_by": "current exact default/Bootstrap Go inputs; new test tagged out; external CPP source consumers covered by current full sandbox Race"
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d3-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.573,
+      "reused_from": "/tmp/haa-p6-d3-v1-build-identity.json",
+      "reuse_reason": "Only CPP2 changed; all Go/lock/checker/scripts compiler inputs identical. All Go tests reading observer.cc are in sandbox and full sandbox Race is rerun here. CPP qualification is separate pending.",
+      "reused_by": "current exact default/Bootstrap Go inputs; new test tagged out; external CPP source consumers covered by current full sandbox Race"
+    }
+  ],
+  "Go_original_binaries": [
+    {
+      "role": "sandbox",
+      "path": "/tmp/haa-p6-d4b2-v1-sandbox.test",
+      "bytes": 27812087,
+      "sha256": "b1b54a475a987a0bebe8e8198bdb9b6c5895f18b705b8dc0e00ccc2122845e3f"
+    },
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p6-d3-v1-bootstrap.test",
+      "bytes": 51692298,
+      "sha256": "a3063450de855634253e1a6004aa53f406b3716a6c716c6ebebdf6440b519a16",
+      "reused_exact_inputs": true
+    }
+  ],
+  "actuals": {
+    "native-census": {
+      "result": {
+        "cpp_source_unchanged": true,
+        "source_unchanged": true,
+        "fixed42_and_zip_unchanged": true,
+        "exit": 0,
+        "seconds": 49.948,
+        "host_before_after_identical": true,
+        "input_unchanged": true,
+        "no_skip": true,
+        "helper_confirmed_stopped": true,
+        "helper_wait_zero": true,
+        "no_helpers_after": true,
+        "owned_fixture_workspaces_absent": true,
+        "log_sha256": "103d19c0237fee2680c9437926ef43cc4204b6d5ae5584402ee7ecc71967f730",
+        "sources": [
+          {
+            "path": "/tmp/haa-p6-d4b2-native-census-actual-v1/protected-client",
+            "sha256": "b1b54a475a987a0bebe8e8198bdb9b6c5895f18b705b8dc0e00ccc2122845e3f"
+          },
+          {
+            "path": "/tmp/haa-p6-d4b2-native-census-actual-v1/observer",
+            "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_census_real_test.go",
+            "sha256": "1622b191d75cc9f102c86acb5d8bbce3cbd3ffc96ab3af67051b5ce200f6a563"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_public_real_test.go",
+            "sha256": "0465beb5ed88ed97e1f54234a3132ae4311517434e944e06f2b2525d229a47e4"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_runtime_real_test.go",
+            "sha256": "06c220c17e1cf9273c764b378b37028b3b4b275d107af077022f50ebea9aa0fe"
+          }
+        ],
+        "scope": "Current exported-cache census + unchanged TMP public source/startup/RO native preparation DATA; actual2; program/Evidence/Policy/selection equivalence/CLI NOT_RUN",
+        "passed_named_tests": [
+          "TestUVActualPublicToolRunNativeCensus",
+          "TestUVActualPublicToolRunSourceBinding"
+        ],
+        "fixture_source": "ACTUAL_PUBLIC_COWSAY_6_1",
+        "native_solver": "ACTUAL UV pip compile proposal and offline UV tool run preparation; not yet native result census equivalence",
+        "public_authentication": "ACTUAL independent release/archive binding",
+        "current_verification_inspection_Evidence_Policy": "NOT_RUN",
+        "owned_native_workspaces_absent": true,
+        "named_pass": true,
+        "observer_directory_entries_after": [],
+        "observer_directory_empty_after": true,
+        "expected_terminal_diagnostic": true,
+        "complete_DATA_census_present": true,
+        "healthy_trace": true,
+        "clean_normalized_trace": true
+      },
+      "parent_seconds": {
+        "TestUVActualPublicToolRunNativeCensus": "24.30",
+        "TestUVActualPublicToolRunSourceBinding": "23.43"
+      },
+      "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d4b2-native-census-actual-v1-original-inventory.json"
+    },
+    "python-positive": {
+      "result": {
+        "cpp_source_unchanged": true,
+        "source_unchanged": true,
+        "fixed42_and_zip_unchanged": true,
+        "exit": 0,
+        "seconds": 75.701,
+        "host_before_after_identical": true,
+        "input_unchanged": true,
+        "no_skip": true,
+        "helper_confirmed_stopped": true,
+        "helper_wait_zero": true,
+        "no_helpers_after": true,
+        "owned_fixture_workspaces_absent": true,
+        "log_sha256": "4a4884055a69bed2006d770b1585640b63c44ace030a2198bc9b09defd43a09e",
+        "sources": [
+          {
+            "path": "/tmp/haa-p6-d4b2-python-positive-actual-v1/protected-client",
+            "sha256": "a3063450de855634253e1a6004aa53f406b3716a6c716c6ebebdf6440b519a16"
+          },
+          {
+            "path": "/tmp/haa-p6-d4b2-python-positive-actual-v1/observer",
+            "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/bootstrap/python_execution_integration_test.go",
+            "sha256": "817487a1cccfcc1561293fc24ef4fdf7e2a9af2151c72412f2992f2b683f9879"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/direct_exec_admission.go",
+            "sha256": "bc77c3a40a17c81906010201d5ca97e44904671a605907417b9d06e77050f496"
+          },
+          {
+            "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/direct_exec_error_preservation_test.go",
+            "sha256": "3b5deb746454d67d018f982c025b83c2e8aabeb46303650cd423a60cc8574010"
+          }
+        ],
+        "scope": "cached-query CPP candidate existing consumer actual current public Python normal0/nonzero2 through unmodified canonical python-execution CI profile, fresh whole inspection/Policy/readonly/capture/cleanup; native UV tool install identity, not UVx equivalence; no CLI/final qualification",
+        "passed_named_tests": [
+          "TestLinuxPythonExecutionIntegration"
+        ],
+        "native_solver": "ACTUAL UV tool install",
+        "current_verification_inspection_Evidence_Policy": "ACTUAL",
+        "owned_python_workspaces_absent": true,
+        "success_cases": [
+          [
+            "1",
+            "0",
+            "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+          ],
+          [
+            "2",
+            "2",
+            "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+          ]
+        ],
+        "named_pass": true,
+        "observer_directory_entries_after": [],
+        "observer_directory_empty_after": true,
+        "all_expected_cases": true
+      },
+      "parent_seconds": {
+        "TestLinuxPythonExecutionIntegration": "72.84"
+      },
+      "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d4b2-python-positive-actual-v1-original-inventory.json"
+    }
+  },
+  "native_DATA_census": {
+    "facts": 84,
+    "directories": 25,
+    "regular_files": 53,
+    "symlinks": 6,
+    "expanded_regular_bytes": 225462,
+    "single_native_environment_entries_below_root": 41,
+    "source": "ACTUAL independent public cowsay6.1 whole original/startup/RO binding before native query",
+    "native_terminal": "fixed /dev/null EACCES nonzero; selected program NOT_RUN",
+    "Policy_Evidence_program_selection_equivalence": "NOT_RUN / NOT_QUALIFIED",
+    "observed_relocatable_cfg_and_wrapper": "cfg relocatable=true and image-independent realpath/dirname wrapper; DATA observation only, existing nonrelocatable UV matcher cannot certify it",
+    "original": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-complete-data-census.json"
+  },
+  "human_review": "Root/base image/runtime pins/profile/wire/control/network/CPU/trace unchanged. New fixed helper and environment share only current attested output cache. Module/dir/cfg read ABI precedes general workspace exception and rejects body/startup/foreign/normalized aliases/writes; old 120 and new 75 cases plus current native/Python consumers verified. Census remains unapproved DATA.",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (current test-only native census; product CPP exact query path)",
+    "QUALIFIED": "YES (named local exported-cache query/native census/current old consumers)",
+    "ACCEPTANCE_CLOSED": "YES (same named scope only)",
+    "MISSING": [
+      "native complete original/RECORD/relocatable-console selection binding and bounded equivalence",
+      "current production runtime adapter/approved program/aliases/CLI",
+      "meaningful grouped hosted candidate/macOS120s failure gap and final CPU/three CUDA/signed qualification"
+    ]
+  },
+  "cleanup": {
+    "completed_duplicate_ELFs": 4,
+    "logical_bytes": 85971665,
+    "cumulative_ELF_files": 239,
+    "private_completed_cache_dirs": 6,
+    "combined_logical_bytes": 11492211577,
+    "root_processes": 118,
+    "references": 0,
+    "query_errors": 0,
+    "Windows_VHD_physical_shrink_claimed": false,
+    "originals_active_reusable_cache_SDK_fixed_inputs_Git_preserved": true
+  },
+  "remote": "CI434/source d81 completed8SUCCESS/macOS+RequiredFAIL; whole qualification NO; natural monitor0/next none. New B2 source outside CI434. No new push/CI for this helper; next meaningful source/native proof checkpoint will be grouped.",
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-cpp-edit.py",
+      "bytes": 13214,
+      "sha256": "e6e0653bc62ccf41a09e711b5685ef15d1fa797bc4c5ecce2a84e73cf258218a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-candidate-CPP.json",
+      "bytes": 829,
+      "sha256": "ea0fe08f02eaf87aed24502ea13c72b082f145a7d0019944ff2921d1c66accc3"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-candidate-observer.cc",
+      "bytes": 393926,
+      "sha256": "def84e07bcdae46f03dc0dd2fa1cbee4250dcdd45f8a3fb15000bdfd86859d01"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-pinned-build.py",
+      "bytes": 3429,
+      "sha256": "041b967c8333b3ec46553560c3d719f85f95fcfc2aee769a6affc52d9498bc97"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-green-build.log",
+      "bytes": 13484,
+      "sha256": "e11f504e13c2044f4e2d190de5ac4e78810586294adc3a3dfab14f97c3506dc8"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-green-build.json",
+      "bytes": 1556,
+      "sha256": "20a40d05bae313d20fa311cb11554033182d709935f978a4a323a1f1f5685772"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-canonical-build.py",
+      "bytes": 2546,
+      "sha256": "404ff9fee58bf6a8c5551e2f9627af7c0a28556755e8c807ffe3725c226a7892"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-observer-build.log",
+      "bytes": 204355,
+      "sha256": "56a9bb9e7b293d83c17ca937d72d635e089d101a23f930deed43a9823236cb2e"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-observer-build.json",
+      "bytes": 1557,
+      "sha256": "7ccad15fb9fcb22624f48a3fbd44bf603eac2942874db21f4daba2f3ed5798cb"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-check.py",
+      "bytes": 5021,
+      "sha256": "ffd9e658ba3b4018d295b7cfad45fe07e16b2f10feb3bb73a222943920db744b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-build-identity.json",
+      "bytes": 251598,
+      "sha256": "28e7383796fd3744c70c6b8a4e5f243bcd37804ef5755235bb8ffacf0c8b8a81"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-checks.json",
+      "bytes": 1334,
+      "sha256": "c732e2a2f492b762e5a8491538dbe05db33ba17ad96b991e636201092b605d5b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-default-membership-proof.json",
+      "bytes": 73741,
+      "sha256": "cd9298ce29e36f15b6a37ba881517177771be747c924b1595ca4ca2ec7f067e5"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-actual-producer.py",
+      "bytes": 2559,
+      "sha256": "77f028ef9108652e4f8c11af2d666944da0454cb1f248326beedae720cb27bb8"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-native-census-actual-v1.py",
+      "bytes": 11905,
+      "sha256": "32dd34737b1013b8350c42d9db0c014201e1bd97a0a44550ab13526f27040a9f"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-python-positive-actual-v1.py",
+      "bytes": 11061,
+      "sha256": "8f053c370d0361ce17a2abf3d4b457ae8c2458d29f0290fec8f0b8c7f7710b9f"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-cleanup-producer.py",
+      "bytes": 1807,
+      "sha256": "a0f7e4266cde26cd69b4d79c93b95c42a7723a036bc3b259fea385545c2fa978"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-freeze-actual.py",
+      "bytes": 1086,
+      "sha256": "936d9a806c256ebee746595049f4f56e31d2a4471a98fa117a406246dede8876"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-complete-data-census.json",
+      "bytes": 36370,
+      "sha256": "1fb2c54f467c20f2282b9e465bc808f9e415245f8b720abd72f9a4f9dbf73a22"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-sandbox-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-sandbox-race.log",
+      "bytes": 60,
+      "sha256": "6f2f2a5dc5529262325861522d99d83d117b8554064be31fd5bc0c4d081f95b7"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-v1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-completed-inventory.py",
+      "bytes": 3815,
+      "sha256": "1e5918a429f0889733074483be7633945a4fcc36465bda32f3f666c077dcdb00"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-completed-cleanup.py",
+      "bytes": 6131,
+      "sha256": "15cd52b6e5b06f893264c1df0c8f1682c86dd2715c6f93af1061aec22083feb7"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-completed-candidate.json",
+      "bytes": 3405,
+      "sha256": "86fe11467a8db58aed0d4e7eb79660ca4c8da68eaf4c7fed4dd839c1e08bb991"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-completed-zombie-proof.json",
+      "bytes": 1629,
+      "sha256": "6d65a5cc5b039fad32f7c1bb274bc5a47b9e795805de39f4bbfd5d9ca29ba3e0"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-completed-preflight.json",
+      "bytes": 3898,
+      "sha256": "80fa5b0e669f473642ad5a00f6bfc372d9f59c31678a6e6558c99b64cfd2fb3d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-completed-result.json",
+      "bytes": 4117,
+      "sha256": "749a3760b8656d141e006ede337198f9a43896a4e216ec60ce61a730616a93cf"
+    }
+  ]
+}

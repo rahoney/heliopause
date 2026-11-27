@@ -3,13 +3,20 @@ package pypi
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
+
+const dynamicCheckProfileName = "pypi-dynamic-environments-v4"
+const supplementedObservationEvidenceID = "pypi-supplemented-observations"
+const dynamicEnvironmentDescriptor = runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema + "|unit-subpaths-v1|" + runtimeidentity.SandboxResponderInspectionIdentity
 
 // DynamicInspector reconciles the statically admitted observation plan with a
 // consumer-owned gVisor runner. It does not control Docker/gVisor directly.
@@ -70,6 +77,7 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection source is unsupported")
 	}
 	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+	profile := pythonDynamicProfile(ctx)
 	plan, err := artifactpypi.BuildObservationPlan(static, resourcePolicy)
 	if err != nil {
 		return domain.InspectionReport{}, err
@@ -82,7 +90,7 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}
-		return incompleteReport(checkID, "M5_PYPI_DYNAMIC_SURFACE_UNSUPPORTED")
+		return incompleteReport(checkID, "M5_PYPI_DYNAMIC_SURFACE_UNSUPPORTED", profile)
 	}
 	var result domain.SandboxResult
 	var observed sandbox.PythonObservationResult
@@ -110,7 +118,7 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	if observed.SessionID().String() != "" {
 		result = observed.SandboxResult
 	}
-	if err != nil {
+	if err != nil && (result.Status() != domain.SandboxIncomplete || result.SessionID().String() == "") {
 		return domain.InspectionReport{}, err
 	}
 	checkName, evidenceName := "pypi-dynamic-import", "pypi-dynamic-import-result"
@@ -120,7 +128,9 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	if len(inputs) != 0 {
 		checkName, evidenceName = "pypi-dynamic-import-supplemented", "pypi-dynamic-import-supplemented-result"
 	}
-	checkID, err := domain.NewCheckID(checkName)
+	// The logical required experiment is fixed before execution; evidence kind
+	// retains no-import and supplemented scope without changing membership.
+	checkID, err := domain.NewCheckID("pypi-dynamic-import")
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -130,7 +140,7 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 		if limitation == "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE" {
 			capability, status = domain.CapabilityUnsupported, domain.ExecutionNotExecuted
 		}
-		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation)
+		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, profile)
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}
@@ -138,18 +148,25 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	}
 	for _, observation := range result.Observations() {
 		if observation.Category() == domain.ObservationResource {
-			return incompleteReport(checkID, "M5_PYPI_DYNAMIC_RESOURCE_LIMIT")
+			return incompleteReport(checkID, "M5_PYPI_DYNAMIC_RESOURCE_LIMIT", profile)
 		}
 	}
-	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	states := result.EnvironmentStates()
+	if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+		return incompleteReport(checkID, "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE", profile)
+	}
+	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
 	summary, err := result.ObservationSummary()
 	if err != nil {
-		return incompleteReport(checkID, "M11_DYNAMIC_SUMMARY_INVALID")
+		return incompleteReport(checkID, "M11_DYNAMIC_SUMMARY_INVALID", profile)
 	}
+	var supplementedSummary string
 	if len(inputs) != 0 {
+		supplementedSummary = summary
+		summaryDigest := sha256.Sum256([]byte(summary))
 		binding, err := inspectionEnvironmentBinding(ctx, artifact, plan, closure, inputs)
 		if err != nil {
 			return domain.InspectionReport{}, err
@@ -158,17 +175,18 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 		// broader dependency probes work without the inspection-only input.
 		identity := inputs[0].Identity()
 		encoded, encodeErr := json.Marshal(struct {
-			Schema              string          `json:"schema"`
-			Scope               string          `json:"scope"`
-			OriginalEnvironment string          `json:"original_environment"`
-			Source              string          `json:"input_source"`
-			Project             string          `json:"input_project"`
-			Version             string          `json:"input_version"`
-			SHA256              string          `json:"input_sha256"`
-			Reason              string          `json:"reason"`
-			Environment         string          `json:"environment_sha256"`
-			Observations        json.RawMessage `json:"observations"`
-		}{"m5-inspection-environment/v1", "inspection-only-prerequisite", "NOT_ATTESTED", identity.Source().String(), identity.Name(), identity.Version(), inputs[0].Digest().String(), "BROADER_MODULE_PROBES", binding, json.RawMessage(summary)})
+			Schema              string `json:"schema"`
+			Scope               string `json:"scope"`
+			OriginalEnvironment string `json:"original_environment"`
+			Source              string `json:"input_source"`
+			Project             string `json:"input_project"`
+			Version             string `json:"input_version"`
+			SHA256              string `json:"input_sha256"`
+			Reason              string `json:"reason"`
+			Environment         string `json:"environment_sha256"`
+			Observations        string `json:"observations_evidence"`
+			ObservationSHA256   string `json:"observation_summary_sha256"`
+		}{"m5-inspection-environment/v2", "inspection-only-prerequisite", "NOT_ATTESTED", identity.Source().String(), identity.Name(), identity.Version(), inputs[0].Digest().String(), "BROADER_MODULE_PROBES", binding, supplementedObservationEvidenceID, hex.EncodeToString(summaryDigest[:])})
 		if encodeErr != nil {
 			return domain.InspectionReport{}, encodeErr
 		}
@@ -182,9 +200,23 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
+	retained := []domain.Evidence{evidence}
+	findingEvidence := []domain.EvidenceID{evidenceID}
+	if supplementedSummary != "" {
+		id, err := domain.NewEvidenceID(supplementedObservationEvidenceID)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		fact, err := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), supplementedObservationEvidenceID, supplementedSummary)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		retained = append(retained, fact)
+		findingEvidence = append(findingEvidence, id)
+	}
 	findings := make([]domain.Finding, 0)
 	for _, code := range pypiDynamicFindingCodes(result.Observations()) {
-		finding, findingErr := domain.NewFinding(code, []domain.EvidenceID{evidenceID})
+		finding, findingErr := domain.NewFinding(code, findingEvidence)
 		if findingErr != nil {
 			return domain.InspectionReport{}, findingErr
 		}
@@ -192,13 +224,28 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	}
 	commandEvidence, err := commandObservationEvidence(checkID, artifact, plan, inputs, observed.Commands, len(findings) == 0)
 	if err != nil {
-		return incompleteReport(checkID, "M5_PYPI_COMMAND_EVIDENCE_INCOMPLETE")
+		return incompleteReport(checkID, "M5_PYPI_COMMAND_EVIDENCE_INCOMPLETE", profile)
 	}
-	return domain.NewInspectionReport(execution, findings, append([]domain.Evidence{evidence}, commandEvidence...))
+	for _, state := range states {
+		summary, err := state.Summary()
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		id, err := domain.NewEvidenceID("pypi-workspace-" + string(state.Profile))
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		fact, err := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		retained = append(retained, fact)
+	}
+	return domain.NewInspectionReport(execution, findings, append(retained, commandEvidence...))
 }
 
-func incompleteReport(checkID domain.CheckID, limitation string) (domain.InspectionReport, error) {
-	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, limitation)
+func incompleteReport(checkID domain.CheckID, limitation string, profile domain.ContentDigest) (domain.InspectionReport, error) {
+	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, limitation, profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -229,4 +276,30 @@ func pypiDynamicFindingCodes(observations []domain.SandboxObservation) []string 
 		}
 	}
 	return codes
+}
+
+func pythonDynamicProfile(ctx context.Context) domain.ContentDigest {
+	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, runtimeidentity.PythonImageReference+"|"+pythonInspectionProfileDescriptor(ctx)+"|"+dynamicEnvironmentDescriptor)
+	return profile
+}
+
+func (i *DynamicInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.runner == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") {
+		return nil, errors.New("pypi dynamic declaration is invalid")
+	}
+	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
+		return nil, errors.New("pypi dynamic source is unsupported")
+	}
+	id, _ := domain.NewCheckID("pypi-dynamic-import")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, pythonDynamicProfile(ctx))
+	return []domain.CheckRequirement{requirement}, err
+}
+
+func skippedDynamicReport(ctx context.Context) (domain.InspectionReport, error) {
+	id, _ := domain.NewCheckID("pypi-dynamic-import")
+	check, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionNotExecuted, "M5_PYPI_STATIC_PREREQUISITE_FAILED", pythonDynamicProfile(ctx))
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	return domain.NewInspectionReport(check, nil, nil)
 }

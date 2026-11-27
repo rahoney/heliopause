@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
+	"unicode/utf16"
 
 	"go.yaml.in/yaml/v3"
 )
@@ -36,6 +38,36 @@ func parseWorkflow(contents string) (map[string]any, error) {
 }
 
 func workflowMap(value any) map[string]any { result, _ := value.(map[string]any); return result }
+
+const workflowExpressionMaxLength = 21000
+const macOSRunnerExpression = "${{ github.event_name == 'workflow_dispatch' && inputs.macos_intel_qualification && 'macos-26-intel' || 'macos-26' }}"
+
+// A quoted expression string can contain "}}" and doubled single quotes.
+var workflowInterpolation = regexp.MustCompile(`\$\{\{((?:'[^']*'|[^'}])*)\}\}`)
+
+// Mixed Actions scalars become one format expression, including the escaped
+// shell text. Context, expression syntax and Bash validation remain separate.
+func workflowRunExpressionLength(run string) int {
+	matches := workflowInterpolation.FindAllStringSubmatchIndex(run, -1)
+	if len(matches) == 0 {
+		return 0
+	}
+	if match := matches[0]; len(matches) == 1 && match[0] == 0 && match[1] == len(run) {
+		return len(utf16.Encode([]rune(strings.TrimSpace(run[match[2]:match[3]]))))
+	}
+	escape := strings.NewReplacer("'", "''", "{", "{{", "}", "}}")
+	var format, args strings.Builder
+	previous := 0
+	for index, match := range matches {
+		format.WriteString(escape.Replace(run[previous:match[0]]))
+		fmt.Fprintf(&format, "{%d}", index)
+		args.WriteString(", " + strings.TrimSpace(run[match[2]:match[3]]))
+		previous = match[1]
+	}
+	format.WriteString(escape.Replace(run[previous:]))
+	expanded := "format('" + format.String() + "'" + args.String() + ")"
+	return len(utf16.Encode([]rune(expanded)))
+}
 
 // Validate the Actions structures used by this repository before textual policy
 // checks. Expressions are scalar strings, not YAML keys or evaluated host code.
@@ -84,13 +116,16 @@ func validateWorkflowStructure(contents string, ordinaryCI bool) []string {
 		if !ok || len(steps) == 0 {
 			bad("job %s requires nonempty steps", id)
 		}
-		for _, value := range steps {
+		for index, value := range steps {
 			step := workflowMap(value)
 			checkKeys("step", step, "name id env if run uses with shell working-directory timeout-minutes continue-on-error")
-			_, run := step["run"].(string)
+			body, run := step["run"].(string)
 			_, uses := step["uses"].(string)
 			if step == nil || run == uses {
 				bad("job %s step must have exactly one string run or uses", id)
+			}
+			if length := workflowRunExpressionLength(body); length > workflowExpressionMaxLength {
+				bad("job %s step %d run expression length %d exceeds GitHub Actions limit %d", id, index+1, length, workflowExpressionMaxLength)
 			}
 		}
 		if value, exists := job["needs"]; exists {
@@ -111,6 +146,9 @@ func validateWorkflowStructure(contents string, ordinaryCI bool) []string {
 	}
 	if !ordinaryCI {
 		return findings
+	}
+	if workflowMap(jobs["macos"])["runs-on"] != macOSRunnerExpression {
+		bad("macOS must use Apple Silicon by default and Intel only on explicit workflow dispatch")
 	}
 	wantJobs := []string{"required"}
 	wantNeeds := []any{}
@@ -173,14 +211,18 @@ func validateWorkflowStructure(contents string, ordinaryCI bool) []string {
 	}
 	dispatch := workflowMap(events["workflow_dispatch"])
 	inputs := workflowMap(dispatch["inputs"])
-	if len(dispatch) != 1 || len(inputs) != 3 {
-		bad("dispatch requires exactly three qualification inputs")
+	if len(dispatch) != 1 || len(inputs) != 4 {
+		bad("dispatch requires exactly the three CUDA inputs and the macOS Intel input")
 	}
 	for _, profile := range []string{"cu126", "cu130", "cu132"} {
 		input := workflowMap(inputs["pytorch_"+profile+"_qualification"])
 		if len(input) != 4 || input["type"] != "boolean" || input["required"] != false || input["default"] != false || input["description"] != "Run only the bounded "+profile+" full qualification." {
 			bad("invalid %s dispatch input structure", profile)
 		}
+	}
+	intelInput := workflowMap(inputs["macos_intel_qualification"])
+	if len(intelInput) != 4 || intelInput["type"] != "boolean" || intelInput["required"] != false || intelInput["default"] != false || intelInput["description"] != "Use an Intel runner for the macOS platform check." {
+		bad("invalid macOS Intel dispatch input structure")
 	}
 	for id, value := range jobs {
 		job := workflowMap(value)

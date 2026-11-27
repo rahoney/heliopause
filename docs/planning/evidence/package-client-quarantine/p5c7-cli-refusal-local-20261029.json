@@ -1,0 +1,125 @@
+{
+  "scope": "P5-C7 real post-Policy ALLOW entry refusal through public CLI; ambiguous implicit bin and explicit missing bin; test-only extra parent",
+  "status": "PASS (named local scope)",
+  "baseline_commit": "9eb854f43fd40cb8a2c034f383bdecfac98cc733",
+  "runtime_inputs": 1344,
+  "existing1343_production_CPP_and_prior_tests_unchanged": true,
+  "new_paths": [
+    "internal/bootstrap/npm_execution_refusal_integration_test.go"
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (new acceptance parent; existing rejection reused)",
+    "WIRED": "YES (actual Bootstrap.Run)",
+    "QUALIFIED": "YES (named local refusal2)",
+    "ACCEPTANCE_CLOSED": "YES (these two refusal cases only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.417
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 10.337
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.973
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c7-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.62
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 19.261
+    }
+  ],
+  "binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c7-v1-bootstrap.test",
+      "sha256": "b14c28653bc515b957d59617fd7f54d2ac91d5709d50dd801538736add8f2ac6",
+      "bytes": 51241034
+    }
+  ],
+  "actual": {
+    "seconds": 33.886,
+    "cases": [
+      [
+        "1",
+        "ambiguous"
+      ],
+      [
+        "2",
+        "missing"
+      ]
+    ],
+    "current_native_resolve_integrity_static_dynamic_Evidence_Policy": "ACTUAL public TypeScript5.9.3; two fresh Evidence run directories and each original subject digest SHA25610e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3 checked",
+    "axes": "quarantine COMPLETED/Policy ALLOW; preparation INCOMPLETE; runtime NOT_STARTED; no exit/signal; output0; stored manifest0; guest cleanup NOT_STARTED",
+    "error": "fixed CLI process failure1/original cause; no completed NodeProgramError",
+    "user_program": "NOT_RUN; quarantine dynamic inspection is separate",
+    "all_source_Host_fixed42_ZIP_Docker_preserved": true,
+    "helper_wait0_confirmedstop_resources_endpoints0": true,
+    "no_skip": true
+  },
+  "raw": {
+    "identity": "docs/github-logs/package-client-quarantine-20261021/p5-c7-v1-build-identity.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p5-c7-actual-v1-result.json",
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/p5-c7-actual-v1-inventory.json"
+  },
+  "active_hosted": "CI429/source9eb854f excludes this extra test source; no new push",
+  "MISSING": [
+    "active current1343 CI429 hosted result/source/logs",
+    "whole P5/final support4profiles/signed/P6/P7 acceptance"
+  ],
+  "next": "local meaningful commit; bounded acceptance/P6 existing-owner baseline while timer continues"
+}

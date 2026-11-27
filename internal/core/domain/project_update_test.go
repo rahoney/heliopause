@@ -91,3 +91,76 @@ func TestProjectControlPresenceAndBounds(t *testing.T) {
 		t.Fatal("unbounded control accepted")
 	}
 }
+
+func TestCompleteProjectUpdateDoesNotInventOrRelaxRequestedPrimary(t *testing.T) {
+	snapshot, _ := projectApprovalFixture(t)
+	original, _ := NewProjectControlFile("Cargo.lock", []byte("original"), true)
+	selected, _ := NewProjectControlFile("Cargo.lock", []byte("selected"), true)
+	control, _ := NewProjectControlDigest(selected.Name(), selected.Digest())
+	snapshot.controls = []ProjectControlDigest{control}
+	before, after := []ProjectControlFile{original}, []ProjectControlFile{selected}
+	if _, err := NewProjectDependencyUpdate(before, after, snapshot, DependencyResolution{}); err == nil {
+		t.Fatal("requested-primary constructor accepted no requested resolution")
+	}
+	for _, empty := range []bool{false, true} {
+		candidate := snapshot
+		if empty {
+			var err error
+			candidate, err = NewDependencyFreeProjectSnapshot(snapshot.Context(), snapshot.Source(), snapshot.ControlDigests(), snapshot.GraphDigest())
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		update, err := NewProjectDependencyUpdateFromSnapshot(before, after, candidate)
+		if err != nil || !update.Valid() || update.HasRequestedResolution() || update.Resolution().LockfileDigest().String() != "" || len(update.Resolution().Graph().Nodes()) != 0 || update.Snapshot().DependencyFree() != empty {
+			t.Fatalf("complete-project identity was lost or primary invented: %v", err)
+		}
+		copyBody := update.SelectedControls()[0].Body()
+		copyBody[0] = 'X'
+		if string(update.SelectedControls()[0].Body()) != "selected" {
+			t.Fatal("complete-project controls are mutable")
+		}
+		wrong, _ := NewProjectControlFile("Cargo.lock", []byte("different"), true)
+		for _, values := range [][]ProjectControlFile{nil, {wrong}, {selected, selected}} {
+			if _, err := NewProjectDependencyUpdateFromSnapshot(before, values, candidate); err == nil {
+				t.Fatal("unbound selected controls accepted")
+			}
+		}
+	}
+	if (ProjectDependencyUpdate{}).HasRequestedResolution() || (ProjectDependencyUpdate{}).Valid() {
+		t.Fatal("zero update acquired validity")
+	}
+}
+
+func TestSnapshotUpdateBindsExplicitControlPresenceWithoutRelaxingOrdinaryConstructors(t *testing.T) {
+	snapshot, _ := projectApprovalFixture(t)
+	before, _ := NewProjectControlFile("lock", []byte("old"), true)
+	absent, _ := NewProjectControlFile("lock", nil, false)
+	digest, _ := NewProjectControlDigest(absent.Name(), absent.Digest())
+	snapshot.controls = []ProjectControlDigest{digest}
+	update, err := NewProjectDependencyUpdateFromSnapshotWithControlPresence([]ProjectControlFile{before}, []ProjectControlFile{absent}, snapshot)
+	if err != nil || !update.Valid() || update.HasRequestedResolution() || update.SelectedControls()[0].Present() {
+		t.Fatal("explicit absence lost", err)
+	}
+	if _, err := NewProjectDependencyUpdateFromSnapshot([]ProjectControlFile{before}, []ProjectControlFile{absent}, snapshot); err == nil {
+		t.Fatal("ordinary constructor accepted absent output")
+	}
+	for _, mode := range []string{"changed", "missing", "duplicate", "zero", "name"} {
+		after := []ProjectControlFile{absent}
+		switch mode {
+		case "changed":
+			after[0], _ = NewProjectControlFile("lock", []byte("changed"), true)
+		case "missing":
+			after = nil
+		case "duplicate":
+			after = append(after, absent)
+		case "zero":
+			after[0] = ProjectControlFile{}
+		case "name":
+			after[0], _ = NewProjectControlFile("foreign", nil, false)
+		}
+		if _, err := NewProjectDependencyUpdateFromSnapshotWithControlPresence([]ProjectControlFile{before}, after, snapshot); err == nil {
+			t.Fatal("invalid presence update accepted", mode)
+		}
+	}
+}

@@ -1,0 +1,116 @@
+{
+  "scope": "M13-004/P2b2 authenticated native materialization only",
+  "baseline": "e0452d4",
+  "IMPLEMENTED": "YES \u2014 same bounded parser and explicit native output consumer",
+  "WIRED": "YES \u2014 maintenance materialize-pnpm command",
+  "QUALIFIED": "NO \u2014 distribution/admission/remote pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "local_status": "VERIFIED",
+  "production_input": "Selected source schema3 runtime owner and production proof; updater does not import controller generated tuple",
+  "native": {
+    "sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942",
+    "size": 57822504,
+    "mode": "0555",
+    "ownership": "current process UID; upstream archive UID not inherited",
+    "links": 1,
+    "host_execution": false
+  },
+  "checks": [
+    {
+      "name": "p2b2-materialize-fixture-fixed-format",
+      "exit": 0,
+      "seconds": 0.291,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-format.json",
+      "sha256": "74c6ca4b5a044f0c9b0995c1e0abe3bf3671b779e23aacbf6c1876da564ae561"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-official",
+      "exit": 0,
+      "seconds": 3.732,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-official.json",
+      "sha256": "ffddd6631f2694b515feb72ce51056340e12f65b5a4aa6abd5bd4f02b6673d10"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-quick",
+      "exit": 0,
+      "seconds": 29.766,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-quick.json",
+      "sha256": "477a76b437c76024ef6172891108727d0f72e9b21a52a8e5d603b5804a99f50f"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-security",
+      "exit": 0,
+      "seconds": 5.788,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-security.json",
+      "sha256": "c8600e0ed12d4f3d1224180e52088fd9956e3e4d58a8052eb6ce344c01cd4fe1"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-docs",
+      "exit": 0,
+      "seconds": 0.233,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-docs.json",
+      "sha256": "a34e695f68d44e97bcef61640593a2697b02b99a1f10f4133f64363132686d62"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-full-race",
+      "exit": 0,
+      "seconds": 21.186,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-full-race.json",
+      "sha256": "a3ed80933867030ad87ae1f05f4e52e8a3eda1f063f9568860da47299c9899be"
+    }
+  ],
+  "first_failures": [
+    {
+      "stage": "Quick architecture",
+      "seconds": 16.055,
+      "cause": "maintenance script imported disallowed product runtimeidentity",
+      "correction": "read selected source runtime owner, preserving architecture policy",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-reviewed-quick.json"
+    },
+    {
+      "stage": "Quick default CLI fixture",
+      "seconds": 130.344,
+      "cause": "unchanged cancellation fixture required ANSI under dumb terminal; explicit TERM differential reproduced",
+      "correction": "separate fixture-only correction with two TERM expectations",
+      "evidence": "docs/planning/evidence/package-client-quarantine/p2b2-existing-progress-fixture-20261024.json"
+    }
+  ],
+  "negative_scope": [
+    "late archive member/trailing/cancel returns no native bytes",
+    "absolute/canonical/external output; owned non-writable-by-others parent",
+    "existing file/symlink/foreign file preserved",
+    "production proof mutation and equal-size wrong archive produce no output"
+  ],
+  "source_files": [
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_tool.go",
+      "sha256": "5e32cbbdebbe030bfc16d24046c2087d77982d865ff4e987a8f5d42a26953b0a"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_tool_test.go",
+      "sha256": "8a7065c2e4aa67fc536f32b07d3b16874fc2bfda1a97bed9a4a8f831a1c8dced"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "0e8bb6ef5d9d1bb22e3030183c614c1b2f4a495013adcb158ee8f8f18ad7638e"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize.go",
+      "sha256": "206d5bbaa062fbab570239dc5769b1ba417f4eaa294f5895592474eb7b7f0bcd"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize_test.go",
+      "sha256": "f0562a1c641cfd629261a634258ce1d1f3b3024fc11bfb619bb7f5d1aa35e131"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize_real_test.go",
+      "sha256": "d33c1125880ce32ee62cbd67f9be7a6f72a832a2748567acbaf7780f73808e0d"
+    }
+  ],
+  "remaining": [
+    "production notices owner/freeze and complete native release/installed role set",
+    "actual gVisor admission and public graph/layout/CLI",
+    "affected remote qualification"
+  ],
+  "cleanup": "testing cleanup removed native output57,822,504B and sparse wrong-archive trial; official input retained for next consumers; no new containers/images/volumes or installed files"
+}

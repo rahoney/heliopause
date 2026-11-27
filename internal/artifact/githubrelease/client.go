@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const (
@@ -80,7 +81,12 @@ func (c *Client) Resolve(ctx context.Context, reference domain.ArtifactReference
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
-	identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), selector.Owner()+"-"+selector.Repo(), selector.Tag(), selector.Asset())
+	return resolvedArtifactForAsset(reference.Source(), asset)
+}
+
+func resolvedArtifactForAsset(source domain.SourceID, asset ResolvedAsset) (domain.ResolvedArtifact, error) {
+	selector := asset.Selector()
+	identity, err := domain.NewResolvedArtifactIdentity(source, selector.Owner()+"-"+selector.Repo(), selector.Tag(), selector.Asset())
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
@@ -109,7 +115,7 @@ func (c *Client) ResolveDependencies(ctx context.Context, reference domain.Artif
 
 // Acquire streams the asset selected during Resolve into a Run-private intake
 // directory. API-declared size and SHA-256 must both match observed bytes.
-func (c *Client) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
+func (c *Client) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (artifact domain.AcquiredArtifact, resultErr error) {
 	if err := validRequest(ctx, c); err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
@@ -120,28 +126,92 @@ func (c *Client) Acquire(ctx context.Context, runID domain.RunID, resolved domai
 	if err != nil || resolved.Identity().Name() != asset.selector.Owner()+"-"+asset.selector.Repo() || resolved.Identity().Version() != asset.selector.Tag() || resolved.Identity().Variant() != asset.selector.Asset() || resolved.DeclaredIntegrity() != "sha256:"+asset.digest.String() {
 		return domain.AcquiredArtifact{}, errors.New("GitHub Release resolved artifact is invalid")
 	}
-	directory, err := createGithubRunDirectory(c.intakeRoot, runID.String())
+	_, err = createGithubRunDirectory(c.intakeRoot, runID.String())
 	if err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
-	cleanup := func(cause error) (domain.AcquiredArtifact, error) {
-		if removeErr := os.RemoveAll(directory); removeErr != nil {
-			return domain.AcquiredArtifact{}, errors.Join(cause, fmt.Errorf("remove incomplete GitHub Release intake: %w", removeErr))
-		}
-		return domain.AcquiredArtifact{}, cause
-	}
-	digest, size, err := c.downloadAsset(ctx, asset, directory)
+	root, err := os.OpenRoot(c.intakeRoot)
 	if err != nil {
-		return cleanup(err)
+		return domain.AcquiredArtifact{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, root.Close()) }()
+	identity, err := root.Lstat(runID.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	held, err := root.OpenRoot(runID.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, held.Close()) }()
+	opened, err := held.Stat(".")
+	if err != nil || !os.SameFile(identity, opened) {
+		return domain.AcquiredArtifact{}, errors.New("GitHub Release intake directory changed")
+	}
+	var lease ports.StorageLease
+	var downloaded os.FileInfo
+	successful := false
+	defer func() {
+		if !successful {
+			current, cleanupErr := root.Lstat(runID.String())
+			if cleanupErr == nil && os.SameFile(identity, current) {
+				if downloaded != nil {
+					// Reuse the existing exact directory/asset ownership boundary.
+					cleanupErr = discardReplayRun(root, runID.String(), replayedReleaseRun{identity, downloaded})
+				} else {
+					cleanupErr = root.Remove(runID.String())
+				}
+				if cleanupErr == nil {
+					parent, err := root.Open(".")
+					cleanupErr = err
+					if err == nil {
+						cleanupErr = errors.Join(parent.Sync(), parent.Close())
+					}
+				}
+			} else {
+				cleanupErr = errors.Join(errors.New("GitHub Release intake cleanup ownership is unknown"), cleanupErr)
+			}
+			resultErr = errors.Join(resultErr, cleanupErr)
+			if lease != nil && cleanupErr == nil {
+				cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+				resultErr = errors.Join(resultErr, lease.Abort(cleanupCtx))
+				cancel()
+			}
+		}
+		if lease != nil {
+			resultErr = errors.Join(resultErr, lease.Close())
+		}
+	}()
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: runID, Kind: "intake", Temporary: runID.String(), Target: runID.String(), Bytes: asset.size + 1, Files: 1})
+		if err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	var digest string
+	var size uint64
+	digest, size, downloaded, err = c.downloadAsset(ctx, asset, held)
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
 	}
 	if size != asset.size || digest != asset.digest.String() {
-		return cleanup(errors.New("GitHub Release acquired bytes differ from resolved integrity"))
+		return domain.AcquiredArtifact{}, errors.New("GitHub Release acquired bytes differ from resolved integrity")
 	}
 	contentDigest, err := domain.NewSHA256Digest(digest)
 	if err != nil {
-		return cleanup(err)
+		return domain.AcquiredArtifact{}, err
 	}
-	return domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), contentDigest, "intake:"+runID.String()+":github-release", size, resolved.DeclaredIntegrity())
+	artifact, err = domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), contentDigest, "intake:"+runID.String()+":github-release", size, resolved.DeclaredIntegrity())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	successful = true
+	return artifact, nil
 }
 
 func validRequest(ctx context.Context, c *Client) error {
@@ -178,35 +248,37 @@ func (c *Client) release(ctx context.Context, selector Selector) ([]byte, error)
 	return body, nil
 }
 
-func (c *Client) downloadAsset(ctx context.Context, asset resolvedLocator, directory string) (string, uint64, error) {
+func (c *Client) downloadAsset(ctx context.Context, asset resolvedLocator, directory *os.Root) (string, uint64, os.FileInfo, error) {
 	requestCtx, cancel := context.WithTimeout(ctx, assetTimeout)
 	defer cancel()
 	endpoint := *c.api
 	endpoint.Path = "/repos/" + asset.selector.Owner() + "/" + asset.selector.Repo() + "/releases/assets/" + strconv.FormatUint(asset.assetID, 10)
 	response, err := c.assetRequest(requestCtx, endpoint.String())
 	if err != nil {
-		return "", 0, err
+		return "", 0, nil, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK || (response.ContentLength >= 0 && uint64(response.ContentLength) != asset.size) {
-		return "", 0, errors.New("GitHub Release asset returned unexpected response")
+		return "", 0, nil, errors.New("GitHub Release asset returned unexpected response")
 	}
-	temporary, err := os.OpenFile(filepath.Join(directory, ".asset.tmp"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	temporary, err := directory.OpenFile(".asset.tmp", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
-		return "", 0, err
+		return "", 0, nil, err
 	}
-	temporaryPath := temporary.Name()
-	defer func() { _ = os.Remove(temporaryPath) }()
+	temporaryPath := ".asset.tmp"
+	defer func() { _ = directory.Remove(temporaryPath) }()
 	hash := sha256.New()
-	written, copyErr := io.Copy(io.MultiWriter(temporary, hash), io.LimitReader(response.Body, int64(asset.size)+1))
-	syncErr, closeErr := temporary.Sync(), temporary.Close()
-	if copyErr != nil || syncErr != nil || closeErr != nil || written == 0 || uint64(written) != asset.size {
-		return "", 0, errors.New("stream GitHub Release asset failed or differed from declared size")
+	written, copyErr := io.Copy(io.MultiWriter(temporary, hash), ports.DownloadReader(ctx, io.LimitReader(response.Body, int64(asset.size)+1), int64(asset.size)))
+	syncErr := temporary.Sync()
+	created, statErr := temporary.Stat()
+	closeErr := temporary.Close()
+	if copyErr != nil || syncErr != nil || statErr != nil || closeErr != nil || written == 0 || uint64(written) != asset.size {
+		return "", 0, nil, errors.New("stream GitHub Release asset failed or differed from declared size")
 	}
-	if err := os.Rename(temporaryPath, filepath.Join(directory, "asset")); err != nil {
-		return "", 0, err
+	if err := directory.Rename(temporaryPath, "asset"); err != nil {
+		return "", 0, nil, err
 	}
-	return hex.EncodeToString(hash.Sum(nil)), uint64(written), nil
+	return hex.EncodeToString(hash.Sum(nil)), uint64(written), created, nil
 }
 
 func (c *Client) request(ctx context.Context, rawURL, accept string, permitRedirect bool) (*http.Response, error) {
@@ -216,6 +288,7 @@ func (c *Client) request(ctx context.Context, rawURL, accept string, permitRedir
 	}
 	request.Header.Set("Accept", accept)
 	request.Header.Set("User-Agent", "helox/0")
+	request.Header.Set("X-GitHub-Api-Version", APIVersion)
 	clientCopy := *c.httpClient
 	clientCopy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	response, err := clientCopy.Do(request)

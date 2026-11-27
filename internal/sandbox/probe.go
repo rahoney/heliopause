@@ -87,7 +87,7 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 	if err != nil {
 		return unavailable, nil
 	}
-	if !atLeastVersion(strings.TrimSpace(string(dockerVersion)), runtimeidentity.DockerMinimumEngine) {
+	if !runtimeidentity.DockerEngineSupported(strings.TrimSpace(string(dockerVersion))) {
 		return unsupported, nil
 	}
 	runscVersion, err := executor.Output(ctx, "runsc", "--version")
@@ -106,6 +106,7 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 var RequiredObservationPoints = []string{
 	"syscall/open_result",
 	"syscall/socketpair_result",
+	"sentry/filesystem_mutation",
 	"sentry/mount_topology_snapshot",
 	"sentry/mount_topology_mutation",
 }
@@ -119,15 +120,4 @@ func VerifyPatchCapability(traceMetadata string) error {
 		}
 	}
 	return nil
-}
-
-func atLeastVersion(actual, minimum string) bool {
-	var actualMajor, actualMinor, actualPatch, minimumMajor, minimumMinor, minimumPatch int
-	if _, err := fmt.Sscanf(actual, "%d.%d.%d", &actualMajor, &actualMinor, &actualPatch); err != nil {
-		return false
-	}
-	if _, err := fmt.Sscanf(minimum, "%d.%d.%d", &minimumMajor, &minimumMinor, &minimumPatch); err != nil {
-		return false
-	}
-	return actualMajor > minimumMajor || actualMajor == minimumMajor && (actualMinor > minimumMinor || actualMinor == minimumMinor && actualPatch >= minimumPatch)
 }

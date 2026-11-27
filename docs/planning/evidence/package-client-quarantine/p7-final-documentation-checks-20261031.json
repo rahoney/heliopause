@@ -1,0 +1,61 @@
+{
+  "work_item": "M13-004/P7 documentation handoff",
+  "status": "PASS",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "profiles": [
+    {
+      "profile": "docs",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "started_at": "2026-10-30T23:41:24.244829+00:00",
+      "completed_at": "2026-10-30T23:41:24.575058+00:00",
+      "elapsed_seconds": 0.33,
+      "exit_code": 0,
+      "log": "/tmp/haa-p7-final-docs-20261031/docs.log",
+      "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+      "source_unchanged": true,
+      "raw_log": "docs/github-logs/package-client-quarantine-20261021/p7-final-docs-docs.log",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "log_bytes": 22
+    },
+    {
+      "profile": "security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "started_at": "2026-10-30T23:41:25.312257+00:00",
+      "completed_at": "2026-10-30T23:41:36.150670+00:00",
+      "elapsed_seconds": 10.838,
+      "exit_code": 0,
+      "log": "/tmp/haa-p7-final-docs-20261031/security.log",
+      "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+      "source_unchanged": true,
+      "raw_log": "docs/github-logs/package-client-quarantine-20261021/p7-final-docs-security.log",
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a",
+      "log_bytes": 166
+    }
+  ],
+  "source51_unchanged_and_private_equal": true,
+  "input_manifest": "docs/github-logs/package-client-quarantine-20261021/p7-final-docs-input-manifest.json",
+  "runtime_full_native_CPP_or_CI_reexecution": false,
+  "scope": "22 explicit documentation/receipt paths on existing exact-source private checkout; outcome/status recording follows checks; no product/checker source delta",
+  "delivery": "raw logs/local receipts retained in workspace; public CI URLs remain original remote evidence",
+  "post_result_docs_readback": {
+    "profile": "docs",
+    "reason": "post-success state and new checks-receipt link readback only; no repeated security/source/native/full/CI",
+    "exit_code": 0,
+    "elapsed_seconds": 0.28,
+    "completed_at": "2026-10-30T23:43:33.570762+00:00",
+    "files": 23,
+    "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+    "raw_log": "docs/github-logs/package-client-quarantine-20261021/p7-final-docs-final-readback.log"
+  },
+  "post_check_changes": "outcome/current-status recording only; JSON parse and Git whitespace check apply to final delivery; no source/checker or new implementation delta"
+}

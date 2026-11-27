@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "baseline": "3623d1ecc51320084e8556aa86d9bff45d2ad029",
+  "scope": "UV-specific native startup and exact fixed Python interpreter query; local qualification only, no production UV resolver/CLI support",
+  "sources": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "ce292a9e2d42b6069dab8edcc6c5314cc3a78a28c0c735f4218aa47e161631f4"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "29f7ecf336476957f6780531f6707a0e20912042cedb2b6f10f89c6178a6fb6a"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_real_test.go",
+      "sha256": "0d378efe0883d3856aeb6f911607aa9e4f6ffbacdf179cc6f87fe7e350befd05"
+    }
+  ],
+  "cpp": {
+    "recipe": "scripts/build-gvisor-observer-release.sh",
+    "seconds": 279.815,
+    "latch_tests": 106,
+    "exit": 0,
+    "observer": {
+      "sha256": "8558d55149fc13c0ad18ff7176d2be32780706bbcf06d089647f7a6318bc6074"
+    }
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.965,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 44.467,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.676,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.215,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.78,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "native": {
+    "startup": {
+      "status": "PASS",
+      "seconds": 3.73,
+      "trace_events": 29,
+      "trace_bytes": 3306,
+      "complete": true
+    },
+    "empty_target_query": {
+      "status": "PASS",
+      "seconds": 3.96,
+      "stdout": "[]",
+      "trace_events": 31,
+      "trace_bytes": 3551,
+      "complete": true
+    },
+    "uid": 1000,
+    "network": "none",
+    "host_before_after_identical": true,
+    "remaining_containers": 0,
+    "remaining_volumes": 0,
+    "remaining_observer_endpoints": 0,
+    "daemon_waits": [
+      0,
+      0
+    ],
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-query-final-actual.json"
+  },
+  "query_authority": {
+    "role": "ARTIFACT",
+    "source": "one first exec from actual kernel clone of admitted UV root, exact launcher and immutable interpreter",
+    "network_grant": false,
+    "inherited_on_clone_or_reexec": false,
+    "python_profile_expanded": false,
+    "metadata_is_policy_or_completion_authority": false
+  },
+  "cleanup": {
+    "targets": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/query-final"
+    ],
+    "entries": 6833,
+    "unique_regular_logical_bytes": 688167061,
+    "references": 0,
+    "query_errors": 0,
+    "all_absent": true
+  },
+  "implemented": true,
+  "wired": "native fixture and unconditional CI selector; production NO",
+  "qualified": "local startup/query only; remote same-candidate existing consumers pending",
+  "acceptance_closed": false,
+  "missing": [
+    "production typed-network native UV selection/data-reader",
+    "guarded install/upgrade/sync and CLI",
+    "new source remote qualification; macOS timeout cause unresolved"
+  ]
+}

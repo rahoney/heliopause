@@ -1,0 +1,98 @@
+{
+  "scope": "P4-M3 guarded complete managed tool receipt/files and retained/retired/new exposed link publication/rollback helper only",
+  "baseline": "f04f9475e40c3ccc37c5ee122e5603710f0f88be",
+  "implemented": "YES",
+  "wired": "YES (existing complete venv engine and concrete optional original-link participant); NO (native upgrade/current update backend/public CLI)",
+  "qualified": "YES (named local canonical/full Promotion Race/fresh actual preservation)",
+  "acceptance_closed": "YES (named complete publication helper); NO (original upgrade/P4)",
+  "checks": [
+    {
+      "receipt": "p4m3-tool-complete-publication-v2-quick.json",
+      "seconds": 176.358,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "receipt": "p4m3-tool-complete-publication-v2-security.json",
+      "seconds": 11.439,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "receipt": "p4m3-tool-complete-publication-v2-docs.json",
+      "seconds": 0.255,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "receipt": "p4m3-tool-complete-publication-v2-full-affected-race.json",
+      "seconds": 162.792,
+      "log_sha256": "472ebb0c0f278daf8c5b7d20c2cd71408ef379950c406b5687746032b11c3daf"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/promotion/tool_original.go",
+      "sha256": "9813f0c763b87c146bd2e87b524e2c278ea95c44ac815882565c14219de1f3e9"
+    },
+    {
+      "path": "internal/promotion/tool_original_test.go",
+      "sha256": "b8c4f5f8b67f93843e425de000a22816b3a50537d979bcf8d2e4ebb75c174e7c"
+    },
+    {
+      "path": "internal/promotion/tool_target.go",
+      "sha256": "40488b5899296794784a7b78b0f05ee8595c1189a49be3837436b3bbeca981ba"
+    },
+    {
+      "path": "internal/promotion/tool_publication.go",
+      "sha256": "6bbfddbc63e0091644e2fad090e3cfb242b85e319ac5fab5b342da790aaa17c1"
+    },
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "sha256": "905ab7c3d4e8363f0cf73e800ae4893a35765215595df319959f97b14d796074"
+    },
+    {
+      "path": "internal/promotion/tool_original_publication.go",
+      "sha256": "4e24de637282f43878192d3ae5d308ee2cedee8db587982a32641c02ae9fdb4a"
+    },
+    {
+      "path": "internal/promotion/tool_original_publication_test.go",
+      "sha256": "0a77dde950f0102fe9f3af2f890a6fc120f0b6597f366b7d44af5fe77bdae1d8"
+    }
+  ],
+  "mechanical_reuse": "p4m3-complete-engine-mechanical-reuse-v2.json; existing venv engine byte-identical apart from one optional post-cleanup tool-original disposal hook",
+  "verified": [
+    "changed and same-version complete publication",
+    "retained/new command identity and obsolete command/script/metadata retirement",
+    "ten injected transaction faults restore original file/link inode, bytes, mode, receipt and ownership",
+    "cancellation restores complete original",
+    "foreign published links/old backups/private data retained with backup/journal/two guards",
+    "post-publication old-backup disposal failure retains recovery, never success",
+    "new external/internal/case collisions before mutation and late case alias rollback preserve foreign data"
+  ],
+  "actual": {
+    "receipt": "p4m3-tool-complete-publication-native-v1-result.json",
+    "seconds": 80.336,
+    "fresh_cli_seconds": 77.46,
+    "subcases": {
+      "json": 30.09,
+      "human_with_spaces": 29.3,
+      "unowned_site": 1.6,
+      "occupied_command": 16.46
+    },
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "host_protected_snapshot_identical": true,
+    "no_skip": true,
+    "binary": {
+      "path": "/tmp/hpr-bx53162k/tool-complete-publication-native-v1/bootstrap.test",
+      "size": 49473643,
+      "sha256": "68c18090587e19d53372ffad6199a3ed60c310d12d9333629fae6a816807a4f2"
+    },
+    "scope": "Existing fresh CLI only; no public original upgrade/Host command execution claim"
+  },
+  "missing": [
+    "Native metadata-only original replay/actual UV upgrade/whole output and source binding",
+    "Current full approved update pipeline/public upgrade CLI",
+    "Native tool adoption/pipx production",
+    "P5/P6/P7 final source/support matrix"
+  ],
+  "remote_ci": "CI414294bb57 only, actual65m timer due03:48:42UTC; no new push for M1/M2/M3"
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "helox.pnpm-inspection-payload-local/v1",
+  "baseline": "2f577ce8809e88e6709d2bcbb6ae707323a97ee1",
+  "scope": "B4b1 deterministic minimum payload and exact project readback with hardlink sharing; named local unit/negative/default/Race qualification only",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "NO (fresh production instance consumer pending B4b2)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/artifact/npm/pnpm_layout_archive.go",
+      "sha256": "646d0422bd14738e97644f4ecb2fa861b395f83f2e0daaa30b4dde2c1d54490d"
+    },
+    {
+      "path": "internal/sandbox/pnpm_inspection_payload.go",
+      "sha256": "5f50c5e3ac12fd0b86d7166c24fb9f14739548b1efbf59a8d6756a649f3b8535"
+    },
+    {
+      "path": "internal/sandbox/pnpm_inspection_payload_test.go",
+      "sha256": "d3b1ca7d5563e77bf315bcd4ccf17260b40f8006b4169a56fe62b71904c766b6"
+    },
+    {
+      "path": "internal/sandbox/pnpm_inspection_prepare_test.go",
+      "sha256": "2b0c03b4807f84c9db9f504669d9bffcba97683a8ffcc512cfda567cc4ad913f"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 2.072,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-format.json",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-format.log",
+      "sha256": "5ad5f85eddb0aebe47a32891317511db8b988ced5fd8970494a4946729548c10"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 229.309,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-quick.json",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-quick.log",
+      "sha256": "c21802d061e60a7bdda7d9e5cc1d55eae10d3d6779d3e535961299e17df3a8b4"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 13.662,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-security.json",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-security.log",
+      "sha256": "269897210d30f1edec71bde83459906a3183d866563d23ee6e4d783a0b4be823"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.235,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-docs.json",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-docs.log",
+      "sha256": "cbc12001aec296a5543c12764bc9fb8070833220fd7087cf44cbb5749c0182b6"
+    },
+    {
+      "profile": "race",
+      "exit": 0,
+      "seconds": 25.352,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-race.json",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resumed-race.log",
+      "sha256": "672dc688ffa524c5fbbdbb49167654b6bd81ce15ef00a968f7c8c3d20539aa07"
+    }
+  ],
+  "meaningful_cases": [
+    "private root manifest and removal of generated metadata",
+    "deterministic rendering and exact whole-project readback",
+    "same-byte separate files versus shared hardlink partition",
+    "equivalent hardlink representative admitted; merged or split partition refused",
+    "foreign root settings and changed bytes, coverage, mode, owner or link refused",
+    "copy/readback errors and cancellation preserve original cause"
+  ],
+  "environment": {
+    "go": "1.27.3",
+    "GOMAXPROCS": "2",
+    "quality_cache": "retained warm cache",
+    "network": "offline canonical profiles",
+    "build_and_runtime_limits": "unchanged"
+  },
+  "previous_timeouts": "preserved; not source findings or unit PASS; RSS growth cause remains unknown",
+  "missing": [
+    "fresh instance production backend and actual execution",
+    "static-all gate and instance/session aggregate",
+    "Host records/transaction/CLI and whole P2 qualification"
+  ],
+  "restoration_receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b1-resume-projection-20261025.json"
+}

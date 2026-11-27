@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "baseline": "4dedfd846ffd9fa0c1f037d216cb0f54833ee6f5",
+  "scope": "C3e3/A1 existing original Python metadata snapshot and native inventory input sharing only; no complete deletion/publication/CLI",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES in existing pip/UV install-update original guard; complete sync CLI NO",
+  "QUALIFIED": "LOCAL ONLY; fresh same-source shared CI pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "fresh same-source actual shared consumers and Required qualification"
+  ],
+  "source": [
+    {
+      "path": "internal/promotion/pypi_update.go",
+      "bytes": 16058,
+      "sha256": "919dd00814c5b8eb9673f6544f7ec65382087a21fc064f573fa0d79ecd280205"
+    },
+    {
+      "path": "internal/promotion/pypi_native_inventory.go",
+      "bytes": 11072,
+      "sha256": "30c55bab7ea9011e2449df56dd9c667aa6c628c87cb81755fc3b54e9c7262699"
+    },
+    {
+      "path": "internal/promotion/pypi_installed_snapshot.go",
+      "bytes": 6648,
+      "sha256": "69a003392a0c7d8415d1d612d50c11172b6954c843ac2558622b58274e060aa6"
+    },
+    {
+      "path": "internal/promotion/pypi_installed_snapshot_test.go",
+      "bytes": 2653,
+      "sha256": "fdf0151e6bd248e009b8d1fb235a13135bdcc53bc8ae605421a5d68fd93fd425"
+    }
+  ],
+  "source_equivalence": {
+    "baseline": "4dedfd8",
+    "pinned_formatter": "Go1.26.10",
+    "capture_core": "identical after local files ownership and helper return-type substitutions",
+    "verify_core": "identical after session transaction becomes explicit helper argument",
+    "directory_limit": "same 1024 value, now shared UpgradeInputDistributionLimit rather than separate literal",
+    "scope": "source body comparison only; does not replace canonical/current-consumer tests"
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.309,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-format.json",
+        "bytes": 110,
+        "sha256": "43e2b506cffd31f32ea0e73237dbeb3ea0bf17a3ad752685adcb03f4e8e5d7f6"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 111.42,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-quick.json",
+        "bytes": 110,
+        "sha256": "443799f74c6fe3aace71076c616f31445acecfb2e4135740127da9e8cece7b67"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-quick.log",
+        "bytes": 1354,
+        "sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 6.434,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-security.json",
+        "bytes": 112,
+        "sha256": "43859396417b6f449ff61c4b0664a767369807910e5499fa1754a30c1988e460"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.219,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-docs.json",
+        "bytes": 108,
+        "sha256": "4d56c50d448683916c2a83af23e430a6c9cdbf0dad72af3583be2d6a41f49104"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.735,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-workflow.json",
+        "bytes": 112,
+        "sha256": "6517415de3334e731f6b22ca3f5e8114ced4dbcaab9ebb8aa567a1d4b3da66d7"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-workflow.log",
+        "bytes": 1071,
+        "sha256": "88264619f503566230f32c005e0870355ff91fb1ee56711f8e0279e4b532508c"
+      }
+    }
+  ],
+  "race": {
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/promotion",
+      "./internal/bootstrap",
+      "./internal/application"
+    ],
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "exit": 0,
+    "seconds": 132.41
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-race.json",
+      "bytes": 281,
+      "sha256": "5d5ec1970f26b914ba45e046c221cf7f7338b44c907d65b6bcbf3dc9ab536d52"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-race.log",
+      "bytes": 187,
+      "sha256": "c73096cd5707a9a95ea993363074b40597655bba31ce920f7d4d2c4b493c8106"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-installed-snapshot-a1-body-equivalence.json",
+      "bytes": 452,
+      "sha256": "9d54a23c1a24e66996d56bde4d756d74da28d51b275823dca1f17410c8aba6ff"
+    }
+  ],
+  "P1_remaining": [
+    "actual source/target complete guard and all old-native proof",
+    "complete-only transaction/cache/Manifest/SBOM/offline publication",
+    "CLI source/flag/static SKIP/report and whole P1 qualification"
+  ],
+  "cleanup": {
+    "all_local_check_processes_completed": true,
+    "fresh_owned_go_tmpdir_entries": 0,
+    "new_native_resource_setup": "NONE for this source unit; retain active source/SDK/runtime/cache and small original logs"
+  }
+}

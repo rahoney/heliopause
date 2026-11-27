@@ -164,7 +164,10 @@ func NewApprovedProjectBuild(report ProjectBuildReport, verification Verificatio
 		verification.Execution().ID().String() != "project-build-input-binding" || verification.Outcome() != VerificationVerified || len(verification.Findings()) != 0 || len(report.inspection.Findings()) != 0 {
 		return ApprovedProjectBuild{}, errors.New("project build requires completed exact Run and ALLOW")
 	}
-	if _, err := NewPolicyInput(report.inputs.RunID(), report.inputs.Source(), verification, report.inspection, result.Evidence()); err != nil {
+	if !result.CheckPlan().Valid() {
+		return ApprovedProjectBuild{}, errors.New("project build approval requires its frozen check declaration")
+	}
+	if _, err := NewPolicyInput(report.inputs.RunID(), report.inputs.Source(), verification, report.inspection, result.Evidence(), result.CheckPlan()); err != nil {
 		return ApprovedProjectBuild{}, err
 	}
 	checks := append([]CheckExecution{verification.Execution()}, report.inspection.Executions()...)

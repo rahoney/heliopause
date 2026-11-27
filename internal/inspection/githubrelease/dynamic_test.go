@@ -35,6 +35,46 @@ func TestDynamicInspectorNormalizesAndFailsClosed(t *testing.T) {
 	}
 }
 
+func TestELFRequiredEnvironmentCoverageAndEvidence(t *testing.T) {
+	artifact := dynamicArtifact(t)
+	complete := result(t, domain.SandboxCompleted, "", nil)
+	for _, name := range []string{"missing", "one", "uncovered", "complete"} {
+		t.Run(name, func(t *testing.T) {
+			states := complete.EnvironmentStates()
+			switch name {
+			case "missing":
+				states = nil
+			case "one":
+				states = states[:1]
+			case "uncovered":
+				states[1].VFSOperationsCovered = false
+			}
+			observed, err := domain.NewSandboxResult(complete.SessionID(), domain.SandboxCompleted, "", nil, states...)
+			if err != nil {
+				t.Fatal(err)
+			}
+			report, err := githubDynamicReport(artifact, observed, "github-release-elf-dynamic")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if name != "complete" {
+				if report.Execution().Status() != domain.ExecutionIncomplete {
+					t.Fatal("missing coverage completed")
+				}
+				return
+			}
+			if report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 3 {
+				t.Fatal("complete environment evidence missing")
+			}
+			for _, fact := range report.Evidence() {
+				if fact.CheckID() != report.Execution().ID() || fact.Identity() != artifact.Identity() || fact.Digest() != artifact.Digest() {
+					t.Fatal("foreign workspace Evidence")
+				}
+			}
+		})
+	}
+}
+
 type githubFakeSandbox struct{ result domain.SandboxResult }
 
 func (f githubFakeSandbox) Execute(context.Context, domain.SandboxRequest) (domain.SandboxResult, error) {
@@ -52,7 +92,14 @@ func dynamicArtifact(t *testing.T) domain.AcquiredArtifact {
 }
 func result(t *testing.T, status domain.SandboxStatus, code string, observations []domain.SandboxObservation) domain.SandboxResult {
 	id, _ := domain.ParseSandboxSessionID("sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa")
-	value, err := domain.NewSandboxResult(id, status, code, observations)
+	var states []domain.SandboxEnvironmentState
+	if status == domain.SandboxCompleted {
+		digest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+		for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+			states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true})
+		}
+	}
+	value, err := domain.NewSandboxResult(id, status, code, observations, states...)
 	if err != nil {
 		t.Fatal(err)
 	}

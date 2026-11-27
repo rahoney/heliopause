@@ -1,0 +1,118 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B3b2a",
+  "baseline": "1f410fd62bf1e94469048e890fa18212e19818dc",
+  "status": "LOCAL_VERIFIED_UNTRUSTED_LAYOUT_ENVELOPE_PARSER_ONLY",
+  "implemented": "YES_BOUNDED_FORMAT_PARSER",
+  "wired": "YES_NATIVE_GATED_FIXTURE; NO_FULL_LAYOUT_EXECUTION_AUTHORITY",
+  "qualified": "NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_layout_archive.go",
+      "sha256": "addca2e499c1ebb102a58041dc06cb3712f9d53d53fd2d495f1438eb7d8bb034"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_layout_archive_test.go",
+      "sha256": "65808fc57034ff25c2f5133596216df28782d46584ef35e981554d7bf87ae19f"
+    },
+    {
+      "path": "internal/sandbox/pnpm_layout_inventory_real_test.go",
+      "sha256": "1a8f75cec8b7bb7ff43f3503e1bdc0c6595960d26585382ac1960106acf2c8c4"
+    }
+  ],
+  "checks": {
+    "security_seconds": 12.63,
+    "quick_seconds": 58.003,
+    "docs_seconds": 0.281,
+    "npm_artifact_full_race_seconds": 6.037
+  },
+  "failures_preserved": [
+    "first Quick SA1019 on deprecated Xattrs, before default/actual",
+    "PAX correction Quick success, then gosec G110 on Copy; fixed CopyN after exact header bound"
+  ],
+  "actual": {
+    "seconds": 21.319,
+    "test_seconds": 18.54,
+    "transitive_instances": 2,
+    "peer_instances": 4,
+    "production_envelope_parser_consumed": true,
+    "original_controls_and_identity_links_unchanged": true,
+    "trace_complete": true,
+    "forbidden_observations": 0,
+    "host_unchanged": true,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "final_original": 0,
+    "full_layout_validated": false,
+    "dynamic_executed": false,
+    "policy_or_host_installation_executed": false
+  },
+  "cleanup": {
+    "logical_bytes": 165567367,
+    "files": 11,
+    "all_uid_references": 0,
+    "query_errors": 0,
+    "target_absent": true
+  },
+  "not_qualified": [
+    "binding all layout files to acquired inventories and frozen edges",
+    "generated bin code/metadata/hoist verification",
+    "production prepare/static-all/per-instance aggregate",
+    "Host transaction/records/CLI/full P2"
+  ],
+  "raw_evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-first-quick.json",
+      "sha256": "74d15b5c902aed30f5e360119a92c58ec3027a2b5c7a6b5e26c687a613f7d3db"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-first-quick.log",
+      "sha256": "ad05fc6c1fa897452fb14c2c818a08125869efb5fe6f5ba38f1720a092b14f4b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-pax-quick.json",
+      "sha256": "480389ebdbbebd43853567b4f6983c9a9dea1c5658d38472dac404f0dc522f80"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-pax-security.json",
+      "sha256": "8905edcf537df9ea4b10a3ac39e3e85593daa1cdd1317bf30258707d8cccd370"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-pax-security.log",
+      "sha256": "42b18807b3b791774086027c2aa2643f0c66e0eb137f660d6323d12f5fb867f2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-bounded-security.json",
+      "sha256": "fd181d7d5c7e5a99d1ad7a4ea3b502b2ac6ede7d3fa12e25013f54c47bac3e38"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-bounded-quick.json",
+      "sha256": "87ccfb3f279a51a5b26c62de5ed12688caf8249a5b6ddf99fe2b56ba8c6f1d0d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-bounded-docs.json",
+      "sha256": "d214d82e3951d4aa421681e1fd8c2fd283b3d1ad281e0361fc0fe6dc6680db69"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-envelope-full-race.json",
+      "sha256": "7aad16983d396e46e85af9fca49da77efed19727459b42ccbd516bfdd04f7c2b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-pnpm-layout-envelope-runtime-preparation.json",
+      "sha256": "b4ad6840142a538be9c1fb6bf7b28755c0dd449d3892e99826fe9ad41e9375ea"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-pnpm-layout-envelope.json",
+      "sha256": "4f1f024348e866950f8b0ef4f550015768f28e8b9782f15e573ccf7c17bdd0bc"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-pnpm-layout-envelope-actual.log",
+      "sha256": "7a561bf8e708814c938f55fa4d5affb9267a18db99fb12c026714dad67e6fb19"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2a-pnpm-layout-envelope-completed-runtime-cleanup.json",
+      "sha256": "4f81194ecfaf5fd8b349684cf759a904aec48d06d89e851ad13ad13e3c3363b5"
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import (
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type goBuildInputObserver interface {
@@ -76,6 +77,7 @@ type goBuildRuntime struct {
 	id        string
 	trace     TraceReader
 	collected bool
+	responder *inspectionResponder
 }
 
 type goBuildOperation struct {
@@ -120,9 +122,11 @@ func (b *ObservedGoBuilder) Build(ctx context.Context, inputs domain.ProjectBuil
 			OutputFiles                         int
 			OutputFileBytes, OutputArchiveBytes int64
 			Profile                             string
-		}{"go-build-v2", PinnedGoRuntime(), goBuildCreateArgumentsForCache(goBuildGuestCache), goBuildValidationArguments(inputs.Selector()), goBuildRoleArguments(inputs.Selector()), goBuildCompilerArguments(inputs.Selector()),
+			GVisorPatch                         string
+			NormalizedEventLimit                uint64
+		}{"go-build-single-environment-v1", PinnedGoRuntime(), goBuildCreateArgumentsForCache(goBuildGuestCache), goBuildValidationArguments(inputs.Selector()), goBuildRoleArguments(inputs.Selector()), goBuildCompilerArguments(inputs.Selector()),
 			goBuildRecipeTopology(false), goBuildRecipeTopology(true), goBuildInputCapacity, goBuildOutputCapacity,
-			artifactgo.MaxBuildOutputFiles, artifactgo.MaxBuildOutputFileBytes, artifactgo.MaxBuildOutputArchiveBytes, goBuildProfile})
+			artifactgo.MaxBuildOutputFiles, artifactgo.MaxBuildOutputFileBytes, artifactgo.MaxBuildOutputArchiveBytes, goBuildProfile, runtimeidentity.GVisorPatchSHA256, maximumGoBuildLedgerEvents})
 		if marshalErr != nil {
 			return domain.ProjectBuildObservation{}, errGoBuildInput
 		}
@@ -206,6 +210,9 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 	operation := &goBuildOperation{builder: b, phase: "INPUT"}
 	defer func() {
 		primary := resultErr
+		if operation.commandReason == "" && (errors.Is(primary, context.DeadlineExceeded) || errors.Is(primary, context.Canceled)) {
+			operation.commandReason = pythonCommandErrorReason(primary)
+		}
 		cleanup := operation.dispose()
 		resultErr = errors.Join(primary, cleanup)
 		if operation.output != nil {
@@ -320,6 +327,7 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 		if err != nil {
 			return result, output, err
 		}
+		operation.phase = "POST_CAPTURE_INPUT"
 		if err := operation.verify(ctx, build); err != nil {
 			return result, output, err
 		}
@@ -381,7 +389,7 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 		return nil, err
 	}
 	if _, err := o.builder.runner.Output(ctx, "docker", "start", id); err != nil {
-		return nil, errors.New("go build runtime start failed")
+		return nil, errors.Join(errors.New("go build runtime start failed"), err)
 	}
 	if awaitBoundaryHelper(ctx, o.builder.runner, id) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
 		return nil, errors.New("go build runtime boundary is incomplete")
@@ -441,11 +449,7 @@ func (o *goBuildOperation) dispose() error {
 	for _, volume := range []*closureVolume{&o.outputVolume, &o.volume} {
 		if volume.name != "" {
 			ctx, cancel := resolverCleanupContext()
-			if volume.verify(ctx, o.builder.runner) != nil {
-				err = errors.Join(err, errors.New("go build volume cleanup identity unavailable"))
-			} else if _, failure := o.builder.runner.Output(ctx, "docker", "volume", "rm", volume.name); failure != nil {
-				err = errors.Join(err, errors.New("go build volume cleanup failed"))
-			}
+			err = errors.Join(err, closeWritableOutputVolume(ctx, o.builder.runner, volume, volume.destination()))
 			cancel()
 		}
 	}

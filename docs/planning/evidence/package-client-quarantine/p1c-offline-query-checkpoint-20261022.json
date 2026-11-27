@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "baseline": "0fa2f853699049e6407b91db2cf6ad8a98446d42",
+  "scope": "trusted offline UV/Python inventory prerequisite only; no production resolver/CLI support",
+  "implemented": true,
+  "wired": "opt-in fixture only",
+  "qualified": false,
+  "acceptance_closed": false,
+  "first_faults": [
+    "own-PID cgroup",
+    "own-PID mountinfo",
+    "exact CPU quota",
+    "exact CPU period",
+    "dev-null read"
+  ],
+  "cpp_latch_results": [
+    {
+      "iteration": "1",
+      "latches": 105,
+      "exit": 0
+    },
+    {
+      "iteration": "2",
+      "latches": 105,
+      "exit": 0
+    },
+    {
+      "iteration": "3",
+      "latches": 105,
+      "exit": 0
+    },
+    {
+      "iteration": "4",
+      "latches": 105,
+      "exit": 0
+    }
+  ],
+  "last_actual": "docs/github-logs/package-client-quarantine-20261021/uv-python-inventory-iteration-4.json",
+  "candidate": {
+    "status": "NOT_TESTED; build request rejected before execution",
+    "automatic_review_reason": "repeated privileged runtime trials and cumulative observer exception risk",
+    "exact_proposal": "read-only /dev/null on system /dev, flags557056, sealed UV CONTROL direct root only",
+    "sources": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "c773940567b944fd01e6a428936980173a2543ffc8fe7804bdca9a850b9b94bf"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "9dcca556df7f737f347444f76f19fe685a52f07de87f87330ea81524026a1555"
+      }
+    ]
+  },
+  "cleanup": {
+    "files": 43784,
+    "bytes": 1364563752,
+    "references": 0,
+    "query_errors": 0,
+    "host_unchanged": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-c1b-completed-qualification-cleanup.json"
+  },
+  "missing": [
+    "approved bounded C++ candidate verification",
+    "successful interpreter inventory",
+    "typed-network UV resolver",
+    "guarded native install/upgrade/sync",
+    "production CLI wiring and full qualification"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "status": "REVISE_U1_D3_APPLICATION_DEFERRED",
+  "reviewer": "independent delegate /root/d3_entry_review under approved D5",
+  "method": "read-only actual source/callers/tests; no build/test/Host/CI/mutation",
+  "original_head": "4a43f2cd61fb1228919f7cb452d95088daf85d4b",
+  "original_uncommitted_files_sha256": {
+    "internal/hosttool/process_lease_linux.go": "b7a403dcca9891cfe90d886865545c974303d8f002bf905b12dd9b068c1ea0c8",
+    "internal/hosttool/observation_resource_linux.go": "a39e282b5c7491baa13cdee154fa2f8a49ba57e26bbbb1ea6bcd4d3d973c8338",
+    "internal/hosttool/policy_engine.go": "1d5bfa028dc128059cb6a832daf6cf80d9811fbe924fccd9cd460029452cf2ca",
+    "internal/bootstrap/bootstrap.go": "9650ae0ee114f1aa19d2d92f521dba142a2ad07a60a71fa46b214e380c9b2798",
+    "internal/sandbox/observer_supervisor.go": "3a3ee371934faf248d881e8d8c5641a57108812d99a0b079bef0e394f766420f",
+    "internal/sandbox/shared_observer.go": "95a2be33a992de1285220bae1431b27d54a9abe9e1aa1a08ff3a056dc49c3e26",
+    "tools/gvisor-observer/observer.cc": "3ac1032ba689ba5f335220a1fbf0260a00fd34d8d607bb3ea8851c94b13dccd5"
+  },
+  "actual_R3_tree": "a95c084fc77b8c5c45e99c44b3540ec11b170dfd",
+  "U1_in_R3": false,
+  "findings": [
+    "reclaim incomplete still loses lease",
+    "quiet2 not creation completion fence",
+    "cleanup failure still explicit release",
+    "helper restart loses RAM authority and policy.RemoveForNetwork nil is not absence proof",
+    "optional lease plus Owner empty permits unowned execution path",
+    "retained write length/error and sync unchecked",
+    "stream-socket stale tests mismatch actual DGRAM/SEQPACKET"
+  ],
+  "independent_R4_scope": "ordinary R0-R8 source-selection preapproval covers F6/144/148 implementation+validation without U1; preserve current strict fail-closed supervisor. R3 mandatory full then stage procedure. Does not satisfy D3 or entire R4 acceptance.",
+  "new_D3_contract_requires_exact_candidate_independent_review_and_user_approval": true
+}

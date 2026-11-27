@@ -323,7 +323,7 @@ func (p *graphInspectionPorts) InspectGraph(_ context.Context, graph domain.Lock
 			checkID, _ = domain.NewCheckID("pypi-dynamic-import")
 			status, limitation = domain.ExecutionIncomplete, p.dynamicFailure
 		}
-		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
+		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation, fixtureCheckProfile())
 		evidence, _ := domain.NewEvidence(mustEvidenceID("graph-inspection-"+artifact.Identity().Name()), checkID, artifact.Identity(), artifact.Digest(), "fixture", "graph inspection completed")
 		var findings []domain.Finding
 		if p.dynamicFinding != "" && artifact.Identity().Name() == "first" {
@@ -387,7 +387,7 @@ func (p *multiInspectionPorts) Resolve(_ context.Context, _ domain.ArtifactRefer
 func (p *multiInspectionPorts) Verify(_ context.Context, artifact domain.AcquiredArtifact) (domain.VerificationReport, error) {
 	p.calls = append(p.calls, "verify:"+artifact.Identity().Name())
 	checkID, _ := domain.NewCheckID("fixture-integrity")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", fixtureCheckProfile())
 	evidence, _ := domain.NewEvidence(mustEvidenceID("integrity-"+artifact.Identity().Name()), checkID, artifact.Identity(), artifact.Digest(), "fixture", "integrity completed")
 	return domain.NewVerificationReport(check, domain.VerificationVerified, []domain.Evidence{evidence})
 }
@@ -395,12 +395,12 @@ func (p *multiInspectionPorts) Verify(_ context.Context, artifact domain.Acquire
 func (p *multiInspectionPorts) Inspect(_ context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	p.calls = append(p.calls, "inspect:"+artifact.Identity().Name())
 	checkID, _ := domain.NewCheckID("fixture-inspection")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", fixtureCheckProfile())
 	evidence, _ := domain.NewEvidence(mustEvidenceID("inspection-"+artifact.Identity().Name()), checkID, artifact.Identity(), artifact.Digest(), "fixture", "inspection completed")
 	return domain.NewInspectionReport(check, nil, []domain.Evidence{evidence})
 }
 
-func (p *multiInspectionPorts) Record(_ context.Context, _ domain.RunID, evidence []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (p *multiInspectionPorts) Record(_ context.Context, _ domain.RunID, evidence []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	if len(evidence) != 2 {
 		return nil, errors.New("unexpected evidence batch")
 	}
@@ -422,4 +422,32 @@ func mustEvidenceID(value string) domain.EvidenceID {
 		panic(err)
 	}
 	return id
+}
+
+func fixtureCheckProfile() domain.ContentDigest {
+	profile, _ := domain.CheckProfileDigest("application-fixture-v1", "")
+	return profile
+}
+
+func (p *multiInspectionPorts) ExpectedChecks(_ context.Context, _ domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	name := "fixture-integrity"
+	if kind == domain.CheckInspection {
+		name = "fixture-inspection"
+	}
+	id, _ := domain.NewCheckID(name)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, fixtureCheckProfile())
+	return []domain.CheckRequirement{requirement}, err
+}
+
+func (p *graphInspectionPorts) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if kind == domain.CheckVerification {
+		return p.multiInspectionPorts.ExpectedChecks(ctx, a, kind)
+	}
+	name := "graph-inspection-" + a.Identity().Name()
+	if p.dynamicFailure != "" && a.Identity().Name() == "first" {
+		name = "pypi-dynamic-import"
+	}
+	id, _ := domain.NewCheckID(name)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, fixtureCheckProfile())
+	return []domain.CheckRequirement{requirement}, err
 }

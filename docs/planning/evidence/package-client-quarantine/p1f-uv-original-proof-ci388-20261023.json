@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "source_commit": "1cf5781ec6e6995d1b02f63f0fd34c821128527e",
+  "checkout_commit": "fbb7116f1016271cb26ffce3e3f843daedf6d22d",
+  "checkout_tree": "36bb083a78a354d973e051d38153b00a94f5a783",
+  "source_tree": "36bb083a78a354d973e051d38153b00a94f5a783",
+  "run": {
+    "id": 39846629922,
+    "number": 388,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/39846629922",
+    "conclusion": "failure"
+  },
+  "jobs": [
+    {
+      "id": 120061504464,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 120061504682,
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "id": 120061504780,
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "id": 120061504888,
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "id": 120061504968,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 120061505073,
+      "name": "gVisor Linux Integration",
+      "conclusion": "failure"
+    },
+    {
+      "id": 120061505074,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 120061505097,
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "id": 120061505128,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 120085269973,
+      "name": "Required",
+      "conclusion": "failure"
+    }
+  ],
+  "QUALIFIED": "NO overall Required/Linux failure",
+  "ACCEPTANCE_CLOSED": "NO A2a/b source qualification remains open",
+  "passed": "46 top-level Linux tests before CPU failure; native UV startup3.33/query3.22/lock-collection3.70; public single/multi/complete five cases59.06; installed update27.93; UV CLI214.93; native macOS/Go1.26.10, Vulnerability and other prerequisites success",
+  "first_failure": {
+    "test": "TestLinuxPyTorchFullIntegration",
+    "seconds": 250.98,
+    "artifact": "sympy@1.14.0",
+    "stage": "unit-outcome",
+    "cause_text": "python observation CPU accounting is unavailable or late",
+    "failed_before": false,
+    "termination": false,
+    "gap_ns": -149,
+    "poll_ns": 1000000000,
+    "usage_us": 4403874,
+    "prior_usage_us": 4403874,
+    "wall_remaining_ns": 892945110033,
+    "interpretation": "timestamp ordering refusal; not >poll late or ceiling exhaustion; exact original interleaving unobserved, investigate controller unit completion versus periodic sampling",
+    "not_inferred": "new inventory/proof changes or Go patch caused this; historical positive-gap CUDA failures share this cause"
+  },
+  "not_reached": [
+    "TestLinuxNPMPromotionIntegration",
+    "TestLinuxPyPIPromotionIntegration",
+    "TestLinuxPyPISdistBuildIntegration",
+    "TestLinuxPyPIWheelDynamicIntegration"
+  ],
+  "cleanup": {
+    "helper_reaps": 3,
+    "all_wait": 0,
+    "original": 1,
+    "helper_state": "CONFIRMED_STOPPED",
+    "helper_stop": 0,
+    "client_error": 0,
+    "client_restore": 0,
+    "restore_result": "RESTORED"
+  },
+  "unchanged_accounting_owners": [
+    {
+      "path": "internal/sandbox/pypi_observation_cpu.go",
+      "unchanged_from_CI387": true,
+      "sha256": "b07b3e78a6a8e17cc815bc4f643783e0d20a5e6ff1dae3fce87d6ce284e3fca0"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_transaction.go",
+      "unchanged_from_CI387": true,
+      "sha256": "e5ea7a1c8333d56be22153270ea5e77839c95da9ea40c8fe6b22aaa05714a011"
+    },
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "unchanged_from_CI387": true,
+      "sha256": "6f87d3cee07f313a3864ef03934b8dac4f2c00b82862fbde14c0b263ef64a207"
+    }
+  ],
+  "not_qualified": "later B1/A2c1 local commits, actual complete sync guard/publication/CLI, whole P1 and new CUDA full",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-final-run.json",
+      "bytes": 14937,
+      "sha256": "ec7de11e0749ee65d4cafcbb7bebe3e0d9de90b9ee9da63bf286c3d956c27d8d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "0d9f3d7747bf1b31171335da6b3df56564eaface44cc583789cc82963751d349"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-checkout.json",
+      "bytes": 2850,
+      "sha256": "8008d1b394476aaa8abae0121bf555c71fb0487c6922eb14c537bcb3c9cb1eaa"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-linux.log",
+      "bytes": 624681,
+      "sha256": "9cead8b8ca8a09b43a9ad1c10c778faa0e402e2a6d3b7f917ceaf9810b7d3552"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-macos.log",
+      "bytes": 24831,
+      "sha256": "7c96d5f6eae5c5383a5fddd81ba4b7a997b72540b0f2ff4849de3031b45d4a71"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-docs.log",
+      "bytes": 20466,
+      "sha256": "29d1a6c8ce3efe6361fbab5e1237070fc4187cf1e7a37d9b9474cc2f003ee507"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-security.log",
+      "bytes": 21797,
+      "sha256": "71db90fd7371cbb8c8e66aff72abcd25edd2c219613b8495cc922028123beb5e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-vulnerability.log",
+      "bytes": 21649,
+      "sha256": "836f302b85604b3375f0064546e6cc9037498e3065dca7bd549a46e8f7a05f3f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci388-required.log",
+      "bytes": 22392,
+      "sha256": "39231e74b44c114dd88281ad476778533c57d1a43fd8b9677a9c1fcd484b3f1f"
+    }
+  ]
+}

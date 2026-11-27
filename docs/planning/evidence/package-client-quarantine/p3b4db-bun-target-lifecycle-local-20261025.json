@@ -1,0 +1,126 @@
+{
+  "work_item": "M13-004/P3-B4d-b",
+  "baseline": "da02f4e28068834a8658274e22e4633e00d7155e",
+  "status": {
+    "IMPLEMENTED": "YES (exact Bun hoisted/nested/scoped target command and separate attested topology)",
+    "WIRED": "YES (creator/nonce/one-shot admission and actual primitive)",
+    "QUALIFIED": "YES (named local synthetic lifecycle primitive and existing PNPM regression)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4d/Bun)",
+    "MISSING": [
+      "production instance backend consuming opaque bound Bun layout",
+      "explicit Bun executable/runtime script requirements and actual runtime admission",
+      "complete Bun static-all/dynamic aggregate/Policy, approved cache/transaction/CLI and whole remote qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/sandbox/bun_target_lifecycle.go",
+      "sha256": "036218c5135f575f055ff1710fb1ce5dad3315979ec2276f743874748d9c0b19"
+    },
+    {
+      "path": "internal/sandbox/bun_target_lifecycle_test.go",
+      "sha256": "7e31655be088ed3d27d6fbb9766c00993e17bee5646505b87fc5ab750bc32d96"
+    },
+    {
+      "path": "internal/sandbox/bun_target_lifecycle_real_test.go",
+      "sha256": "84acb2107f9d7ab6a5ef8152e77c8ecd3da6ec35aeb7caaec39977334b1db5ee"
+    },
+    {
+      "path": "internal/sandbox/pnpm_target_lifecycle_real_test.go",
+      "sha256": "83569efa0e05ef6ec07d6a37b8900ba8de51ffad2f98c691751b5ea0d23e8774"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "8e2cc5f64eeee3d198416bda2a09d52476572f0fbdaf6364818094553e92d741"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "7df0504c141e42cdd395daa6b0b5db83066ddabea1ceabad82b0e43da9d45d7a"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "f09e1aa0bf9e11ae06fd33fc8c488ae0a57926c893c0d6c6fa7776c4525d97c2"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4db-first-quick.json",
+      "exit": 0,
+      "seconds": 199.536,
+      "receipt_sha256": "18713329a96d5c82f85c368aa324a32fc3d8139630d671066a27f33cc4bfa420"
+    },
+    {
+      "receipt": "p3b4db-sandbox-full-race.json",
+      "exit": 0,
+      "seconds": 26.591,
+      "receipt_sha256": "8ede819728247ad9a4e875c3d0bd9dfc3a72faa05029082278b39775f9561012"
+    },
+    {
+      "receipt": "p3b4db-bun-target-tagged-vet.json",
+      "exit": 0,
+      "seconds": 1.171,
+      "receipt_sha256": "ff21d37d2ec14f4e3deb5af0c5219dd1ba7cee6c34dc3c86aaeb1b6b279a975f"
+    },
+    {
+      "receipt": "p3b4db-bun-target-v1-actual-compile.json",
+      "exit": 0,
+      "seconds": 6.685,
+      "receipt_sha256": "08cd1163e885c61c6c4ec32c223134848c7df7875c0abdf73a049ba4a93883fd"
+    },
+    {
+      "receipt": "p3b4db-bun-target-observer-canonical.json",
+      "exit": 0,
+      "seconds": 250.402,
+      "receipt_sha256": "965b1484cd11bb51fd33e369282da89cac26b7cdae664ccd8feb87aa536132d0"
+    },
+    {
+      "receipt": "p3b4db-bun-target-v2-result.json",
+      "exit": 0,
+      "seconds": 57.515,
+      "receipt_sha256": "b5542a8488af10db2b65b241cfaa64d66d8e80d05bb188039f704d094efff0cb"
+    }
+  ],
+  "lifecycle_primitive": {
+    "input": "explicit synthetic project and package scripts; no public source approval",
+    "targets": [
+      "shallow target",
+      "nested/scoped target"
+    ],
+    "normal_cases": 2,
+    "exit37_cases": 2,
+    "normal_event_order": [
+      "preinstall",
+      "install",
+      "postinstall"
+    ],
+    "negative_event_prefix": [
+      "preinstall"
+    ],
+    "untrusted_artifact_shell_counts": [
+      3,
+      2
+    ],
+    "root_dependency_prepare_events": 0,
+    "network": "verified canonical null network and no addresses",
+    "trace": "complete; forbidden filesystem/honeytoken/network observations zero",
+    "Policy_Host_install": "NOT_EXERCISED"
+  },
+  "pnpm_regression": "original npm attribution3 plus transitive/peer target normal+exit37 cases using same shared driver; original native data deliberately modified for synthetic scripts, not Policy input",
+  "observer": {
+    "all_latches": 119,
+    "new_bun_named_latches": 2,
+    "canonical_observer": {
+      "sha256": "5b3d485f8f145c58fb5f2e1b57261067537729b1a1d4f68a571849f5a25f41fd",
+      "size": 3135760
+    },
+    "filesystem_network_grants_added": false
+  },
+  "driver_reuse": "p3b4db-target-driver-mechanical-reuse.json",
+  "first_failed_host_proof": {
+    "result": "p3b4db-bun-target-v1-result.json",
+    "assessment": "p3b4db-first-host-overlap-assessment.json",
+    "recovery": "p3b4db-post-compiler-recovery.json",
+    "correction": "same Go binary and byte-identical canonical observer; compiler completed before serial actual v2; original failure preserved"
+  },
+  "ci": "No push/new CI for primitive; backend checkpoint and actual timer rules remain. Next meaningful candidate must close macOS/Required gate."
+}

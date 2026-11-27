@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "scope": "P1e/C3e2 data-only exact UV no-deps compile semantics; no product source change",
+  "exit": 0,
+  "seconds": 13.789,
+  "uv_version": "0.13.4",
+  "python_version": "3.14.7",
+  "native_tool": {
+    "role": "lock-verified UV OCI tool",
+    "sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499"
+  },
+  "observations": [
+    {
+      "case": "root-only",
+      "compile_exit": 0,
+      "materialization_exit": 0,
+      "native_packages": [
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ],
+      "installed": [
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "complete-two",
+      "compile_exit": 0,
+      "materialization_exit": 0,
+      "native_packages": [
+        {
+          "name": "haa-probe-dep",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ],
+      "installed": [
+        {
+          "name": "haa-probe-dep",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "empty",
+      "compile_exit": 0,
+      "materialization_exit": 0,
+      "native_packages": [],
+      "installed": []
+    }
+  ],
+  "boundaries": [
+    "network-none/read-only/UID1000/no-cap/NPP runc; guest loopback-only inert fixture registry",
+    "root-only no-deps compile preserves incomplete list; it does not grant independent closure approval",
+    "complete-two and empty native lock/target census observed; no artifact module import",
+    "not public supply-chain/production gVisor/typed-network/Policy/deletion qualification"
+  ],
+  "cleanup": {
+    "containers": [
+      {
+        "container": "f9403ae6f08974e699cf2ec3d562c01f4b4f8d18d7742b84a94d3964e0558607",
+        "removed": true
+      },
+      {
+        "container": "ebcc729798ab08140dc835fb9e09989c86b12a596d7afcab4535f507c12b9bc3",
+        "removed": true
+      }
+    ],
+    "owned_label_absence_verified": true,
+    "new_images": 0,
+    "host_files_images_containers_bridge_service_identical": true,
+    "empty_workroot_client_removed": true,
+    "completed_operator_files": [
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/uv-sync-compile-probe.py",
+        "bytes": 11267,
+        "sha256": "ae60176a881d3a7e0d05eeeef03777a95522ea8c679d66060e7e813bf65236fd",
+        "archived": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-sync-compile-probe.py"
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/uv-project-lock-race.py",
+        "bytes": 1865,
+        "sha256": "e17c42caec7ec1924fd897858433264660614f1ed4713ea94d429e68f65af247",
+        "archived": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-project-lock-race.py"
+      }
+    ],
+    "go_tmpdir_entries": 0
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-compile-result.json",
+      "bytes": 10475,
+      "sha256": "ecb27936155f6666a369009c65e0dac342e2c488a5f8b7b97e2d632e6288e140"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-compile-host-before.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-compile-host-after.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-compile-root-only.json",
+      "bytes": 2969,
+      "sha256": "6ad44d6dcfa75529f75059ac77fc303a0de94e1b0f0bb3d707dc7036208fcf7e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-compile-complete-two.json",
+      "bytes": 3616,
+      "sha256": "3e5cdf8c04567e81a45d3df89dc8dba2f6b1cf745773feb28e7e7fd27d6931ca"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-compile-empty.json",
+      "bytes": 2367,
+      "sha256": "01fd3dc7407a84919c670fb617da0b13000ff889e28a864049c6448ac7d5a82a"
+    }
+  ]
+}

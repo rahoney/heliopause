@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "baseline": "73e555856a9dc022c90d618a91039fef171701b3",
+  "scope": "C3a internal ordinary prepared INSTALL and empty-venv UV guard; no production client/application composition or actual UV-to-target qualification yet",
+  "sources": [
+    {
+      "path": "internal/core/ports/install_preparation.go",
+      "sha256": "7e17cb97a3c0d0e4c202fd103dd0bd16eec0c97c3bd3b42494ccb2c600088d61"
+    },
+    {
+      "path": "internal/core/ports/update.go",
+      "sha256": "b7d6139c8bd566bca0f8c248b4d18ebc443d19948205ec5965ff0e2dbd7eb148"
+    },
+    {
+      "path": "internal/application/install_prepared.go",
+      "sha256": "8d6a58ca00fa97493eff08486532fa243fa7abd11a6b66a746422b57b2dc8062"
+    },
+    {
+      "path": "internal/application/install_prepared_test.go",
+      "sha256": "ced7622e16152dd28d680d6833f644d58d43dcf9ef0cad9e62d1ff13249a2ae2"
+    },
+    {
+      "path": "internal/application/install_update.go",
+      "sha256": "5c18d01d8f8382bb95e1fbbfe0d8f0814271c2d8b1ffc6fc182d14f4c5172f7a"
+    },
+    {
+      "path": "internal/promotion/uv_install.go",
+      "sha256": "28853b8b7cd37634658545e590d4b0498b25e80cea8f06ba712d578dc40ed9dd"
+    },
+    {
+      "path": "internal/promotion/uv_install_test.go",
+      "sha256": "58cdf6f2dcc7bb2a6ccdb4b0f069b37ed37cc057f25809d3769709b38c59d7a3"
+    },
+    {
+      "path": "internal/promotion/uv_venv_config_test.go",
+      "sha256": "0881e8ba1862050fd0be5db2a6cc65a0a2d29d83fba00b3559f5a5ae3e5446d7"
+    },
+    {
+      "path": "internal/promotion/pypi_selected_manifest.go",
+      "sha256": "057ac638e69684fa06d63e75985ec86570e3cd4051129b9137734edb694279d2"
+    },
+    {
+      "path": "internal/promotion/pypi_update.go",
+      "sha256": "c17e4e22fd4c2eb3ca8b91be832af869164e7a714f5a5a7488264ea536626e45"
+    },
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "sha256": "403758fa032ded8515a2fbf1ba4b196fa04f8012ae3e469dcb57dfa08393bde7"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver.go",
+      "sha256": "ae175b5ebcb06d66a336489aedc53d516c1d8a70e1c6b2ab1e4147233358a7b4"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_reader.go",
+      "sha256": "bbcbb2f9d86a88bd03edb73c28dd3b2e68d1f07cf2533b4e00aa251074c4d5d2"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.363,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 105.221,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.997,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.25,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.858,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "races": [
+    {
+      "phase": "application",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/application"
+      ],
+      "exit": 0,
+      "seconds": 9.153
+    },
+    {
+      "phase": "promotion",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "-run",
+        "^Test(UVInstall|UVVenvConfig|Venv|PyPIUpgrade|PyPINative|PyPI.*Promotion)",
+        "./internal/promotion"
+      ],
+      "exit": 0,
+      "seconds": 37.885
+    },
+    {
+      "phase": "sandbox",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "-run",
+        "^Test(UVResolver|UVIndependentReader|UVArchiveWriter|PyPIResolver|PyTorch.*(Resolver|Resolve))",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 21.436
+    }
+  ],
+  "properties_checked": [
+    "ordinary INSTALL intent and per-request service copies; existing Update/content session regressions",
+    "guard acquired before resolution and released on failure/close",
+    "standard and UV version_info configs; creation marker separated from runtime authentication",
+    "nonempty/native/legacy/managed state refusal before native selection",
+    "source/reference/context/target/runtime/control drift and cancellation refusal",
+    "Manifest runtime/lock/target/requires_new/control binding before materializer",
+    "staged archive substitution refusal and exact selected graph binding",
+    "partial publication rollback; original or concurrent user edit preservation"
+  ],
+  "initial_check": {
+    "profile": "quick",
+    "exit": 1,
+    "finding": "Staticcheck SA4006 unused fixture plan assignment; corrected without suppression",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-prepared-install-quick.log"
+  },
+  "temporary_test_root": {
+    "path": "/tmp/haa-uv-runtime-0_e6zmn4/tmp",
+    "entries_after_all_checks": 0
+  },
+  "retained_active_inputs": "source/SDK/quality caches/current observer remain for C3 client wiring; no new native Docker assets were created",
+  "implemented": true,
+  "wired": "internal typed ports and library consumers only; CLI/composition NO",
+  "qualified": "local canonical5, application full Race, selected promotion/sandbox Race; no native end-to-end install claim",
+  "acceptance_closed": false,
+  "missing": [
+    "typed CLI/client composition and actual inspected-set promotion",
+    "installed-aware UV install/upgrade selection and native ownership",
+    "complete/multi-root/empty sync transaction and final P1 qualification"
+  ]
+}

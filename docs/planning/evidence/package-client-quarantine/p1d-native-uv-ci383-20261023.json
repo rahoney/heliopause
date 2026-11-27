@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "run_id": 39799393698,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39799393698",
+  "source_commit": "a547957d9fafcaea3b1e63b0ee6adee163db34bf",
+  "checkout": "8df420664cce550e1a8dd03d87946b5d75136142",
+  "tree": "92d99157a76e8272fe975928f205625f7ddda024",
+  "source_and_checkout_tree_equal": true,
+  "conclusion": "success",
+  "scope": "C3d bounded native default public UV wheel ownership enrollment and actual CLI handoff/replay; existing shared consumers",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES for this bounded scope",
+  "ACCEPTANCE_CLOSED": "YES for C3d only",
+  "MISSING": [],
+  "jobs": [
+    {
+      "id": 119895448592,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449106,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449117,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449153,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449157,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449169,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449234,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449338,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119895449515,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119914328940,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux_top_level_passes": 51,
+  "uv_cli": {
+    "seconds": 145.34,
+    "managed_steps": [
+      "fresh",
+      "retained",
+      "root-upgrade",
+      "closure-noop",
+      "new-root"
+    ],
+    "native_original_tar_entries": 17,
+    "native_original": "genuine locked UV0.13.4/Python3.14.7 using authenticated previously inspected staged idna3.10 wheel; no artifact execution during data fixture generation",
+    "negative": "unrecorded cache refused before new-set inspection; target/Evidence unchanged",
+    "adopt": "idna3.10 to3.11 UPDATE COMPLETED/ALLOW/promotion COMPLETED; exact UV runtime and controls5 including independent authentic old-wheel proof",
+    "managed_replay": "idna3.11 UPDATE COMPLETED/ALLOW/promotion COMPLETED; controls4; complete required checks/Evidence, original cfg/user file preserved, old3.10 metadata removed"
+  },
+  "cpu_full_seconds": 220.35,
+  "helpers_reaped": 5,
+  "helper_wait": 0,
+  "cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+  "macos": {
+    "conclusion": "success",
+    "actual_go": "1.26.10",
+    "production_build_seconds": 59.458,
+    "production_build_bound_seconds": 120,
+    "default_tests": "PASS under original bound",
+    "source_performance_fix": "NONE; earlier382 build-timeout cause remains unknown"
+  },
+  "vulnerability": "PASS; actual Go1.26.10",
+  "cuda_full": "NOT_RUN; does not replace profile-specific evidence",
+  "unsupported": [
+    "native generated scripts/cross-scheme",
+    "native compiled/unknown cache directories",
+    "local/direct/VCS/build source and unexpected auxiliary files",
+    "other indexes/platforms/runtime versions outside current reviewed support"
+  ],
+  "whole_P1_remaining": [
+    "complete/multi-root/explicit-empty sync and no-op semantics",
+    "actual managed dependency retention/root-vs-closure upgrade qualification",
+    "whole P1 source/runtime/CLI acceptance"
+  ],
+  "historical_failures_preserved": [
+    "CI381 data-fixture docker cp to read-only rootfs before native execution",
+    "CI382 attempt1 macOS build timeout, Linux/native PASS; attempt2 GitHub internal startup error/jobs0"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci383-linux.log",
+      "bytes": 581304,
+      "sha256": "c5dc15fda4b39904c1cec0a5cc84ba31c5e2ec18d857982ee79026135d76e293"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci383-macos.log",
+      "bytes": 25932,
+      "sha256": "4cb7270623ecc7b7d47a7a0867659944c6cbc22c6330196d7a83cf3998b13a7e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci383-docs.log",
+      "bytes": 20464,
+      "sha256": "f98b330e84e506ba724ff1e8bed924f1ae93c92e43c7ba38064bbeee3c1ab398"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci383-vulnerability.log",
+      "bytes": 20932,
+      "sha256": "132f4f8418227b1a1a883e17f75e6669d07133c5d8e940e1a9c3a9fc6ac9a15f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci383-required.log",
+      "bytes": 21523,
+      "sha256": "ba7575ac51cd4a297a7e4a5613afd129ec6ced536c334d4cade25aee09994273"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci383-final-jobs.json",
+      "bytes": 12397,
+      "sha256": "7b7de6328fd3e14d0a8a50afcb3e29f6acb8ffb853090880f9b5461bfa8308a2"
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "status": "PASS (named current Python storage preparation)",
+  "baseline_commit": "012f936fb762659f4ab9d45f36b4170e6579f81b",
+  "runtime_inputs": 1351,
+  "existing1348_sources_unchanged": true,
+  "new_paths": [
+    "internal/bootstrap/python_execution_prepare.go",
+    "internal/bootstrap/python_execution_prepare_test.go",
+    "internal/bootstrap/python_execution_prepare_integration_test.go"
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (concrete preparation factory)",
+    "WIRED": "YES (internal real current preparation; public CLI/runtime NO)",
+    "QUALIFIED": "YES (named local actual3)",
+    "ACCEPTANCE_CLOSED": "YES (named preparation only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.916
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/bootstrap",
+        "-run",
+        "^TestPythonExecutionPreparation"
+      ],
+      "exit_code": 0,
+      "seconds": 3.423
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 249.346
+    },
+    {
+      "step": "bootstrap-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 23.628
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.071
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 4.475
+    },
+    {
+      "step": "tagged-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-a3-v2-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.62
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 20.064
+    }
+  ],
+  "first_failure": {
+    "stage": "Quick Staticcheck ST1005",
+    "seconds": 70.418,
+    "cause": "seven capitalized error string prefixes",
+    "correction": "lowercase wording only; checks/version unchanged; first original retained"
+  },
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 84.364,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "351a729ed97c187e8a49db2291b6130592040a6674ce79af00936f1cbc98721b",
+    "sources": [
+      {
+        "path": "/tmp/haa-p6-a3-actual-v1/protected-client",
+        "sha256": "61d56031505a8052abda749092efc17e93695867a33cdedf5d083c07411c5270"
+      },
+      {
+        "path": "/tmp/haa-p6-a3-actual-v1/observer",
+        "sha256": "b76b0c86941fdae63c7c195aa237bcb29e421020df02bbbcd255d709e10c3e77"
+      },
+      {
+        "path": "/tmp/haa-p6-a3-20261029-source/internal/bootstrap/python_execution_prepare_integration_test.go",
+        "sha256": "a3d3426b895c64483b93d120321389e31fec76fdc723a9820029eaa8dc177534"
+      }
+    ],
+    "scope": "actual public cowsay6.1 current Python preparation3: two stored successes and missing console after real Policy ALLOW; honest native tool-install selector; no user program/native UVx runtime or CLI",
+    "passed_named_tests": [
+      "TestLinuxPythonExecutionPreparationIntegration"
+    ],
+    "native_solver": "ACTUAL UV tool install",
+    "current_verification_inspection_Evidence_Policy": "ACTUAL",
+    "owned_python_workspaces_absent": true,
+    "success_cases": [
+      [
+        "1",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ],
+      [
+        "2",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ]
+    ],
+    "refusal_case": true,
+    "fresh_Evidence_source_verified": true,
+    "named_pass": true,
+    "observer_directory_entries_after": [],
+    "observer_directory_empty_after": true,
+    "all_expected_cases": true
+  },
+  "actual_parent_seconds": 79.96,
+  "positive_source_sha256": "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a",
+  "actual_scope": "fresh public native tool-install/current whole source integrity/static/dynamic/Evidence/M3/M5; two console preparations/staged execution Manifest+SBOM and post-Policy missing console refusal; no selected user program run",
+  "entry_member_semantics": "ExecutionContext/Manifest path/SHA/size binds original entry_points.txt declaration source, not module body or callable completion. Runtime must remeasure the exact declaration/complete approval before invocation.",
+  "native_identity": "uv-tool-install retained; native UVx golden equivalence remains OPEN",
+  "source_comparison": "p6-uv0134-bounded-selector-comparison-20261029.json",
+  "binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p6-a3-v2-bootstrap.test",
+      "sha256": "61d56031505a8052abda749092efc17e93695867a33cdedf5d083c07411c5270",
+      "bytes": 51420696
+    }
+  ],
+  "observer_reused": "CPP131/b76b0c86 unchanged",
+  "originals": "docs/github-logs/package-client-quarantine-20261021/p6-a3-actual-v1-* and p6-a3-v2-*",
+  "host_target": "NOT_CREATED; existing fixture interpreter image DATA read only",
+  "MISSING": [
+    "current readonly Python whole layout/user-run admission and kernel terminal/output/cleanup",
+    "native UVx/tool run golden equivalence and actual aliases/CLI",
+    "later P6 bunx/pipx run/pnpm dlx",
+    "whole final4profiles/signed qualification"
+  ]
+}

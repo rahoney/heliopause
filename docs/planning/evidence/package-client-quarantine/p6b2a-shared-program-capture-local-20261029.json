@@ -1,0 +1,300 @@
+{
+  "work_item": "M13-004",
+  "substep": "P6-B2-A",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES (existing Node caller)",
+  "QUALIFIED": "YES (named local only)",
+  "ACCEPTANCE_CLOSED": "YES (same named scope)",
+  "baseline": "a6b02ab36c473d8bc35082c4e8ec5261ef03e79a; runtime same as0d96/CI431 source1355",
+  "runtime_inputs": 1356,
+  "existing1354_unchanged": true,
+  "modified_paths": [
+    "internal/sandbox/node_execution.go"
+  ],
+  "new_paths": [
+    "internal/sandbox/program_execution.go"
+  ],
+  "source_identity": [
+    {
+      "path": "internal/sandbox/node_execution.go",
+      "sha256": "da3edb0c2fd26bc42892b1daa224bb5d662d366565f1a0a09fe18c0840221a27",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/program_execution.go",
+      "mode": "100644",
+      "sha256": "9063cf3e2af18c2f076d6c46d8b80384b52563e8b239daf64e5bfe2866070927"
+    }
+  ],
+  "canonical_checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 2.421
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/sandbox",
+        "-run",
+        "^TestNodeExecution"
+      ],
+      "exit_code": 0,
+      "seconds": 9.503
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 304.561
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 35.809
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 3.524
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 13.556
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-b2a-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.522
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 19.513
+    }
+  ],
+  "binary": {
+    "role": "bootstrap",
+    "path": "/tmp/haa-p6-b2a-v1-bootstrap.test",
+    "sha256": "4f9d9f8a9177cb3275c49ebff2fc1ce6ee0d041a57ac1b4ff3cc2a1c47eb0cdc",
+    "bytes": 51483713
+  },
+  "CPP": {
+    "sha256": "b76b0c86941fdae63c7c195aa237bcb29e421020df02bbbcd255d709e10c3e77",
+    "latches": 131,
+    "unchanged": true
+  },
+  "reuse": "Existing Node admission/capture/kernel terminal+target/client reconciliation/source verify/complete body and mapper moved to one private helper and consumed by the original API. Public outcome/privacy/typed Node error/preflight/input disposal bodies preserved. No new runtime profile or permission.",
+  "actual": {
+    "boundary": {
+      "result": "docs/github-logs/package-client-quarantine-20261021/p6-b2a-boundary-actual-v1-result.json",
+      "seconds": 197.578,
+      "named_tests": [
+        "TestLinuxNodeExecutionBoundaryIntegration"
+      ],
+      "cases": [
+        [
+          "argv",
+          "true",
+          "73",
+          "0"
+        ],
+        [
+          "term",
+          "true",
+          "7",
+          "0"
+        ],
+        [
+          "kill",
+          "true",
+          "7",
+          "0"
+        ],
+        [
+          "cancel",
+          "false",
+          "6",
+          "0"
+        ],
+        [
+          "stdout-overflow",
+          "false",
+          "1048576",
+          "0"
+        ],
+        [
+          "stderr-overflow",
+          "false",
+          "0",
+          "1048576"
+        ],
+        [
+          "outside-read",
+          "false",
+          "9",
+          "0"
+        ],
+        [
+          "network",
+          "false",
+          "14",
+          "0"
+        ],
+        [
+          "child",
+          "false",
+          "12",
+          "0"
+        ],
+        [
+          "comm-spoof",
+          "false",
+          "12",
+          "0"
+        ],
+        [
+          "readonly",
+          "true",
+          "16",
+          "0"
+        ],
+        [
+          "deadline",
+          "false",
+          "6",
+          "0"
+        ]
+      ],
+      "host_source_inputs_CPP_preserved": true,
+      "helper_confirmed_stopped_wait0": true,
+      "workspaces_endpoints_absent": true
+    },
+    "cli": {
+      "result": "docs/github-logs/package-client-quarantine-20261021/p6-b2a-cli-actual-v1-result.json",
+      "seconds": 111.938,
+      "named_tests": [
+        "TestLinuxNPMExecutionCLIIntegration"
+      ],
+      "cases": [
+        [
+          "1",
+          "npx",
+          "json",
+          "en",
+          "false",
+          "0"
+        ],
+        [
+          "2",
+          "exec",
+          "json",
+          "ko",
+          "true",
+          "1"
+        ],
+        [
+          "3",
+          "npx",
+          "human",
+          "ko",
+          "true",
+          "0"
+        ],
+        [
+          "4",
+          "exec",
+          "human",
+          "en",
+          "false",
+          "1"
+        ]
+      ],
+      "host_source_inputs_CPP_preserved": true,
+      "helper_confirmed_stopped_wait0": true,
+      "workspaces_endpoints_absent": true
+    }
+  },
+  "source_review": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2a-v1-source-review.json",
+  "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2a-actual-original-inventory.json",
+  "limits": [
+    "Child only proves clone fault/ARTIFACT/incomplete/cleanup; JS body and held-pipe drain NOT_PROVEN.",
+    "CI431/source0d96 excludes this helper; no later-source hosted qualification is claimed.",
+    "Python ARTIFACT runtime/profile/native UVx golden/aliases/CLI and whole P4-P7/final remain OPEN."
+  ],
+  "MISSING": [
+    "New shared implementation hosted qualification at meaningful grouped checkpoint.",
+    "Subsequent Python selected-program profile/backend/current real execution and native aliases/CLI acceptance."
+  ],
+  "completed_copied_artifacts_disposed": {
+    "files": 4,
+    "bytes": 109400066,
+    "original_binary_CPP_inputs_logs_preserved": true,
+    "reference_errors": 0,
+    "references": 0
+  }
+}

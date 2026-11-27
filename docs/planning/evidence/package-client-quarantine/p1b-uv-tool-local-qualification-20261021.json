@@ -1,0 +1,159 @@
+{
+  "baseline": "c2c1750f8b7558666a4f6ca12c3bfd61d4297a9b",
+  "scope": "authenticated upstream UV native image bytes and offline maintenance consumer only; no production uv invocation",
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 1.284,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 36.458,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.392,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.217,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "fuzz": {
+      "profile": "fuzz",
+      "exit": 0,
+      "seconds": 69.683,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "command_negative_checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.418,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 42.227,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 4.764,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "actual_layers": {
+    "args": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-count=1",
+      "-tags=realcorpus",
+      "-run=^TestUVOfficialImageToolClosure$",
+      "-v",
+      "./internal/verification/releaseprovenance"
+    ],
+    "exit": 0,
+    "seconds": 1.921,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "host_uv_execution": false
+  },
+  "actual_command": {
+    "args": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "run",
+      "./scripts/update-runtime",
+      "verify-uv-image",
+      "--input",
+      "/tmp/haa-uv-runtime-0_e6zmn4/source/internal/verification/releaseprovenance/testdata/uv-0.13.4",
+      "--layers",
+      "/tmp/haa-uv-runtime-0_e6zmn4/upstream"
+    ],
+    "exit": 0,
+    "seconds": 1.81,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "host_uv_execution": false
+  },
+  "receipt": {
+    "schema": "helox.uv-image-supply/v2",
+    "identity": {
+      "version": "0.13.4",
+      "source_commit": "7456b60bc6bc348e13e06e3691bf08e78d3aef54",
+      "workflow_run": "39441647119",
+      "index_sha256": "9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b",
+      "manifest_sha256": "f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993"
+    },
+    "files": [
+      {
+        "role": "bundle",
+        "sha256": "39c24b19483ac2fba5fa0877ef6ad9a5f30fc1eb913375fcf2dba1de787ec835"
+      },
+      {
+        "role": "config",
+        "sha256": "bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
+      }
+    ],
+    "invocation": "https://github.com/astral-sh/uv/actions/runs/39441647119/attempts/1",
+    "layers": [
+      {
+        "sha256": "78fa515da939df1a7735518cd8483877c98aa632744a890e35c0b8c94edae9a6",
+        "size": 19395988
+      },
+      {
+        "sha256": "a7a4c1c28acfa0600954ba762985b04fd8db0ecd249573405f86e458150e26a0",
+        "size": 96
+      }
+    ],
+    "tool": {
+      "sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+      "size": 42544544
+    }
+  },
+  "source": [
+    {
+      "path": "internal/verification/releaseprovenance/uv_tool.go",
+      "sha256": "9fc46ce86c3e72235d2d527c752479d25e3ec0c3d1fd49b396e99f890f29d30e"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/uv_tool_test.go",
+      "sha256": "8b926a1fb3d4797ad8042ce0743f225b8451577f0c286f34f4382f74f011ef3c"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/uv_tool_real_test.go",
+      "sha256": "b552b687a2b568fc850a8653d779ce0dfa4330efc2f450944b813275e471a65a"
+    },
+    {
+      "path": "scripts/update-runtime/uv_image.go",
+      "sha256": "5d96013f1fc37e7fb9e661513ea71d94f5209a10b8dc1379fe75b60f30ec89ec"
+    },
+    {
+      "path": "scripts/check/security.go",
+      "sha256": "e93ce2d2767db737863bfd50b3b32dc596c0ec1ff64b9cf05889b3904e33d20a"
+    },
+    {
+      "path": "scripts/update-runtime/uv_image_test.go",
+      "sha256": "2b3b6dd0334086f95ee1ffe1580d31eec0db5cf0b936c07251a006a9467fb0b4"
+    }
+  ],
+  "host_uv_execution": false,
+  "limits": {
+    "compressed_bytes": 67108864,
+    "expanded_bytes": 67108864,
+    "entries": 32
+  },
+  "remaining": [
+    "UV runtime lock/maintenance/provision/admission",
+    "UV install/upgrade/sync and actual qualification",
+    "new source remote CI"
+  ]
+}

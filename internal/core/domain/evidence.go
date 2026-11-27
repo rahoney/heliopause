@@ -8,6 +8,13 @@ import (
 
 const maxEvidenceSummaryLength = 1024
 
+// Host install action facts describe a possible installation requirement;
+// they do not authorize execution or replace an inspection's Findings.
+const (
+	EvidenceHostInstallActionRequired    = "host-install-action-required"
+	EvidenceHostInstallActionNotRequired = "host-install-action-not-required"
+)
+
 // EvidenceID identifies one normalized Evidence fact. Its zero value is invalid.
 type EvidenceID struct{ value string }
 
@@ -29,10 +36,11 @@ type Evidence struct {
 	digest   ContentDigest
 	kind     string
 	summary  string
+	profile  ContentDigest
 }
 
 // NewEvidence constructs sanitized normalized Evidence without raw provider output.
-func NewEvidence(id EvidenceID, checkID CheckID, identity ResolvedArtifactIdentity, digest ContentDigest, kind, summary string) (Evidence, error) {
+func NewEvidence(id EvidenceID, checkID CheckID, identity ResolvedArtifactIdentity, digest ContentDigest, kind, summary string, profiles ...ContentDigest) (Evidence, error) {
 	if id.value == "" || checkID.value == "" || identity.source.value == "" || digest.value == "" {
 		return Evidence{}, errors.New("evidence identity, check, artifact identity, and digest are required")
 	}
@@ -45,8 +53,17 @@ func NewEvidence(id EvidenceID, checkID CheckID, identity ResolvedArtifactIdenti
 	if containsSensitiveEvidence(summary) {
 		return Evidence{}, errors.New("evidence summary contains a credential or identifying Host path pattern")
 	}
-	return Evidence{id: id, checkID: checkID, identity: identity, digest: digest, kind: kind, summary: summary}, nil
+	var profile ContentDigest
+	if len(profiles) > 1 || len(profiles) == 1 && profiles[0].value == "" {
+		return Evidence{}, errors.New("evidence profile is invalid")
+	}
+	if len(profiles) == 1 {
+		profile = profiles[0]
+	}
+	return Evidence{id: id, checkID: checkID, identity: identity, digest: digest, kind: kind, summary: summary, profile: profile}, nil
 }
+
+func (e Evidence) ProfileDigest() ContentDigest { return e.profile }
 
 func (e Evidence) ID() EvidenceID                     { return e.id }
 func (e Evidence) CheckID() CheckID                   { return e.checkID }
@@ -117,4 +134,34 @@ func containsSensitiveEvidence(summary string) bool {
 		}
 	}
 	return false
+}
+
+// BindEvidenceProfiles projects actual check metadata into fresh normalized
+// facts. Existing non-empty bindings must agree; they cannot be relabelled.
+func BindEvidenceProfiles(checks []CheckExecution, evidence []Evidence) ([]Evidence, error) {
+	result := append([]Evidence(nil), evidence...)
+	if len(checks) == 0 {
+		return result, nil
+	}
+	byCheck := make(map[CheckID]CheckExecution, len(checks))
+	for _, check := range checks {
+		if _, duplicate := byCheck[check.id]; duplicate {
+			return nil, errors.New("evidence checks contain duplicate identifiers")
+		}
+		byCheck[check.id] = check
+	}
+	for index, item := range result {
+		check, ok := byCheck[item.checkID]
+		if !ok {
+			return nil, errors.New("evidence refers to an undeclared actual check")
+		}
+		if item.profile.value != "" && item.profile != check.profile {
+			return nil, errors.New("evidence is already bound to another check profile")
+		}
+		if check.profile.value != "" {
+			item.profile = check.profile
+			result[index] = item
+		}
+	}
+	return result, nil
 }

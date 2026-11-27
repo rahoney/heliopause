@@ -1,0 +1,56 @@
+{
+  "scope": "Existing CLI progress fixture TERM capability only; production CLI unchanged",
+  "baseline": "e0452d4",
+  "local_status": "VERIFIED",
+  "original_source_equal_to_baseline": true,
+  "direct_reproduction": {
+    "TERM=dumb": "FAIL 0.958s",
+    "TERM=xterm-256color": "PASS 0.642s",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-existing-progress-term-reproduction-20261024.json"
+  },
+  "change": "Assert cancellation stops later writes under both explicit TERM inputs; require ANSI only with animated terminal capability",
+  "source_files": [
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "64cdb42b40f8b359dde1153de83d019032f61a40512a8dc58dd6a6f6a3eda323"
+    },
+    {
+      "path": "internal/cli/presentation_test.go",
+      "sha256": "3f28076b427bf4632740f0053c4016271fff0cd816485cb15cdd4e4e3bd9b5dd"
+    }
+  ],
+  "checks": [
+    {
+      "name": "p2b2-materialize-fixture-fixed-cli",
+      "exit": 0,
+      "seconds": 8.328,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-cli.json",
+      "sha256": "31444646775e90d7a431d01f2789a3fd04047fb0d4443ef47f1ca09904ffff6e"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-quick",
+      "exit": 0,
+      "seconds": 29.766,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-quick.json",
+      "sha256": "477a76b437c76024ef6172891108727d0f72e9b21a52a8e5d603b5804a99f50f"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-security",
+      "exit": 0,
+      "seconds": 5.788,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-security.json",
+      "sha256": "c8600e0ed12d4f3d1224180e52088fd9956e3e4d58a8052eb6ce344c01cd4fe1"
+    },
+    {
+      "name": "p2b2-materialize-fixture-fixed-docs",
+      "exit": 0,
+      "seconds": 0.233,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-materialize-fixture-fixed-docs.json",
+      "sha256": "a34e695f68d44e97bcef61640593a2697b02b99a1f10f4133f64363132686d62"
+    }
+  ],
+  "not_claimed": [
+    "new product CLI behavior",
+    "new native platform or remote qualification"
+  ]
+}

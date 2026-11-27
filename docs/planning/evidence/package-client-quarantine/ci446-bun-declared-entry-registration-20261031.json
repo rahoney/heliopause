@@ -1,0 +1,133 @@
+{
+  "run_id": 41159991137,
+  "number": 446,
+  "source": "e3b2b7011825c6322e5aa8d031716ff51f752a27",
+  "tree": "0cdaeaa206c10aa9b93ac45c2c418aab68948d3d",
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41159991137",
+  "event": "pull_request",
+  "status": "completed",
+  "conclusion": "success",
+  "run_started_at": "2026-10-31T02:26:06+00:00",
+  "registered_at": "2026-10-31T02:26:45.899423+00:00",
+  "initial_jobs": [
+    {
+      "id": 124415202301,
+      "name": "Security",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202419,
+      "name": "Quick",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202450,
+      "name": "Representative Wheel Corpus",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202456,
+      "name": "Vulnerability",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202486,
+      "name": "Minimum Go",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202492,
+      "name": "gVisor Linux Integration",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202496,
+      "name": "gVisor Observer Helper",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202565,
+      "name": "macOS",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124415202937,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "expected_required_jobs": 10,
+  "expected_ordinary_unique_top_parents": 126,
+  "first_due_at": "2026-10-31T02:46:06+00:00",
+  "first_due_kst": "2026-10-31 11:46:06 +09:00",
+  "worker_script": "/tmp/haa-ci-20min-get-worker.py",
+  "worker_script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+  "worker_config": "/tmp/haa-ci446-autopoll-config.json",
+  "monitor_dir": "/tmp/haa-ci446-autopoll",
+  "timed_actual_queries": 0,
+  "worker_started": true,
+  "qualification": "QUALIFIED (bounded functional scope); see hosted receipt",
+  "new_CI_launches": 1,
+  "extra_manual_profile_dispatches": 0,
+  "credentials_used_for_registration": false,
+  "source_control": "normal FF ec1 to e3b2b70; no additional push during CI",
+  "scope": "completed G4 functional bundle + required existing ordinary consumers; old four-profile evidence remains scoped to ec1",
+  "worker": {
+    "run_id": 41159991137,
+    "source": "e3b2b7011825c6322e5aa8d031716ff51f752a27",
+    "pid": 909486,
+    "uid": 1000,
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci446-autopoll-config.json",
+    "process_start_ticks": "8920720",
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "actual_queries": 0,
+    "next_due_at": "2026-10-31T02:46:06+00:00",
+    "state": "WAITING"
+  },
+  "worker_session_id": 81628,
+  "worker_identity_verified": true,
+  "monitoring_limit": "worker performs GET and records terminal result; ending the assistant turn does not automatically resume reasoning/fixes",
+  "monitor_readback": {
+    "actual_queries": 5,
+    "last_timed_query_at": "2026-10-31T04:06:10.961341+00:00",
+    "next_due_at": null,
+    "status": "completed",
+    "success_jobs": 10,
+    "raw_summary": "/tmp/haa-ci446-autopoll/poll05-summary.json",
+    "existing_worker_identity": "same existing verified worker; no duplicate timer",
+    "active_response_kept_open": true
+  },
+  "completed_eight_evidence": {
+    "checkout": "e757cc1b05a761ad1ee7ac0b496128039489e754",
+    "tree": "0cdaeaa206c10aa9b93ac45c2c418aab68948d3d",
+    "whole_tree_matches_frozen_source": true,
+    "decoded_log_bytes": 440761,
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/ci446-completed-eight-inventory.json",
+    "source_proof": "docs/github-logs/package-client-quarantine-20261021/ci446-partial-source-proof.json",
+    "storage": "local originals; not pushed",
+    "remaining": [
+      "Linux current application/CLI and regression outcomes",
+      "Required",
+      "final cleanup"
+    ],
+    "not_whole_qualification": true
+  },
+  "qualification_receipt": "ci446-bun-declared-entry-hosted-qualification-20261031.json",
+  "worker_terminal": {
+    "observed_exec_exit_code": 0,
+    "state": "COMPLETED",
+    "actual_queries": 5,
+    "next_due_at": null,
+    "signal_sent": false
+  }
+}

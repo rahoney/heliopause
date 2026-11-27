@@ -1,0 +1,54 @@
+{
+  "work_item": "M13-004 channel naming readiness only",
+  "owner_choice": "PENDING",
+  "account_readiness": "owner earlier confirmed rahoney npm/PyPI account setup; not reverified as ownership",
+  "public_queries": [
+    {
+      "ecosystem": "npm",
+      "proposed_name": "@rahoney/heliopause",
+      "url": "https://registry.npmjs.org/@rahoney%2Fheliopause",
+      "checked_at": "2026-10-30T22:39:32.958716+00:00",
+      "read_only": true,
+      "authenticated": false,
+      "http_status": 404,
+      "public_registration": "NO_PUBLIC_PROJECT_RETURNED"
+    },
+    {
+      "ecosystem": "PyPI",
+      "proposed_name": "heliopause-artifact-airlock",
+      "url": "https://pypi.org/pypi/heliopause-artifact-airlock/json",
+      "checked_at": "2026-10-30T22:39:32.959426+00:00",
+      "read_only": true,
+      "authenticated": false,
+      "http_status": 404,
+      "public_registration": "NO_PUBLIC_PROJECT_RETURNED"
+    }
+  ],
+  "homebrew_proposal": {
+    "repository": "rahoney/homebrew-heliopause",
+    "formula": "helox",
+    "ownership_or_availability": "NOT_ESTABLISHED; no repository creation requested"
+  },
+  "limitations": [
+    "HTTP404 only means no public project was returned at query time; not a namespace reservation or publication permission",
+    "npm scoped-package access and PyPI normalized/confusable/prohibited-name rules require publisher setup; not established by read-only GET",
+    "owner must choose exact names before implementing selected channels per existing baseline"
+  ],
+  "external_mutations": 0,
+  "credentials_used_or_saved": false,
+  "owner_question": {
+    "status": "SUPERSEDED_FOR_CURRENT_FUNCTIONAL_WORK",
+    "options": [
+      "use proposed exact names",
+      "decide names later"
+    ],
+    "requested_during": "same-source cu132 CI445 wait; current qualification continues",
+    "dependent_channel_implementation_started": false,
+    "priority_correction": "user2026-10-31: finish functional gaps before naming/distribution; name choice does not block implementation"
+  },
+  "post_functional_owner_question": {
+    "status": "DEFERRED_BY_OWNER",
+    "channel_names_selected": false,
+    "next_priority": "review and complete name-independent incomplete/unreviewed work; no repeated naming question"
+  }
+}

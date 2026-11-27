@@ -1,0 +1,576 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-e2 original ZIP required/mixed/current unsigned graph fixture and exact native3, two existing readiness readers; common clients/hosted/final remain open",
+  "baseline": {
+    "commit": "fb05feec06b8981576937cb10e2b6ff528a67621",
+    "tree": "8691f55f772546fcae98a4cd227d2d69340dc953"
+  },
+  "implemented": true,
+  "wired": true,
+  "qualified": true,
+  "acceptance_closed": "YES only six named local parents and pure credential/reader regression; not whole P4/common/final",
+  "changes": [
+    {
+      "path": "internal/sandbox/boundary_helper.go",
+      "sha256": "33cf46cbec8119641ead32e62d1a36698fe29cdb0bfed5fff21d929ce5d66ba3"
+    },
+    {
+      "path": "internal/sandbox/boundary_readiness_linux_test.go",
+      "sha256": "1d70c478e9f6771c4bc3510b6e14d7bcaf66fac055674f04b2778e87673f08ff"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "eb66cc932affa8c40cbc1d33b044158f501327eb24219aef4e79142a8348fe33"
+    }
+  ],
+  "runtime_source": {
+    "count": 1281,
+    "root_and_private_match_verified_actual_source": true,
+    "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-v2-source-before.json"
+  },
+  "canonical_checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.849
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 232.928
+    },
+    {
+      "step": "race",
+      "exit_code": 0,
+      "seconds": 31.342
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 7.61
+    },
+    {
+      "step": "bootstrap-build",
+      "exit_code": 0,
+      "seconds": 4.012
+    },
+    {
+      "step": "sandbox-build",
+      "exit_code": 0,
+      "seconds": 7.835
+    },
+    {
+      "step": "graph-build",
+      "exit_code": 0,
+      "seconds": 6.757
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.256
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 13.073
+    }
+  ],
+  "cpp": {
+    "seconds": 256.108,
+    "latch_pass": 128,
+    "latch_fail": 0,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "eb66cc932affa8c40cbc1d33b044158f501327eb24219aef4e79142a8348fe33"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "a72723697bd94adb035cd12391c5ab16ba49178cf2bc0d57e301ce9b0d53d11f"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "observer": {
+      "bytes": 3206688,
+      "sha256": "d834ca86cd366f30c35a4a635e173300ed103f9c983b7469391aba95b85d1bf2"
+    }
+  },
+  "reuse": {
+    "entire_CPP_except_exact_readiness_literal_identical_to_fb05fee": true,
+    "original_validator_unchanged": true,
+    "immutable_boundary_helper_and_OCI_function_preserved": true,
+    "v2_readiness_bytes": 2074,
+    "old_helper_sha256": "e7e7c9d86222f89cc916eb28b971bcf7fca5cf4b5785e1940051514bdd3b312f"
+  },
+  "validation": {
+    "old_same_new_test_red_seconds": 0.012,
+    "old_red": "valid fixture readers0/wanted2; old readiness only test-overlaid, product untouched",
+    "new_focused_seconds": 0.276,
+    "new_shell_regression": "exactly2 actual grep readers for valid init/self; at most2 and refusal for each UID/GID slot, groups,5caps, missing/empty fields and either missing file",
+    "existing_validator_body_immutable_helper_OCI_and_all_CPP_except_exact_readiness_literal_preserved": true,
+    "total_CPU_seconds": 30,
+    "cleanup_reserve_seconds": 17,
+    "active_CPU_seconds": 13,
+    "required_units": 20,
+    "no_input_pin_role_grant_or_budget_changes": true
+  },
+  "actual": [
+    {
+      "consumer": "inspect",
+      "seconds": 42.618,
+      "passed_named_parents": [
+        "TestPipxAcquiredRuntimeRequiredInspectionIntegration"
+      ],
+      "all_source_input_host_and_helper_invariants_pass": true,
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--result.json"
+    },
+    {
+      "consumer": "mixed",
+      "seconds": 90.645,
+      "passed_named_parents": [
+        "TestLinuxPipxAcquiredRuntimeTransactionIntegration"
+      ],
+      "all_source_input_host_and_helper_invariants_pass": true,
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--result.json"
+    },
+    {
+      "consumer": "graph",
+      "seconds": 82.159,
+      "passed_named_parents": [
+        "TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging"
+      ],
+      "all_source_input_host_and_helper_invariants_pass": true,
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--result.json"
+    },
+    {
+      "consumer": "tools-native",
+      "seconds": 163.064,
+      "passed_named_parents": [
+        "TestLinuxPipxObservedNativeInstallIntegration",
+        "TestLinuxPipxPublicInstallResolverIntegration",
+        "TestLinuxPipxPublicOriginalUpgradeIntegration"
+      ],
+      "all_source_input_host_and_helper_invariants_pass": true,
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--result.json"
+    }
+  ],
+  "mixed": {
+    "normal_before_CPU_usec": 11758667,
+    "injected_failure_CPU_usec": 450356,
+    "normal_after_CPU_usec": 12028750,
+    "normal_commands_each": 5,
+    "normal_registers_each": 22,
+    "injected_commands": 0,
+    "injected_after_genuine_read": true,
+    "all_three_expected_statuses_and_parent_pass": true,
+    "scope": "single current tuple, no fixed reduction ratio or all-host guarantee"
+  },
+  "graph_fixture": {
+    "subjects": 13,
+    "checks": 32,
+    "evidence": 37,
+    "zip_checks": 1,
+    "zip_evidence": 7,
+    "native_fixture_calls": 6,
+    "promoter_spy_success_case": 1,
+    "missing_required_runner_promoter": 0,
+    "unsigned_production_authenticity_promoter": 0,
+    "signed_native_and_Host_installation_qualified": false
+  },
+  "prior_failures": {
+    "baseline_required_seconds": 42.235,
+    "baseline_required_result": "CPU authorization exhausted final userpath.cli",
+    "direct_builtin_candidate": {
+      "canonical_cpp_128_pass": true,
+      "actual_seconds": 6.708,
+      "result": "preparation STREAM_FAULT: direct shell /proc/1/status outside existing reader membership",
+      "adopted": false
+    },
+    "existing_FS_reader_contract_preserved_by_v2": true,
+    "initial_CPU_and_encoding_diagnostics": "p4o4c3c3b3c-e1-cpu-diagnostic-assessment-20261028.json"
+  },
+  "operator_pre_execution_correction": {
+    "scope": "PRE-EXECUTION operator output filename correction; no product/runtime/source changes",
+    "error": "new v3 base/identities were generated under mutable standalone actual-v2.py filenames; sed of expected v3 filename exposed mismatch before any Root execution",
+    "unused_scripts": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-e2-inspect-actual-v2.py",
+        "saved_unused_copy": "/tmp/haa-p4o4c3c3b3c-e2-v3-inspect-misnamed-unused.py",
+        "sha256": "d9480541e887a6795638db8820f27e94f91e28b7e47b7a8c6e004b69d56106c4",
+        "misnamed_mutable_original_moved_to": "/tmp/haa-p4o4c3c3b3c-e2-v3-inspect-misnamed-unused-original.py"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-e2-graph-actual-v2.py",
+        "saved_unused_copy": "/tmp/haa-p4o4c3c3b3c-e2-v3-graph-misnamed-unused.py",
+        "sha256": "d7248486d11485e08dbcbbce9a24a9c82729740f64dde98d4e5c52d87d320290",
+        "misnamed_mutable_original_moved_to": "/tmp/haa-p4o4c3c3b3c-e2-v3-graph-misnamed-unused-original.py"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-e2-mixed-actual-v2.py",
+        "saved_unused_copy": "/tmp/haa-p4o4c3c3b3c-e2-v3-mixed-misnamed-unused.py",
+        "sha256": "87cc7a0d3a8d4001ef83374aa1786727aa58745cc8002c7588c97eaa840144f4",
+        "misnamed_mutable_original_moved_to": "/tmp/haa-p4o4c3c3b3c-e2-v3-mixed-misnamed-unused-original.py"
+      }
+    ],
+    "old_actual_directory_untouched": true,
+    "raw_original_generator_namespace_actual_sh_result_and_source_bindings_preserved": true,
+    "standalone_original_v2_operator_file_was_overwritten": true,
+    "correction": "output filename suffix v3.py now matches internal v3 base; generated fresh v3 files only",
+    "runtime_execution_with_mismatched_operator": false,
+    "misnamed_v2_paths_removed_by_preserving_rename": true
+  },
+  "missing": [
+    "Current common readiness consumers UV/Python/PNPM/Bun and whole affected profile matrix.",
+    "Current whole-source hosted/UID1001/macOS Required conclusions beyond e859.",
+    "Final signed15asset/19bundle release/activation and CPU/cu126/cu130/cu132 acceptance.",
+    "Ordinary native default/other recipe and P5/P6 execution scope remain unqualified/unimplemented."
+  ],
+  "raw_originals": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--actual.log",
+      "sha256": "32d427de6483106af2eae0337a524680994e79339ba9b4d7c1ede9deeebcbfbc",
+      "bytes": 633
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--actual.sh",
+      "sha256": "068e2d2a9ad880747ef8f5358564208c10470888ae83c74208011fca9ce2de08",
+      "bytes": 476
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--namespace-result.json",
+      "sha256": "9867f95459db2514d3836c0d340fc258061862b7d0db19728b3febe3c64c9008",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--namespace.py",
+      "sha256": "eefedf9adc1c811b7e9bb17eb303c052681b3c99a5e59b5dac8a421aa5776562",
+      "bytes": 1565
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--result.json",
+      "sha256": "2fae14b23707c71da3da7ae54f41ba4e21ec4f861ec6db3c1e3dea8d7118a66f",
+      "bytes": 1515
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--runtime-source-binding.json",
+      "sha256": "69f0330448289b8e3352b471250b3d372c8f8e267ef24d1c7433c1afd0e6172c",
+      "bytes": 231731
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3--user-tmp--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-inspect-actual-v3.py",
+      "sha256": "d9480541e887a6795638db8820f27e94f91e28b7e47b7a8c6e004b69d56106c4",
+      "bytes": 8967
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--actual.log",
+      "sha256": "ce62e30eacba5a1a9b2306c25973f7731b6eb2e721551c7aa3e1fd30e9361867",
+      "bytes": 1558
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--actual.sh",
+      "sha256": "ae2880677ab3c9a01cbec3a84a94d602931526eaba22bd5e48644e8ce54f1cb6",
+      "bytes": 468
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--namespace-result.json",
+      "sha256": "02a03a00d13b55bf2134b34ca8009e1306aac98a7ebeef640f7efd7d8b4d62bb",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--namespace.py",
+      "sha256": "31ca12a9b933d60fa4075185a9723c4c88893f1c74c6a154f40475adebfc942f",
+      "bytes": 1561
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--result.json",
+      "sha256": "fa12202bf8aee1e49ea44719df8dfc3e586b675fafff3694b2b42bdb8eb39884",
+      "bytes": 1507
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--runtime-source-binding.json",
+      "sha256": "69f0330448289b8e3352b471250b3d372c8f8e267ef24d1c7433c1afd0e6172c",
+      "bytes": 231731
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3--user-tmp--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-mixed-actual-v3.py",
+      "sha256": "87cc7a0d3a8d4001ef83374aa1786727aa58745cc8002c7588c97eaa840144f4",
+      "bytes": 8953
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--actual.log",
+      "sha256": "5e79aef107b46a6b096374a218780e376d8b9e177141f2e6b0f10b7dc2999061",
+      "bytes": 1788
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--actual.sh",
+      "sha256": "641f1e15c5602ff79b307eda9e50e77abb5ecfdd069a4c40f81b6f1c30748731",
+      "bytes": 468
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--graph-data--helox-release-sbom.cdx.json",
+      "sha256": "f5cbf5603b94db92eacb42d81b288a3e6ced4072d807ebe8f54b42d4ad3245de",
+      "bytes": 1980
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--namespace-result.json",
+      "sha256": "11036129bb1b13d0d433b83899a897722c93febf980ba3fb30d2c5818c5fd978",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--namespace.py",
+      "sha256": "7ca584dc814dc6a458e3701982e76395e781e8ad29f3d9c07d58d7b58d43dd57",
+      "bytes": 1576
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--result.json",
+      "sha256": "57b43cffa88dbbc8e048b1eb97f58e41791536b374ba169486dc2f0a48bdd96b",
+      "bytes": 1523
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--runtime-source-binding.json",
+      "sha256": "69f0330448289b8e3352b471250b3d372c8f8e267ef24d1c7433c1afd0e6172c",
+      "bytes": 231731
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3--user-tmp--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-graph-actual-v3.py",
+      "sha256": "d7248486d11485e08dbcbbce9a24a9c82729740f64dde98d4e5c52d87d320290",
+      "bytes": 9302
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--actual.log",
+      "sha256": "67b705c48261f735328b3cdbcb4c20a0db9c48477240365ecd1617c810f2224a",
+      "bytes": 11807
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--actual.sh",
+      "sha256": "3e860c26cac1246dda01f202f7b27d9b7f7ba1f180825b3a9310e8eb813c7fbe",
+      "bytes": 546
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--host-after.json",
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa",
+      "bytes": 2225
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--host-before.json",
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa",
+      "bytes": 2225
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--namespace-result.json",
+      "sha256": "7f07c01a6abf76ddb73b0b5f7922fcb05e73380d47890881fee0944ff419c2ce",
+      "bytes": 216
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--namespace.py",
+      "sha256": "504c605094f0baedb7642ad6c606f14949aa5ec9d586379600ca3106124e0f99",
+      "bytes": 1599
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--result.json",
+      "sha256": "0fee2b692cde5dffc9e8030de2088b7f15f58e993fa099d98578897faac262cb",
+      "bytes": 1429
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--runtime-source-binding.json",
+      "sha256": "69f0330448289b8e3352b471250b3d372c8f8e267ef24d1c7433c1afd0e6172c",
+      "bytes": 231731
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3--user-tmp--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-tools-native-actual-v3.py",
+      "sha256": "928de04174019dc36c859209c7a2df5592130a932c425fca8f189b210ec6bab0",
+      "bytes": 9808
+    }
+  ],
+  "additional_raw_prefixes": [
+    "p4o4c3c3b3c-e2-v1-",
+    "p4o4c3c3b3c-e2-v2-",
+    "p4o4c3c3b3c-e2-inspect-actual-v1--",
+    "p4o4c3c3b3c-e2-inspect-actual-v2--"
+  ]
+}

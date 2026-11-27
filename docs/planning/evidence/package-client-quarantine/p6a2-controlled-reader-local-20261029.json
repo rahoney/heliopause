@@ -1,0 +1,126 @@
+{
+  "status": "PASS (named local DATA reader and replay correction)",
+  "baseline_commit": "21ab828510d08b30e3a268d875736312b751fee5",
+  "runtime_inputs": 1348,
+  "existing1343_sources_unchanged": true,
+  "modified_paths": [
+    "internal/artifact/pypi/execution_entry.go",
+    "internal/artifact/pypi/execution_entry_test.go",
+    "internal/inspection/pypi/static.go"
+  ],
+  "new_paths": [
+    "internal/inspection/pypi/execution_inventory.go",
+    "internal/inspection/pypi/execution_inventory_test.go"
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (controlled snapshot reader)",
+    "WIRED": "NO (Python preparation/runtime/CLI)",
+    "QUALIFIED": "YES (named internal DATA scope)",
+    "ACCEPTANCE_CLOSED": "YES (named reader and replay correction only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.816
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/artifact/pypi",
+        "./internal/inspection/pypi",
+        "-run",
+        "^TestConsole(Execution|Intake)"
+      ],
+      "exit_code": 0,
+      "seconds": 5.276
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 287.612
+    },
+    {
+      "step": "pypi-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./internal/inspection/pypi"
+      ],
+      "exit_code": 0,
+      "seconds": 14.051
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.366
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 19.87
+    }
+  ],
+  "original_failure": {
+    "Quick_seconds": 299.785,
+    "focused_before_Quick": "PASS6.127s",
+    "replay_RED_seconds": 3.013,
+    "cause": "New A1 consumer hashed RECORD map-derived file/installed/hook order. Same original archive was inconsistently rejected; canonical parser had no deterministic ordering contract.",
+    "correction": "Canonicalize only the private A1 fingerprint snapshot Files by Path, InstalledFiles by ArchivePath, SiteHookLines by File/Line. Parser/Model C/RECORD/approval semantics unchanged.",
+    "same_replay_regression": "RED at attempt0 then GREEN64 repeated measurements; additional64 hook-source measurements and A2 same original replay PASS",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-a2-v1-first-failure.json"
+  },
+  "reader": "Held intake/Run roots and regular file/open/path identity;512B filename; existing default64MiB compressed/256MiB uncompressed; bounded owned memory snapshot supplied to the existing canonical ReaderAt parser; caller Err/Cause/close errors invalidate result",
+  "test_scope": [
+    "real controlled inert ZIP/RECORD/parser, not public supply authentication",
+    "same acquisition and snapshot preserve exact console metadata; changed current source refused",
+    "archive/filename/Run/root symlinks and directories refused",
+    "oversized/foreign filename, wrong digest/size and malformed acquisition handle refused",
+    "pre-cancel and cancellation during source read preserve original cause"
+  ],
+  "not_authority": [
+    "current whole Policy or inspection approval",
+    "interpreter/runtime/user callable completed or safe",
+    "native UVx selector equivalence",
+    "Host installation/publication/output promotion"
+  ],
+  "source_identity": "docs/github-logs/package-client-quarantine-20261021/p6-a2-v2-source-identity.json",
+  "active_hosted": "CI429/source9eb/1343 excludes A1/A2; poll04 8SUCCESS/Linux running; next timer05 due03:37:40UTC/session41398; no push",
+  "MISSING": [
+    "same current whole PyPI inspection/preparation and records composition",
+    "native UVx selector golden equivalence",
+    "readonly Python user-run/admission/terminal/output/cleanup",
+    "actual aliases/CLI/whole final qualification"
+  ]
+}

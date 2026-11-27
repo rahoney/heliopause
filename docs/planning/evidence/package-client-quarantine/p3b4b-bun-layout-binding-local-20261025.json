@@ -1,0 +1,176 @@
+{
+  "work_item": "M13-004/P3-B4b",
+  "baseline": "d72287e0d3972467cb4633dbe84594ea894cd1c5",
+  "status": {
+    "IMPLEMENTED": "YES (Bun hoisted full source file/bin/edge binding and shared workspace accounting)",
+    "WIRED": "YES (production binder and named actual source/native-capture consumer; production gVisor preparer not wired)",
+    "QUALIFIED": "YES (named local subset)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4/Bun)",
+    "MISSING": [
+      "production gVisor bounded offline cache envelope/prepare with complete observation/cleanup",
+      "Bun lifecycle/runtime distinction and full per-instance dynamic inspection/Policy",
+      "approved cache/transaction/CLI and affected-profile remote qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_budget.go",
+      "sha256": "6e9075f1c9eff5346661bcd12bbccaced3ea7756f3d6e68ab799611799a9d626"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_inventory.go",
+      "sha256": "825de05acaa060542ba1add164809d554d81ea6d855d90ef9e931d7f50c6f221"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_budget.go",
+      "sha256": "7703d164836742e3e55d6ce2d99f1956f9c5011327991313bfaca9e1f9e2b45a"
+    },
+    {
+      "path": "internal/artifact/npm/bun_layout_archive.go",
+      "sha256": "44b20b0abb47e6494c104663b64041b2dfae46bc6b38cb7ab787821e66d6500b"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_layout.go",
+      "sha256": "be5794f65f89f5149f1824f018b99ad3da2be90bbca9f109ab667ff501c7454a"
+    },
+    {
+      "path": "internal/artifact/npm/bun_layout_binding_data.go",
+      "sha256": "f8fb8a5880dc8a5c7d37630e58e3d1b1ab38d90473d9339af23100565de84d63"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_layout_test.go",
+      "sha256": "a40d561a1279d520a6738a80e57b78ac8343cff373c1a9c686255f2905b4b8e2"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_budget_test.go",
+      "sha256": "8515413d8e094cd39e342ce75084bff2efcd1e4358f9a2ef2092cc8f4ae2ef01"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_source_real_test.go",
+      "sha256": "ece51685dbd7cd7ec8e45e61744141f563daccc4c28fc53136a86a33bafe0bda"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_layout_real_test.go",
+      "sha256": "e84e0e45afb7728aba81980f2bfd7fc2de7e3e8a3274af42b222411cf30edc51"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4b-layout-corrected-format.json",
+      "command": null,
+      "exit": 0,
+      "seconds": 1.566,
+      "log_sha256": null
+    },
+    {
+      "receipt": "p3b4b-layout-corrected-quick.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 188.001,
+      "log_sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "receipt": "p3b4b-bun-full-related-race.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 47.291,
+      "log_sha256": "dc7938bd4275f911a7b40f6d81a9e75086408d5e3418467f62e5e95b37c07bfa"
+    },
+    {
+      "receipt": "p3b4b-bun-layout-final-tagged-vet.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 1.021,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b4b-bun-layout-binding-corrected-real-compile.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/hpr-bx53162k/bun-layout-binding-corrected/sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 7.137,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b4b-bun-layout-binding-corrected-real.json",
+      "command": [
+        "/tmp/hpr-bx53162k/bun-layout-binding-corrected/sandbox.test",
+        "-test.v",
+        "-test.timeout=3m",
+        "-test.run",
+        "^TestBunFrozenNativeLayoutBinding$"
+      ],
+      "exit": 0,
+      "seconds": 1.422,
+      "log_sha256": "fb869d8a07e3055b5cbbba8f35ad66d4ad60916bfd56fb16b4107c8e1c4c23ec"
+    }
+  ],
+  "mechanical_reuse": [
+    "p3b4b-budget-inventory-mechanical-reuse.json",
+    "p3b4b-source-fixture-mechanical-reuse.json"
+  ],
+  "first_failures": {
+    "unused_test_import": "p3b4b-layout-first-quick.json",
+    "SA1012_nil_context_test": "p3b4b-layout-reviewed-quick.json",
+    "actual_transitive_pass_peer_source_mode_mismatch": "p3b4b-first-actual-mode-assessment.json",
+    "diagnostic_relative_parent_loop": "p3b4b-layout-operator-v1-assessment.json"
+  },
+  "source_mode_correction": "Original packed0664 facts preserved; HAA cache envelope explicitly prepares source mode &^0022. Five js-tokens files become0644. Corrected binder requires that exact private view, unchanged bytes/exec bits and safe output; no Bun extraction chmod or Host mutation claim.",
+  "actual": {
+    "receipt": "p3b4b-bun-layout-binding-corrected-real.json",
+    "cases": [
+      "transitive",
+      "peer"
+    ],
+    "unique_archives": [
+      2,
+      4
+    ],
+    "instances": [
+      2,
+      4
+    ],
+    "bound_entries": [
+      11,
+      63
+    ],
+    "fresh_independent_acquire_SRI_static_inventory": true,
+    "partial_inventory_bin_substitution_rejected": true,
+    "gVisor_dynamic_Policy_Host_install": "NOT_EXERCISED"
+  },
+  "completed_payload_cleanup": {
+    "receipt": "p3b4b-completed-copies-cleanup.json",
+    "roots": 7,
+    "regular_bytes": 778244261,
+    "references": 0,
+    "query_errors": 0,
+    "RSS_recovery": "NOT_MEASURED"
+  },
+  "remote": "NO new push/CI; group at meaningful backend checkpoint and consume actual clock timer; next meaningful macOS/Required gate remains open"
+}

@@ -241,7 +241,7 @@ func (p *m7QualificationPorts) Inspect(_ context.Context, artifact domain.Acquir
 	return domain.NewInspectionReport(check, nil, []domain.Evidence{evidence})
 }
 
-func (p *m7QualificationPorts) Record(_ context.Context, _ domain.RunID, evidence []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (p *m7QualificationPorts) Record(_ context.Context, _ domain.RunID, evidence []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	p.calls = append(p.calls, "evidence")
 	references := make([]domain.EvidenceReference, len(evidence))
 	for index, item := range evidence {

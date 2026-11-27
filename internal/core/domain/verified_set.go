@@ -9,17 +9,19 @@ import (
 // a set-level Policy needs. It deliberately contains only normalized Domain
 // values and trusted Evidence references.
 type DependencyInspection struct {
-	node     DependencyNodeID
-	runID    RunID
-	artifact AcquiredArtifact
-	checks   []CheckExecution
-	evidence []EvidenceReference
-	decision PolicyDecision
+	node                  DependencyNodeID
+	runID                 RunID
+	artifact              AcquiredArtifact
+	checks                []CheckExecution
+	plan                  CheckPlan
+	evidence              []EvidenceReference
+	decision              PolicyDecision
+	installActionEvidence Evidence
 }
 
 // NewDependencyInspection constructs one completed inspection record for an
 // exact locked dependency.
-func NewDependencyInspection(node DependencyNodeID, runID RunID, artifact AcquiredArtifact, checks []CheckExecution, evidence []EvidenceReference, decision PolicyDecision) (DependencyInspection, error) {
+func NewDependencyInspection(node DependencyNodeID, runID RunID, artifact AcquiredArtifact, checks []CheckExecution, evidence []EvidenceReference, decision PolicyDecision, plans ...CheckPlan) (DependencyInspection, error) {
 	if node.value == "" || runID.value == "" || artifact.identity.source.value == "" || decision.policyID == "" {
 		return DependencyInspection{}, errors.New("dependency inspection requires node, completed run subject, and policy decision")
 	}
@@ -38,9 +40,19 @@ func NewDependencyInspection(node DependencyNodeID, runID RunID, artifact Acquir
 		}
 		seenEvidence[reference.id] = true
 	}
+	if len(plans) > 1 {
+		return DependencyInspection{}, errors.New("dependency inspection has multiple declarations")
+	}
+	var plan CheckPlan
+	if len(plans) == 1 {
+		plan = plans[0]
+		if err := plan.Validate(runID, artifact, checks); err != nil {
+			return DependencyInspection{}, err
+		}
+	}
 	return DependencyInspection{
 		node: node, runID: runID, artifact: artifact,
-		checks:   append([]CheckExecution(nil), checks...),
+		plan: plan, checks: append([]CheckExecution(nil), checks...),
 		evidence: append([]EvidenceReference(nil), evidence...), decision: decision,
 	}, nil
 }
@@ -49,11 +61,56 @@ func (i DependencyInspection) Node() DependencyNodeID         { return i.node }
 func (i DependencyInspection) RunID() RunID                   { return i.runID }
 func (i DependencyInspection) Artifact() AcquiredArtifact     { return i.artifact }
 func (i DependencyInspection) PolicyDecision() PolicyDecision { return i.decision }
+func (i DependencyInspection) CheckPlan() CheckPlan           { return i.plan }
+
 func (i DependencyInspection) Checks() []CheckExecution {
 	return append([]CheckExecution(nil), i.checks...)
 }
 func (i DependencyInspection) Evidence() []EvidenceReference {
 	return append([]EvidenceReference(nil), i.evidence...)
+}
+
+// WithHostInstallActionEvidence retains one exact, recorded inspection fact
+// before full Evidence is projected to store references. Absence stays unknown.
+func (i DependencyInspection) WithHostInstallActionEvidence(evidence []Evidence) (DependencyInspection, error) {
+	if i.node.value == "" || i.artifact.identity.source.value == "" {
+		return DependencyInspection{}, errors.New("host install action requires a valid dependency inspection")
+	}
+	for _, fact := range evidence {
+		if fact.kind != EvidenceHostInstallActionRequired && fact.kind != EvidenceHostInstallActionNotRequired {
+			continue
+		}
+		if i.installActionEvidence.id.value != "" || fact.identity != i.artifact.identity || fact.digest != i.artifact.digest {
+			return DependencyInspection{}, errors.New("host install action evidence is duplicate or has a different subject")
+		}
+		recorded := false
+		for _, reference := range i.evidence {
+			if reference.id == fact.id {
+				recorded = true
+				break
+			}
+		}
+		matches := 0
+		for _, check := range i.checks {
+			if check.id != fact.checkID {
+				continue
+			}
+			if check.kind != CheckInspection || !check.required || check.capability != CapabilitySupported || check.status != ExecutionCompleted {
+				return DependencyInspection{}, errors.New("host install action evidence requires a completed required inspection")
+			}
+			matches++
+		}
+		if !recorded || matches != 1 {
+			return DependencyInspection{}, errors.New("host install action evidence requires its recorded reference and unique check")
+		}
+		i.installActionEvidence = fact
+	}
+	return i, nil
+}
+
+// HostInstallActionEvidence returns a value copy and whether the action is known.
+func (i DependencyInspection) HostInstallActionEvidence() (Evidence, bool) {
+	return i.installActionEvidence, i.installActionEvidence.id.value != ""
 }
 
 // InspectedDependencySet is a complete graph-bound collection of independently

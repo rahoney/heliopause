@@ -190,3 +190,120 @@ func TestDetachedSignatureRejectsRevokedAndExpiredCurrentKeys(t *testing.T) {
 		t.Fatal("revoked key accepted")
 	}
 }
+
+// The registry later served the same official key re-certified on 2026-02-18
+// without its 2021 self-signatures; the 2025 signature stays valid through the
+// pinned current binding, and tampering or an invalid current authority still fail.
+func TestOfficialRecertifiedRegistryCertificateUsesCurrentBinding(t *testing.T) {
+	artifact, sums, sig := signedFixture(t, "hashicorp-random-3.7.2", "hashicorp/random@3.7.2")
+	recertified, err := os.ReadFile("testdata/hashicorp-recertified-20260218.asc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact.SigningKeys[0].ASCIIArmor = string(recertified)
+	now := time.Date(2026, 11, 7, 0, 0, 0, 0, time.UTC)
+	binding, err := VerifySignedChecksums(artifact, sums, sig, now)
+	if err != nil || binding.Trust != TrustOfficial || binding.Fingerprint != OfficialFingerprint {
+		t.Fatalf("recertified official binding = %+v, %v", binding, err)
+	}
+	config := &packet.Config{Time: func() time.Time { return now }, MinRSABits: 2048}
+	entity, _, err := parseCertificate(recertified)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, valid := entity.SigningKeyById(time.Date(2025, 4, 22, 12, 0, 0, 0, time.UTC), 0xC820C6D5CD27AB87, config); valid {
+		t.Fatal("fixture no longer lacks a signing-time binding")
+	}
+	tampered := bytes.Replace(sums, []byte("linux_amd64"), []byte("linux_arm64"), 1)
+	if _, err := VerifySignedChecksums(artifact, tampered, sig, now); err == nil {
+		t.Fatal("tampered checksums accepted with recertified certificate")
+	}
+	if _, err := VerifySignedChecksums(artifact, sums, sig, time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)); err == nil {
+		t.Fatal("expired official authority accepted with recertified certificate")
+	}
+
+	t.Run("corrupted-signature", func(t *testing.T) {
+		mutated := append([]byte(nil), sig...)
+		mutated[len(mutated)-1] ^= 1
+		if _, err := packet.Read(bytes.NewReader(mutated)); err != nil {
+			t.Fatal("corruption fixture must remain a parseable signature", err)
+		}
+		if _, err := VerifySignedChecksums(artifact, sums, mutated, now); err == nil {
+			t.Fatal("recertified official authority accepted a corrupted signature")
+		}
+	})
+
+}
+
+// A valid current certificate and signature do not silently extend the
+// official-only recertification exception to other publisher authorities.
+func TestNonOfficialRecertificationRetainsHistoricalBinding(t *testing.T) {
+	created := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	configuration := func(at time.Time) *packet.Config {
+		return &packet.Config{Time: func() time.Time { return at }, Algorithm: packet.PubKeyAlgoEdDSA, DefaultHash: crypto.SHA256}
+	}
+	entity, err := openpgp.NewEntity("Original synthetic identity", "", "original@example.invalid", configuration(created))
+	if err != nil {
+		t.Fatal(err)
+	}
+	message := []byte("frozen synthetic checksum document")
+	var signature bytes.Buffer
+	if err := openpgp.DetachSign(&signature, []*openpgp.Entity{entity}, bytes.NewReader(message), configuration(created.Add(time.Hour))); err != nil {
+		t.Fatal(err)
+	}
+	oldNames := make([]string, 0, len(entity.Identities))
+	for name := range entity.Identities {
+		oldNames = append(oldNames, name)
+	}
+	if err := entity.AddUserId("Recertified synthetic identity", "", "recertified@example.invalid", configuration(created.Add(2*time.Hour))); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range oldNames {
+		delete(entity.Identities, name)
+	}
+	var public, armored bytes.Buffer
+	if err := entity.Serialize(&public); err != nil {
+		t.Fatal(err)
+	}
+	writer, err := armor.Encode(&armored, "PGP PUBLIC KEY BLOCK", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := writer.Write(public.Bytes()); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	current, _, err := parseCertificate(armored.Bytes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	packetBody, err := packet.Read(bytes.NewReader(signature.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sig, ok := packetBody.(*packet.Signature)
+	if !ok || sig.IssuerKeyId == nil {
+		t.Fatal("synthetic detached signature is invalid")
+	}
+	config := configuration(created.Add(3 * time.Hour))
+	key, currentValid := current.SigningKeyById(config.Now(), *sig.IssuerKeyId, config)
+	if !currentValid || fingerprint(current.PrimaryKey) == OfficialFingerprint {
+		t.Fatal("fixture must have a valid nonofficial current authority")
+	}
+	if _, historicalValid := current.SigningKeyById(sig.CreationTime, *sig.IssuerKeyId, config); historicalValid {
+		t.Fatal("fixture must lack a signing-time binding")
+	}
+	hash, err := sig.PrepareVerify()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = hash.Write(message)
+	if err := key.PublicKey.VerifySignature(hash, sig); err != nil {
+		t.Fatal("fixture must retain a cryptographically valid signature", err)
+	}
+	if _, err := verifyDetached(current, message, signature.Bytes(), config); err == nil {
+		t.Fatal("nonofficial recertification silently bypassed historical binding")
+	}
+}

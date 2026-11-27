@@ -22,8 +22,12 @@ func (g *approvedCargoProjectGuard) verifyBuildApproval(ctx context.Context, bui
 	if err != nil || !reflect.DeepEqual(snapshot, build.Report().Inputs().Snapshot()) {
 		return nil, errors.New("cargo build retained approval changed")
 	}
+	facts, err := domain.BindEvidenceProfiles(build.Result().Checks(), append(build.Verification().Evidence(), build.Report().Inspection().Evidence()...))
+	if err != nil {
+		return nil, err
+	}
 	expected := map[domain.EvidenceID]domain.Evidence{}
-	for _, fact := range append(build.Verification().Evidence(), build.Report().Inspection().Evidence()...) {
+	for _, fact := range facts {
 		expected[fact.ID()] = fact
 	}
 	bindingID, _ := domain.NewEvidenceID("project-build-output-binding")

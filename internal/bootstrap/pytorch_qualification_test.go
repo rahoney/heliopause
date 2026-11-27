@@ -102,9 +102,7 @@ func PreparePyTorchQualification(ctx context.Context, profile, version, targetPa
 	if err != nil {
 		return "", nil, err
 	}
-	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(start, remote, output)
-	})
+	ctx, observer, err := newProtectedObserverSupervisor(ctx, executor, launcher)
 	if err != nil {
 		return "", nil, err
 	}
@@ -140,4 +138,10 @@ func PreparePyTorchQualification(ctx context.Context, profile, version, targetPa
 	}
 	body, err := json.Marshal(request)
 	return string(body), receipt, err
+}
+
+// PrepareProtectedObserverIntegration exposes the same protected composition
+// to external-package native tests without a separate helper lifecycle.
+func PrepareProtectedObserverIntegration(ctx context.Context, executor *hosttool.Executor, launcher hosttool.ObserverLauncher) (context.Context, *sandbox.ObserverSupervisor, error) {
+	return newProtectedObserverSupervisor(ctx, executor, launcher)
 }

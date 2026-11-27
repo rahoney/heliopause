@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/CI436-close-entry-correction",
+  "source": "f4f7abc50166a5e5b3a2743967674e7b89088678",
+  "whole_tree": "99e558c6bff0b18355de9eadcee4a334cfa3dcee",
+  "previous_remote": "775c19cd1eb8070515d9a936efad0fa628071f2b",
+  "normal_fast_forward": true,
+  "outgoing_commits": 4,
+  "outgoing_paths": 11,
+  "remote_ref_readback_matches": true,
+  "run_id": 40992454633,
+  "run_number": 437,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40992454633",
+  "started_at": "2026-10-30T02:34:15Z",
+  "initial_status": "in_progress",
+  "initial_jobs": 9,
+  "initial_MCP_run_jobs_read_verified": true,
+  "timer": {
+    "mode": "existing unchanged public read-only20min GET worker",
+    "session_id": 85924,
+    "host_pid": 52695,
+    "state_file": "/tmp/haa-ci437-autopoll/state.json",
+    "first_due_at": "2026-10-30T02:54:15Z",
+    "first_due_KST": "2026-10-30 11:54:15 KST",
+    "actual_timed_queries_at_registration": 0,
+    "future_execution_not_claimed": true
+  },
+  "expected_qualification": {
+    "matching_close_entry_observer_and_profile": true,
+    "existing_Linux_consumers_and_Bun_peer": true,
+    "current_D5_D6_D7_hosted_parents": 3,
+    "CPP_named_latches": 132,
+    "current_top_level_parents": 109,
+    "Linux_timeout_minutes": 120,
+    "Required_jobs": 10,
+    "budgets_and_permissions_unchanged": true
+  },
+  "result": "SUCCESS",
+  "whole_qualification": "FROZEN_SOURCE_NAMED_HOSTED_QUALIFIED",
+  "independent_local_next": "P6-E2 existing pipx run owner/safe native terminal/whole original entry collision review; no push that cancels frozen CI437",
+  "authorization": "After exact public payload approval request and initial automatic rejection, user explicitly instructed CI at an important validation boundary; common observer change meets that condition. Same normal push was approved/executed; no workaround.",
+  "last_consumed_poll": {
+    "number": 5,
+    "actual_query_started_at": "2026-10-30T04:14:19.587907+00:00",
+    "actual_query_ended_at": "2026-10-30T04:14:20.730664+00:00",
+    "result": "8SUCCESS/LinuxIN_PROGRESS; Required not yet created",
+    "next_due_at": "2026-10-30T04:34:20.730680+00:00",
+    "original": "docs/github-logs/package-client-quarantine-20261021/ci437-poll05-summary.json"
+  },
+  "completed8_source_proof": {
+    "checkout": "e5a153efd6be3dbecc7ddb9e4aca938aaa88a188",
+    "whole_tree": "99e558c6bff0b18355de9eadcee4a334cfa3dcee",
+    "source_parent_verified": true,
+    "all8_logs_readback_verified": true,
+    "all8_logs_fetched_once": true,
+    "CPP_helper_latches": 132,
+    "CPP_helper_latches_fail": 0,
+    "scope": "8 completed jobs only; Linux/Required PENDING",
+    "original": "docs/github-logs/package-client-quarantine-20261021/ci437-completed8-source-proof.json"
+  },
+  "completion": {
+    "run_updated_at": "2026-10-30T04:25:38Z",
+    "required_jobs_success": 10,
+    "qualification_receipt": "./ci437-close-entry-uv-hosted-qualification-20261030.json",
+    "timer_worker_exit_code": 143,
+    "actual_timed_queries": 5,
+    "next_timer": null
+  }
+}

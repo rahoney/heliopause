@@ -1,0 +1,216 @@
+{
+  "scope": "P5-B2f production factory/M3 preparation and current Evidence/staging; exact TypeScript5.9.3; no user-program execution",
+  "source_base": "a6cc4200b25a8d1beea6275ad7b33546d78867ff",
+  "runtime_source_files": 1301,
+  "prior1300_unchanged": true,
+  "new_source": {
+    "path": "internal/bootstrap/node_execution_prepare_integration_test.go",
+    "sha256": "343aa5a943410b3b21e20c3f3785a683866ae98081d96a3411ade96a192c0442",
+    "mode": "100644"
+  },
+  "states": {
+    "IMPLEMENTED": "YES (existing preparation and actual test)",
+    "WIRED": "YES (production factory and same-job CI step)",
+    "QUALIFIED": "YES (named local production preparation); NO (hosted new step)",
+    "ACCEPTANCE_CLOSED": "YES (local preparation); NO (hosted/user-run/whole P5)"
+  },
+  "checks_before_actual": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.442
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 63.329
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-b2f-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 4.001
+    }
+  ],
+  "post_wiring_quick": {
+    "profile": "quick",
+    "after": "same-job Node preparation workflow step",
+    "exit_code": 0,
+    "seconds": 81.733
+  },
+  "canonical_workflow": "PASS; full log p5-b2f-workflow.log",
+  "dispatch_negative_harness": {
+    "scope": "actual YAML Node preparation step Bash dispatch/negative harness; trusted framework completion only",
+    "step_body_sha256": "feacfd53bba7899afc71fff4996a80ebbdedf065c765ad33231ae063cb81c559",
+    "rows": [
+      {
+        "report": "pass",
+        "log_failure": false,
+        "exit": 0,
+        "expected": 0,
+        "exact_parent_cwd_and_lifecycle": true
+      },
+      {
+        "report": "empty",
+        "log_failure": false,
+        "exit": 1,
+        "expected": 1,
+        "exact_parent_cwd_and_lifecycle": true
+      },
+      {
+        "report": "skip",
+        "log_failure": false,
+        "exit": 1,
+        "expected": 1,
+        "exact_parent_cwd_and_lifecycle": true
+      },
+      {
+        "report": "child",
+        "log_failure": false,
+        "exit": 1,
+        "expected": 1,
+        "exact_parent_cwd_and_lifecycle": true
+      },
+      {
+        "report": "duplicate",
+        "log_failure": false,
+        "exit": 1,
+        "expected": 1,
+        "exact_parent_cwd_and_lifecycle": true
+      },
+      {
+        "report": "failure",
+        "log_failure": false,
+        "exit": 37,
+        "expected": 37,
+        "exact_parent_cwd_and_lifecycle": true
+      },
+      {
+        "report": "pass",
+        "log_failure": true,
+        "exit": 29,
+        "expected": 29,
+        "exact_parent_cwd_and_lifecycle": true
+      },
+      {
+        "report": "failure",
+        "log_failure": true,
+        "exit": 37,
+        "expected": 37,
+        "exact_parent_cwd_and_lifecycle": true
+      }
+    ],
+    "source_guard_or_runtime_changed": false
+  },
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 30.93,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "ca0db39fcbad2316c2c5802b11dcbd4430cd00830aa440b71fd919ff9209bb41",
+    "sources": [
+      {
+        "path": "/tmp/haa-p5-b2f-actual-v1/protected-client",
+        "sha256": "0c4f588be47541bf17eb70acaf23a4129007c44d08d4a532f8b3bfe91f8df787"
+      },
+      {
+        "path": "/tmp/haa-p5-b2f-actual-v1/observer",
+        "sha256": "d834ca86cd366f30c35a4a635e173300ed103f9c983b7469391aba95b85d1bf2"
+      },
+      {
+        "path": "/tmp/haa-p5-b2e-20261029-source/internal/bootstrap/node_execution_prepare.go",
+        "sha256": "b9b393af973bea4d7effe03c6d3aa97a8a397e0e07cfd93e7ace938eaa99aa5e"
+      },
+      {
+        "path": "/tmp/haa-p5-b2e-20261029-source/internal/bootstrap/node_execution_prepare_integration_test.go",
+        "sha256": "343aa5a943410b3b21e20c3f3785a683866ae98081d96a3411ade96a192c0442"
+      }
+    ],
+    "scope": "CURRENT production Node preparation factory/M3/Evidence/staging; exact TypeScript5.9.3/SRI; live public selection and fresh repeat; no user-program execution or Host install",
+    "passed_named_tests": [
+      "TestLinuxNodeExecutionPreparationIntegration"
+    ],
+    "production_guard_unchanged": true,
+    "fixture_version": "typescript@5.9.3",
+    "user_program_run": false,
+    "named_pass": true
+  },
+  "go_binary": {
+    "sha256": "0c4f588be47541bf17eb70acaf23a4129007c44d08d4a532f8b3bfe91f8df787",
+    "flags": "go test -c -tags=realcorpus ./internal/bootstrap; no trimpath/overlay"
+  },
+  "cpp_observer_sha256": "d834ca86cd366f30c35a4a635e173300ed103f9c983b7469391aba95b85d1bf2",
+  "subject": {
+    "name": "typescript",
+    "version": "5.9.3",
+    "sha256": "10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3",
+    "source_provenance": "p5b2f-npm-fixture-source-20261029.json",
+    "selection": "live public exact-version/SRI; not fixed42 graph replay",
+    "entry": "bin/tsc",
+    "explicit_command": "tsc",
+    "graph_subjects": 1,
+    "required_checks": 3,
+    "Evidence_each": 4,
+    "fresh_operations": 2,
+    "program_run": false
+  },
+  "workspace_readback": {
+    "node_test_workspace_entries": [],
+    "retained_entries": [
+      {
+        "name": "haa-network-policy-helper.log",
+        "role": "existing canonical helper diagnostic log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "node_workspace_absence_verified_after_actual": true,
+    "whole_tmp_empty_assertion_was_too_broad": true,
+    "original_operator_owned_prefix_check_is_not_used_as_Node_workspace_proof": true
+  },
+  "ci_wiring": {
+    "job": "existing gvisor-integration",
+    "new_job": false,
+    "tagged_client_reused": true,
+    "cleanup_helpers_reused": true,
+    "exact_framework_parent_PASS_count": 1,
+    "noSKIP": true,
+    "job_timeout_Required_SDK_CPP_budgets_unchanged": true,
+    "hosted_result": "PENDING next qualified grouped push"
+  },
+  "first_invocation": "non-root preflight stopped before namespace/product; original preserved; existing sudo route used",
+  "missing": [
+    "new ordinary hosted source/checkouts/logs and UID1001 preparation step qualification",
+    "actual user-program sandbox/rehash/output/exit/signal/cancel/cleanup",
+    "CLI/aliases and final profiles"
+  ],
+  "ci424_source_4ec_excludes_this_code": true
+}

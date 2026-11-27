@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-E2-E3-grouped-hosted",
+  "source": "31acbfe46bb860279fc3005d7104518fa5614010",
+  "whole_tree": "5b40eaf8df3bd83a6b385c7af7df1ecd51cc2de0",
+  "previous_remote": "f4f7abc50166a5e5b3a2743967674e7b89088678",
+  "normal_fast_forward": true,
+  "outgoing_commits": 4,
+  "outgoing_paths": 48,
+  "remote_ref_readback_matches": true,
+  "run_id": 41011408932,
+  "run_number": 438,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41011408932",
+  "started_at": "2026-10-30T05:58:50Z",
+  "initial_status": "in_progress",
+  "initial_jobs": 9,
+  "initial_MCP_run_jobs_read_verified": true,
+  "timer": {
+    "mode": "public read-only actual GET every20min",
+    "session_id": 5733,
+    "host_pid": 330825,
+    "uid": 1000,
+    "process_start_ticks": "1596505",
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci438-autopoll-config.json",
+    "state_file": "/tmp/haa-ci438-autopoll/state.json",
+    "first_due_at": "2026-10-30T06:18:50Z",
+    "first_due_KST": "2026-10-30 15:18:50 KST",
+    "actual_queries_at_registration": 0,
+    "future_execution_not_claimed": true
+  },
+  "expected_qualification": {
+    "new_CPP_pipx_root_query_and_clone_current_observer": true,
+    "existing_consumers_including_UV_and_Bun_peer": true,
+    "new_pipx_application_cases": 3,
+    "new_pipx_CLI_cases": 6,
+    "CPP_named_latches": 132,
+    "expected_top_level_parents": 111,
+    "Linux_timeout_minutes": 120,
+    "Required_jobs": 10,
+    "new_jobs": 0,
+    "product_budgets_permissions_required_coverage_unchanged": true
+  },
+  "expected_duration_basis": {
+    "CI437_server_seconds": 6683,
+    "new_local_application_seconds": 143.1,
+    "new_local_CLI_seconds": 283.94,
+    "arithmetic_seconds": 7110.04,
+    "estimate_only_not_completion_guarantee": true
+  },
+  "result": "SUCCESS — Required/all10",
+  "independent_local_next": "P6-F pinned bunx/pnpm dlx original source/alias/runtime/cache baseline; do not push a new helper/doc change that cancels active CI438",
+  "authorization": "User conditionally authorized CI at an important validation boundary. Complete source/current application/CLI E2/E3 group qualifies; normal push only, no main merge/release.",
+  "last_consumed_poll": {
+    "number": 6,
+    "actual_query_started_at": "2026-10-30T07:58:59.673868+00:00",
+    "actual_query_ended_at": "2026-10-30T07:59:00.679590+00:00",
+    "result": "Required/all10 SUCCESS",
+    "next_due_at": null,
+    "original": "docs/github-logs/package-client-quarantine-20261021/ci438-poll06-summary.json"
+  },
+  "completed8_source_proof": {
+    "checkout": "7beb11ba066f532b20380d1e419abb5c5548d3db",
+    "tree": "5b40eaf8df3bd83a6b385c7af7df1ecd51cc2de0",
+    "source_is_parent": true,
+    "decoded_bytes": 447169,
+    "existing8_logs_fetched_once": true,
+    "original": "docs/github-logs/package-client-quarantine-20261021/ci438-completed8-source-proof.json",
+    "CPP_latches_pass": 132,
+    "CPP_latches_fail": 0,
+    "whole_qualification": "PENDING_LINUX_AND_REQUIRED"
+  },
+  "qualification": "ci438-pipx-current-hosted-qualification-20261030.json",
+  "worker_completion": {
+    "exit_code": 0,
+    "state": "COMPLETED",
+    "next_timer": null
+  }
+}

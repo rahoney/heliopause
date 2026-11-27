@@ -1,0 +1,99 @@
+{
+  "work_item": "M13-004/P4-F",
+  "baseline": "9ac602a8cafd422285a3cec95a5bb1b9964231d0",
+  "status": {
+    "IMPLEMENTED": "YES (native provenance and approved cache adapter)",
+    "WIRED": "YES (existing complete inspection/Policy/Evidence/cache; actual composition)",
+    "QUALIFIED": "YES (named local two roots/empty and tamper negatives)",
+    "ACCEPTANCE_CLOSED": "YES (named data-only cache scope); NO (whole P4)",
+    "MISSING": [
+      "project controls/venv atomic transaction, ownership and CLI",
+      "lock-only versus installed publication and persistent UV tool/pipx",
+      "P7 final affected support/profile qualification"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4f-native-cache-v1-format.json",
+      "seconds": 1.501,
+      "sha256": "67be058c41abbc79bd75efb3b198df15ea50f0d05838ad380181535c797b0478"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4f-native-cache-v1-quick.json",
+      "seconds": 307.044,
+      "sha256": "a7925fee1f20eba5d7a9743a9b5c127ef21325bc0d3c49f1d3c989ba54a56452"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4f-native-cache-v1-security.json",
+      "seconds": 11.481,
+      "sha256": "1a84893f4023b701d4d6486936e84bcec6e2c5207fa181fc65e77faf17098a1d"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4f-native-cache-v1-docs.json",
+      "seconds": 0.247,
+      "sha256": "67d963aa99aca4384aaf1a95aebedda612f74d2d077de6e738eebece3f7f2a30"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4f-native-cache-full-affected-race.json",
+      "seconds": 270.474,
+      "sha256": "4c6e3422903cc9583d3932169848ca9a41d1799ee4743a2cf82a9ddade1ee39b"
+    }
+  ],
+  "actual": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4f-project-cache-native-v1-result.json",
+    "seconds": 51.282,
+    "test_seconds": 48.22,
+    "two_roots_seconds": 39.46,
+    "empty_seconds": 7.13,
+    "observed": [
+      "actual native public selection idna3.10+packaging25.0 and explicit empty",
+      "existing complete integrity/static/dynamic inspection/current M3+M4/Evidence",
+      "all required entry checks completed with at least three Evidence references",
+      "primary-free six-control Manifest and bound SBOM, approved cache readback",
+      "zero approval refuses staging; injected current Evidence reader failure refuses both staging/readback; real reader restoration succeeds",
+      "same sealed-cache Manifest modification refuses readback; target remains absent"
+    ],
+    "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+    "host_before_after_identical": true,
+    "no_skips": true,
+    "not_claimed": "Host project/venv installation, CLI support, native environment adoption, persistent tools or remote P4 qualification"
+  },
+  "unchanged_owners": [
+    "internal/promotion/python_project_cache.go",
+    "internal/application/project_inspect.go",
+    "internal/sandbox/uv_project_resolver.go",
+    "internal/artifact/pypi/uv_project_input.go",
+    "internal/artifact/pypi/uv_native_project_lock.go",
+    "internal/artifact/pypi/uv_project_export.go",
+    "internal/promotion/pypi_venv_transaction.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/sandbox/uv_project_update.go",
+      "sha256": "d2ec57af9aa7e503a031e477b5d922451232e4f511c41d471b8aa7b12e27b0c2"
+    },
+    {
+      "path": "internal/sandbox/uv_project_update_test.go",
+      "sha256": "65a0c7c110b0cf36a675c079dd4b41bd1ab5f8d698e56d2bb8b59e4768557677"
+    },
+    {
+      "path": "internal/promotion/uv_project_cache.go",
+      "sha256": "16e6a29612458b0d5774297785b896b4ff50cfe716e7ac170a19e5648fe12413"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_cache_integration_test.go",
+      "sha256": "7387c3f6b27fdc636a110ddc71232b5df3035be4c2735559f93af381ac0aa9b2"
+    }
+  ],
+  "invariants": [
+    "native manifest/lock/raw export and derived view exact provenance",
+    "immutable original/selected intent and current runtime, complete selected wheel identity",
+    "current approval/Evidence and existing independent whole archive metadata/record/cache validation reused",
+    "existing UV pip cache/transaction/runtime/observer bodies unchanged"
+  ],
+  "ci": "No push/dispatch; CI413 only covers frozen50fd; grouped final affected checkpoint remains open",
+  "lessons_review": "No new failure/cause; existing lessons unchanged"
+}

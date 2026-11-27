@@ -1,0 +1,176 @@
+{
+  "scope": "P5-C4 current preparation -> same execution context -> concrete materialization/Node runtime through application workflow; actual public TypeScript5.9.3 normal0/nonzero1",
+  "status": "PASS (named local scope)",
+  "baseline_commit": "98b1a9d8e0aa5f29a85234eb3b4818f0e52064e8",
+  "runtime_inputs": 1337,
+  "existing1332_including_CPP_and_old_actual_tests_unchanged": true,
+  "new_source_paths": [
+    "internal/application/execution_run.go",
+    "internal/application/execution_run_test.go",
+    "internal/bootstrap/node_execution_run.go",
+    "internal/bootstrap/node_execution_run_test.go",
+    "internal/bootstrap/node_execution_run_integration_test.go"
+  ],
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (application and concrete Bootstrap factory; public CLI missing)",
+    "QUALIFIED": "YES (named local workflow)",
+    "ACCEPTANCE_CLOSED": "YES (workflow unit only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.669
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/application",
+        "./internal/bootstrap",
+        "-run",
+        "^(TestExecutionWorkflow|TestNPMExecutionFactory)"
+      ],
+      "exit_code": 0,
+      "seconds": 12.8
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 282.298
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/application",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 25.374
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.323
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 4.775
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c4-v2-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.32
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 19.446
+    }
+  ],
+  "binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c4-v2-bootstrap.test",
+      "sha256": "34411705236497dc7745a6c9da04f007272b6408a719a3dd340331e9cced9c3a",
+      "bytes": 51143428
+    }
+  ],
+  "actual": {
+    "seconds": 58.861,
+    "cases": [
+      [
+        "1",
+        "0",
+        "4980",
+        "0"
+      ],
+      [
+        "2",
+        "1",
+        "62",
+        "0"
+      ]
+    ],
+    "native_resolver_acquisition": "ACTUAL public npm fixed TypeScript5.9.3",
+    "current_verification_inspection_Evidence_Policy": "ACTUAL required3 and current entry/set ALLOW per request",
+    "private_argv_source_runtime_and_records": "current typed context and complete staged manifest/SBOM bytes; independent operation/run/manifest per request",
+    "backend": "existing readonly whole input/target/terminal/private capture/observer/disposal; immutable terminal/output copied into private result",
+    "original_program_error": "completed guest1 retains NodeProgramError cause separately from incomplete workflow",
+    "all_source_Host_fixed42_ZIP_Docker_preserved": true,
+    "helper_wait0_confirmedstop_resources_endpoints0": true,
+    "no_skip": true
+  },
+  "orchestration_tests": "existing preparation fixture/constructors and explicit runtime doubles: no execution after preparation failure, fresh request/approval, terminal inconsistency, original causes, late caller cancellation, nil/invalid/pre-cancel, stream copies and formatter/JSON privacy; doubles are not real runtime evidence",
+  "source_and_raw_evidence": {
+    "identity": "docs/github-logs/package-client-quarantine-20261021/p5-c4-v2-build-identity.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p5-c4-actual-v1-result.json",
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/p5-c4-actual-v1-inventory.json",
+    "precheck_producer_failure": "docs/github-logs/package-client-quarantine-20261021/p5-c4-v1-check-preflight-notice.json"
+  },
+  "hosted": "CI428/source558d75a excludes local C3d and C4; no new push while active",
+  "MISSING": [
+    "safe explicit stream rendering separate from HAA summary",
+    "public npx/npm exec descriptor/grammar/composition and CLI actual",
+    "hosted grouped candidate and final profile/signed qualification",
+    "child held-pipe remains unproven; no grant broadening"
+  ]
+}

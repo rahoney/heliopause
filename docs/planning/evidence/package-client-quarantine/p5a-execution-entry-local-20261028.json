@@ -1,0 +1,103 @@
+{
+  "scope": "P5-A structural npm bin selection only; execution/CLI/whole P5 not qualified",
+  "status": "LOCAL_QUALIFIED (structural selection only)",
+  "base_commit": "ccbd93fef6460ba21050cd34cbc6a97a1eb63be2",
+  "existing_runtime_files_unchanged": 1281,
+  "new_source_files": [
+    {
+      "path": "internal/artifact/npm/execution_entry.go",
+      "sha256": "5ef4ee0ef24273ecd0befea51dd79fcdea861e1e9d9acba719188c4dcb5a2251",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/execution_entry_test.go",
+      "sha256": "d8697665a3cb6e7de271229fd4acf0bdbf20129976769ed81a65977b49b4b753",
+      "mode": "100644"
+    }
+  ],
+  "current_source_files_each": 1283,
+  "checks": [
+    {
+      "step": "entry-focused",
+      "command": [
+        "go",
+        "test",
+        "./internal/artifact/npm",
+        "-run",
+        "^TestExecutionEntry",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 2.04
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 37.506
+    },
+    {
+      "step": "npm-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm"
+      ],
+      "exit_code": 0,
+      "seconds": 49.102
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.267
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 14.043
+    }
+  ],
+  "existing_owners_reused": [
+    "ArchiveInventory",
+    "pnpmInventoryBins"
+  ],
+  "existing_parser_changed": false,
+  "bindings": [
+    "full acquired artifact including intake handle",
+    "whole manifest and all member facts",
+    "selected exact regular target path/digest/size/mode"
+  ],
+  "selection_contract": "automatic only one bin whose command equals package basename; explicit for different names/multiple bins including same-target aliases",
+  "first_failure": {
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p5-entry-first-quick.log",
+    "quick_seconds": 265.854,
+    "cause": "new test fixture used a noncanonical base32 RunID suffix; inventory constructor rejected before entry binding comparison",
+    "correction": "use existing domain.NewRunID; no production validation change"
+  },
+  "missing": [
+    "current full graph inspection/Policy binding",
+    "runtime/shebang and introduction-time byte validation",
+    "fresh sandbox execution and bounded stdout/stderr/exit/cancel/cleanup",
+    "CLI/npx/npm exec wiring and actual hostile qualification"
+  ],
+  "ci422_source": "12034457a69eabed0429d05d96dbf79bbef3409a; this local P5 source is excluded",
+  "no_public_push": true
+}

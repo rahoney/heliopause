@@ -1,0 +1,153 @@
+{
+  "scope": "M13-004/P2b1 authenticated archive to native file identity; isolated native ABI/format observations",
+  "baseline": "9ad5055",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES — existing offline maintenance consumer",
+  "QUALIFIED": "NO — product runtime/remote qualification pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "local_status": "VERIFIED",
+  "supply": {
+    "schema": "helox.pnpm-release-supply/v2",
+    "identity": {
+      "version": "12.15.0",
+      "source_commit": "91774e72a04d52ce61db06339696a433d383c764",
+      "workflow_run": "39583314875",
+      "archive_sha256": "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598"
+    },
+    "bundle_sha256": "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089",
+    "archive_bytes": 25369328,
+    "invocation": "https://github.com/pnpm/pnpm/actions/runs/39583314875/attempts/1",
+    "tool": {
+      "sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942",
+      "size": 57822504,
+      "libraries": [
+        "libgcc_s.so.1",
+        "librt.so.1",
+        "libpthread.so.0",
+        "libm.so.6",
+        "libdl.so.2",
+        "libc.so.6"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "name": "p2b1-native-boundaries-format",
+      "exit": 0,
+      "seconds": 0.314,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b1-native-boundaries-format.json"
+    },
+    {
+      "name": "p2b1-native-boundaries-focused",
+      "exit": 0,
+      "seconds": 1.855,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b1-native-boundaries-focused.json"
+    },
+    {
+      "name": "p2b1-native-official",
+      "exit": 0,
+      "seconds": 2.274,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b1-native-official.json"
+    },
+    {
+      "name": "p2b1-native-canonical-quick",
+      "exit": 0,
+      "seconds": 117.599,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b1-native-canonical-quick.json"
+    },
+    {
+      "name": "p2b1-native-canonical-security",
+      "exit": 0,
+      "seconds": 6.162,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b1-native-canonical-security.json"
+    },
+    {
+      "name": "p2b1-native-canonical-docs",
+      "exit": 0,
+      "seconds": 0.233,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b1-native-canonical-docs.json"
+    },
+    {
+      "name": "p2b1-native-full-race",
+      "exit": 0,
+      "seconds": 19.732,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b1-native-full-race.json"
+    }
+  ],
+  "observations": {
+    "seconds": 10.319,
+    "successful_cases": 19,
+    "runtime": "locked Node24.21.0 image, non-root read-only runc, network-none, cap-drop ALL, no-new-privileges, CPU1/memory512MiB",
+    "registry": "guest loopback mirror of selected official package metadata and authentic tarballs; archive locator rewritten; not a live public resolver replay",
+    "lifecycle": "ignored; package code not executed",
+    "lockfile_version": "9.0",
+    "graph_examples": [
+      "single root is-number6 -> selected update7",
+      "two direct roots with is-odd3.0.1 -> transitive is-number6 alongside root7",
+      "react18.3.1 + use-sync-external-store1.2.0 peer context; four distinct archives"
+    ],
+    "layout": "native root/dependency symlinks and peer-qualified virtual store; file nlink1/2/3 observed",
+    "host_before_after_identical": true,
+    "cleanup": [
+      {
+        "container": "5c1f8c78f0c3c1e3860391649e1bbba75d927a1283d461c9d741b0099dbc71b3",
+        "removed": true
+      },
+      {
+        "container": "33d04a34c3aa43298e889ac8e21c49120c1c4ebbcc3745953793f48fba1cd232",
+        "removed": true
+      },
+      {
+        "image": "sha256:47de83bbeb728dc53b5a194f7c6b3d276478937c6c54f6aa21ca6dddbc728a04",
+        "removed": true,
+        "no_prune": true
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_tool.go",
+      "sha256": "9063ad921fb5416375343c600df38ef79bb19b3aa451e13d23d6065656f26d3a"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_tool_test.go",
+      "sha256": "b5d1b46f4ea9b1a9a3849b3641f2d671cf8a3173b2cade90f0df721cab1d5dd4"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_release.go",
+      "sha256": "1ae2c82b6eecff770239e17bb6857cf961d2191e0c77e5c2412028a9a23062d5"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_release_real_test.go",
+      "sha256": "64a7eb231af4d13fc4edb8190457ea1b76ccabf92d19330d8a08500aec2a8792"
+    }
+  ],
+  "raw_refs": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/pnpm-native-observation-result.json",
+      "sha256": "f47d87bc05eb7bf70ae3c240e039ba879dcf8169d2c2a211a98719cf02f63df3",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/pnpm-native-observation-supply-receipt.json",
+      "sha256": "b453e92c5ff67f6333404eea9996163c32eaf8157a4ac7b1ac6a27c9ff826818",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/pnpm-native-observation-upstream-artifacts.json",
+      "sha256": "a8c9232a1f1a03f1206943e5e5de6a69214881e234e6a057d139e85fc4eff9a7",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/pnpm-native-observation-empty-work-cleanup.json",
+      "sha256": "e5c3b911a7cefbbfc28cfd44b9adf6c4b91226879180edd6357e1d8ada647ab3",
+      "storage": "local untracked raw; not remotely archived"
+    }
+  ],
+  "remaining": [
+    "single runtime owner/maintenance/distribution and actual gVisor tool admission",
+    "independent public source binding, pnpm graph/layout/project transaction and CLI",
+    "actual affected ecosystem/native platform/Required qualification"
+  ],
+  "cleanup": "own containers and derived image removed with no-prune; Host exact; empty work/client directories retired; archive retained only for next frozen runtime consumers"
+}

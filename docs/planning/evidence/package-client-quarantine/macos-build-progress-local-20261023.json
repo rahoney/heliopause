@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "baseline": "88c15b4e13baad5effc6c0f896b335a662376c8b",
+  "IMPLEMENTED": "YES bounded Go -v output",
+  "WIRED": "YES foundationSteps/Quick and platformSteps production build",
+  "QUALIFIED": "LOCAL ONLY",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "fresh native macOS and Required",
+    "timeout internal cause remains unknown"
+  ],
+  "scope": "add only -v to same two production build invocations; reuse existing bounded partial capture; package output is progress not exact stalled-package authority",
+  "source": {
+    "path": "scripts/check/runner.go",
+    "bytes": 15047,
+    "sha256": "c1e73248937b1eaeaebcbde28eabbc770692fd1bcd6d1575f43f3769a4ec7b84"
+  },
+  "preserved": "build -trimpath ./..., existing2m timeout and1MiB output bound, default test6m, same SDK/cache/env/Required/process cause and artifact budgets",
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.844,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-format.json",
+        "bytes": 110,
+        "sha256": "63fe64472923cc565822e75b8ff046e843bd5d509208f977702ddf243343f824"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 34.079,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-quick.json",
+        "bytes": 110,
+        "sha256": "923895edd08aa69383cab577ada68b8d94ed57c5e2ed1e470cef6dbb8d972d61"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-quick.log",
+        "bytes": 1354,
+        "sha256": "c438c5d2c1d24a22477db29db102b5baed051173f0cb5f60c76fd5533bca0c90"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.277,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-security.json",
+        "bytes": 112,
+        "sha256": "7be6d7f1506424a07fb915c91053c9439587bda1260b889c9b86789c29629e53"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.225,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-docs.json",
+        "bytes": 108,
+        "sha256": "7bde8bc9ca38b40b65335fe33e579196b66bb4b903d8b36bd6a38252a4b96643"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.724,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-workflow.json",
+        "bytes": 112,
+        "sha256": "a08fab76f9cc2870133deddb0120fc3f7cec9779ee72a26992f16798cd9414da"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-workflow.log",
+        "bytes": 1071,
+        "sha256": "fc81e111ed7b3dd4dfdcf6068e1392276f2f669cdfc3e6d2fabda49a3d37e5bf"
+      }
+    },
+    {
+      "profile": "platform",
+      "exit": 0,
+      "seconds": 21.553,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-platform.json",
+        "bytes": 113,
+        "sha256": "3411889fab529a0b71b4a2569da13e09b11fe490a29710a459047affac14ac91"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-candidate-platform.log",
+        "bytes": 46,
+        "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7"
+      }
+    }
+  ],
+  "race": {
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./scripts/check"
+    ],
+    "exit": 0,
+    "seconds": 22.786
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-checker-race.json",
+      "bytes": 167,
+      "sha256": "0f750c749f4d39782acbc519dee10f049e36c1e766214a0d35f9fa368f8716e6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/macos-build-progress-checker-race.log",
+      "bytes": 57,
+      "sha256": "33053d4bf288b4803877182b23ccc94e5489fa836142d429d1d5de7ba6201dff"
+    }
+  ],
+  "cleanup": {
+    "all_checks_finished": true,
+    "owned_go_tmpdir_entries": 0,
+    "native_resources": "NONE; active SDK/runtime/cache retained"
+  },
+  "not_claimed": "diagnostic addition fixes timeout or local cached platform performance equals native cold performance"
+}

@@ -1,0 +1,495 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D8",
+  "status": "NATIVE_RUN_GROUPED_HOSTED_WIRING_LOCAL_QUALIFIED_REMOTE_PENDING",
+  "baseline": "f8bdd0e248b9616496d707dcbdc0ab941a5df043",
+  "runtime_inputs": 1392,
+  "modified_paths": [
+    "scripts/ci-uv-tools.sh",
+    "scripts/check/uv_tools_workflow.go",
+    "scripts/check/uv_tools_workflow_test.go",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source_identity": [
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "293dba67c304c26703a4bedc5602a907f63127ad426154fcd4bc003cc05b239b",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow_test.go",
+      "sha256": "f2055a99853ec6763b2efdda26f0942d705da2f0cf3e145c9bc8a0a30a04a51f",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/ci-uv-tools.sh",
+      "sha256": "7c1e9a7f1b79ce19c97258090918bd9f1e3301db16fd46d7db4f34681c52ed7a",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.419
+    },
+    {
+      "step": "shell-syntax",
+      "command": [
+        "bash",
+        "-n",
+        "scripts/ci-uv-tools.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.004
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "./scripts/check",
+        "-run",
+        "^Test(UVTools|UVRun|CurrentExecution)",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 1.469
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 1.569
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 65.997
+    },
+    {
+      "step": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 67.099
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 10.491
+    }
+  ],
+  "guard_data": {
+    "scope": "DATA-only saved actual output applied to exact canonical AWK programs; no Artifact/native/CPP rerun",
+    "cases": [
+      {
+        "cohort": "uv_run_workflow",
+        "case": "saved actual positive",
+        "expected_exit": 0,
+        "exit_code": 0,
+        "log_bytes": 1935,
+        "log_sha256": "fb762124dd0414569a5f2f42bd0acdf8697aa0ceb335ecc15c74b1e7baf4b981"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "missing parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 1866,
+        "log_sha256": "955a529edd8df2a45422a42a3877c26d39ff1d3d431b99355da219f3e7832737"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "duplicate parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2004,
+        "log_sha256": "9341d7c7dd1f60a95e30452b636366faad406d6e24fddb704cdd5547ce81bce0"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "SKIP appended",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 1963,
+        "log_sha256": "73e1fe1cf3fc2aebd53ec874b5eb11bc315122d75cd8a52a302bd54839b5d422"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "wrong parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 1936,
+        "log_sha256": "caabceecf2baccbe6722ef7aa9403362766fcf5cc309c52009f3268a009a4a86"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "saved actual positive",
+        "expected_exit": 0,
+        "exit_code": 0,
+        "log_bytes": 2338,
+        "log_sha256": "700755269100b24d74859b8aee928be881c7646d2606628ff3ed6ac11ebd86d9"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "missing parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2280,
+        "log_sha256": "1e05b5aa0b09de41ee5641b336fd2840b895727c8ed78ad8c3e390804d62c97b"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "duplicate parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2396,
+        "log_sha256": "00905436aee8a021b3003f042aea3e779c4111a447e6a173caa686612f46c03a"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "SKIP appended",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2366,
+        "log_sha256": "7dda054b3641279318ba233cd2ea065eb8751e1f68f1b6e43f0ece4bd1dbb49d"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "wrong parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2339,
+        "log_sha256": "152644c917221fd735f68dab79e7d5f8897e9ed6bf5f4a8784e5d8ccdc5dc38c"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "saved actual positive",
+        "expected_exit": 0,
+        "exit_code": 0,
+        "log_bytes": 3969,
+        "log_sha256": "6fa780410e8261d50193fbef568f387901b943c4031665f89ee0bee19dcbdd80"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "missing parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3912,
+        "log_sha256": "7299e3c3e9b0605cc864b03b1b3bfc0e109a564ac7023ede05b61dffd6c18ce6"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "duplicate parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 4026,
+        "log_sha256": "9ebc14bfcf53b33c37f8aa92c8ebd804b156b22c367daeb513f24ac4412b5a1b"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "SKIP appended",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3997,
+        "log_sha256": "07fe115f821bb1d97f3426b13979b111d3a200ccec5b294af45a38dedcecf7dc"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "wrong parent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3970,
+        "log_sha256": "1f4630f70b465b313f1afdb46a4c3076646a5a6d0a1d661e38598c63b725bb5d"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "missing final refusal",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 1680,
+        "log_sha256": "d5e7241c5b005d18e108479118c765bd0fa99b973823611056beb6bcc47e3a07"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "duplicate final refusal",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2190,
+        "log_sha256": "6cc23edec3d832178b4a25076fd52939416df64a148016f90a963eb5da5c5923"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "missing final refusal",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2127,
+        "log_sha256": "0631442c382611b6c22ba021ee2bcfd77612bc3cd1ef9033f53b59d3a73ee149"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "duplicate final refusal",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2549,
+        "log_sha256": "4a260ae0bd1f82b9c96e9479eb69d02b333bdd04c8bcbcd9b2ec4a7fb80a5661"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "missing final refusal",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3673,
+        "log_sha256": "358913fe9cd168985050f9c9be15e6cc0abdcfc4055b9317032d628c1d31d11f"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "duplicate final refusal",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 4265,
+        "log_sha256": "733b3645e6e2b5d2037f198e1b446284cfc87c1f4fd5f75af246eebf3bd76349"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "refusal became runtime",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 1933,
+        "log_sha256": "7aaefdb72e599c70601750e0c77cb9c4084d50e5bc1aef8be95cfd5155aa40a8"
+      },
+      {
+        "cohort": "uv_run_workflow",
+        "case": "foreign source",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 1935,
+        "log_sha256": "5b221888b4147c073b36cd932dbd297b270c9fc2957e9c71b591fcd3c889d78b"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "missing from dependency original",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2140,
+        "log_sha256": "ee850a55a4af0697893649dcf2ce6efef82f904398afca7e182679e9fd4ae5cf"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "duplicate from dependency original",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2536,
+        "log_sha256": "78bddc4c3f87269b2c3967c733f79fc2a6c56992755b7b7d792c73f1e2c836bc"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "evidence absent",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2338,
+        "log_sha256": "1cd1d3eb2e61b28fd0357499b9210a7861e0aeb378138001dcdcdace086c4fc2"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "from original changed",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2338,
+        "log_sha256": "dfeae2ee51ede4b2a9ba11e03de5ee2d2e26562a43c39648cfcc8bd3537b212c"
+      },
+      {
+        "cohort": "uv_run_cli",
+        "case": "refusal ran guest",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 2337,
+        "log_sha256": "35fea94135b53d0479a65aba1b73c41e2d988052a5e5b174e0e3ca3c28d6b1c7"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "missing incomplete native trace",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3707,
+        "log_sha256": "a06fa05935f1038a71f7d8ad7b84e9ab7ca3ec07d45cfa0917176bb9e0e60cab"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "duplicate incomplete native trace",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 4231,
+        "log_sha256": "28523b35378de89d1610a48a12221fe3f90905751c6547854f4034b59d5de780"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "incomplete became selection",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3968,
+        "log_sha256": "ecf2daf1c759dd9c082c3196850538c902467a86f6092728d7845f1f05a816b3"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "unapproved record promoted",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3962,
+        "log_sha256": "7418e4e7c3b3e5d255d8dffe2057e34c0d92ecba0208976b9acf334ac1565fef"
+      },
+      {
+        "cohort": "uv_run_source",
+        "case": "raw trace incomplete",
+        "expected_exit": 1,
+        "exit_code": 1,
+        "log_bytes": 3970,
+        "log_sha256": "e3a1ab079fae5ef9499d836293eb78746b9e0c2b86803cd4adaad3c63bfeb31b"
+      }
+    ],
+    "all_expected": true,
+    "native_actual_rerun": false,
+    "source_provenance": [
+      "CI435 frozen native source/census2+markers3",
+      "D5 actual production normal/incomplete trace6",
+      "D6 actual current app3",
+      "D7 final actual CLI5"
+    ]
+  },
+  "existing_consumers": "106 hosted parents retained plus production selector normal/incomplete parent1/current native app3 parent1/UV CLI5 parent1 = expected109; Required10/CPP132/UV195/Linux120min/permissions unchanged",
+  "native_and_CPP_actual_rerun": false,
+  "human_review": "Existing protected Bootstrap/helper remains bound for current native app+CLI; app reuses existing never-started pinned Python DATA exporter and CLI exits through a payload-free early branch. Existing Sandbox rebind then native DATA2+production selection parent1 uses same cleanup lifecycle. Closed profile allowlist, exact flags/parent/cwd, error-before-cat precedence, noSKIP/unique cases/whole original source/Evidence+Policy/runtime/refusal are checked by existing script and AST/workflow checker. No artifact completion authority/Policy or runtime changes. Saved real log DATA is only dispatch/guard qualification, not a new product execution.",
+  "audit": {
+    "IMPLEMENTED": "YES (existing owners extended)",
+    "WIRED": "YES (same concrete job/step/helper/profile/Required chain)",
+    "QUALIFIED": "YES (named local canonical8/guard DATA33); remote PENDING",
+    "ACCEPTANCE_CLOSED": "YES (local wiring slice only); hosted NO",
+    "MISSING": [
+      "one meaningful grouped new-source hosted run/source+tree/macOS/Linux109/Required10/logs",
+      "generic equivalence/pipx/P7/final profiles/signed release bundle"
+    ]
+  },
+  "CI_frequency": "D5/D6/D7/D8 grouped important end-to-end source only; previous435 completed10SUCCESS. No helper/doc-only CI, no unchanged native/CPP rerun.",
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-edit.py",
+      "bytes": 10595,
+      "sha256": "76596785089df27675805db928b0a9d1a1214f2571a147cef578c17366b4447f"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-tests.py",
+      "bytes": 3188,
+      "sha256": "eaea5ed67f5747ecb0b01b842566357d63631d8368ab1cfe060f8a020b1c786b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-edited.json",
+      "bytes": 557,
+      "sha256": "bd0a99988333322cf02491ead8d0130600e5b64e279446df14533178087cb44d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-check.py",
+      "bytes": 2357,
+      "sha256": "3e06b71d390c3a98473c0ff5f44a019548fd6f9c110c48386362411788983d6c"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-checks.json",
+      "bytes": 1383,
+      "sha256": "45f4c36a53a3e98705a73a49ff72847665be97309c3be136df32d76f15e0bd7d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-source-identity.json",
+      "bytes": 253091,
+      "sha256": "86765937c111ee0cd6a7b0277761f258c12c65e230089691cac8856d7a463c5c"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-guards.py",
+      "bytes": 4398,
+      "sha256": "a3c73657941ef28cfff7d7e4267d842f2a2bf185b9331764d7b0a67fb0195db8"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-guards-v1.json",
+      "bytes": 8407,
+      "sha256": "501eeaca1e04bae58d240159075297d19465627014d5653cdb106a3e9ebafe1c"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-shell-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-focused.log",
+      "bytes": 56,
+      "sha256": "68bd75c94ed35c99e74dd14fbe7b9fc9e444be6f6611be0238aef6759b98405f"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-workflow.log",
+      "bytes": 1071,
+      "sha256": "d0bc0b28fc17f147f2a6d46c330fc1ce7355b15065d24973d1d7f17ab8538212"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-quick.log",
+      "bytes": 1354,
+      "sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-checker-race.log",
+      "bytes": 57,
+      "sha256": "a0040bf12263b9af97ef40cce5d4f49caf8fe289291037aa26e2ed9ebdf813cb"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d8-v1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "scope": "requested 15-minute timed CI390 verification; no product/source edits",
+  "timer": {
+    "started_utc": "2026-10-23 00:33:31 UTC",
+    "requested_check_utc": "2026-10-23 00:48:31 UTC",
+    "actual_check_utc": "2026-10-23 00:48:41 UTC"
+  },
+  "run_id": 39875399261,
+  "head_sha": "79e76dd5c001196fed5c982a457a67c869e7acd9",
+  "checkout": "7338e7197b775d75c6c89bbf78e5f44c9ecc6e34",
+  "tree": "50e9396aa4f1ce9763b6757eb08f827707f7d97d",
+  "result": "10 SUCCESS including Required",
+  "linux_top_level_passes": 51,
+  "cpu_full_seconds": 297.93,
+  "macos_build_seconds_approx": 59.17,
+  "macos_default_test": "PASS",
+  "helpers": "5 wait0; original0 CONFIRMED_STOPPED helper_stop0/client_error0/client_restore0 NOT_REQUIRED",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci390-final-run.json",
+      "bytes": 14710,
+      "sha256": "6b4925b09ca047158e8c63c63b1b6f0f0a5ec2cbfcdc3fb5743dcc6d1d1c32d7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci390-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "e2d6911dc3147b037acd30f0f8dc05ad1e7102b9058de28de9838583db4a650d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci390-checkout.json",
+      "bytes": 2850,
+      "sha256": "9c0c1ef9dba099508e894cc26b566210a2ec7507fa8508dfbda9816e7462d1a0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci390-macos.log",
+      "bytes": 22114,
+      "sha256": "2933dba0361aee1ae645b85347a14e1835633b28c565a444d9fcfd3e97272ea9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci390-linux.log",
+      "bytes": 655637,
+      "sha256": "a8053fe1faf9a29103ce0251affe311c51397b49802d51851fc98febc6e420cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci390-required.log",
+      "bytes": 22247,
+      "sha256": "c526c1c5fc91a88265cb2e07511ed48f478f4a44711858474055dff892a65718"
+    }
+  ],
+  "limits": "native current candidate PASS; prior macOS timeout internal cause remains unknown; CUDA3 actual and actual complete sync/P1 acceptance still remain"
+}

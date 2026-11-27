@@ -1,0 +1,283 @@
+{
+  "status": "R2_LOCAL_AND_SCOPED_ACTUAL_CONSUMER_CHECKPOINT_PASS",
+  "base_HEAD": "0bb267b60e98b4a51d225a0393ffadfcfaf440e0",
+  "tested_uncommitted_tree": "078da6764276e3d316cc70dfb6133c774f4f84be",
+  "parent_count": 13,
+  "subcase_count": 25,
+  "Go_PASS_events": 38,
+  "native_parents": {
+    "TestLinuxNPMInspectCLIIntegration": {
+      "source": "/tmp/haa-r2-native-y54rudzu/result.json",
+      "seconds": 7.192,
+      "cases": [],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=5m",
+        "-test.run",
+        "^TestLinuxNPMInspectCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestNPMPublicProjectCLIIntegration": {
+      "source": "/tmp/haa-r2-native-y54rudzu/result.json",
+      "seconds": 32.637,
+      "cases": [],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=10m",
+        "-test.run",
+        "^TestNPMPublicProjectCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestNPMPublicProjectRootCLIIntegration": {
+      "source": "/tmp/haa-r2-native-y54rudzu/result.json",
+      "seconds": 81.589,
+      "cases": [
+        "postinstall",
+        "dependencies",
+        "postprepare",
+        "empty-dependencies"
+      ],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=15m",
+        "-test.run",
+        "^TestNPMPublicProjectRootCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestLinuxUVInstallCLIIntegration": {
+      "source": "/tmp/haa-r2-native-y54rudzu/result.json",
+      "seconds": 283.485,
+      "cases": [],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=10m",
+        "-test.run",
+        "^TestLinuxUVInstallCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestLinuxUVProjectNativeAdoptionCLIIntegration": {
+      "source": "/tmp/haa-r2-native-y54rudzu/result.json",
+      "seconds": 165.976,
+      "cases": [
+        "add",
+        "sync"
+      ],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=15m",
+        "-test.run",
+        "^TestLinuxUVProjectNativeAdoptionCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestLinuxUVToolInstallCLIIntegration": {
+      "source": "/tmp/haa-r2-native-resume-paeji2aq/result.json",
+      "seconds": 81.546,
+      "cases": [
+        "json",
+        "human_with_spaces",
+        "unowned-site",
+        "occupied-command"
+      ],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=15m",
+        "-test.run",
+        "^TestLinuxUVToolInstallCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestLinuxPipxToolInstallCLIIntegration": {
+      "source": "/tmp/haa-r2-pipx-correct-j1yaww74/result.json",
+      "seconds": 101.741,
+      "cases": [
+        "json",
+        "human_with_spaces",
+        "unowned-site",
+        "occupied-command"
+      ],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=15m",
+        "-test.run",
+        "^TestLinuxPipxToolInstallCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestCargoPublicFetchCLIIntegration": {
+      "source": "/tmp/haa-r2-pipx-correct-j1yaww74/result.json",
+      "seconds": 33.721,
+      "cases": [],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=10m",
+        "-test.run",
+        "^TestCargoPublicFetchCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": true
+    },
+    "TestLinuxTerraformInitIntegration": {
+      "source": "/tmp/haa-r2-tf-native-36gzg19w/result.json",
+      "seconds": 95.161,
+      "cases": [
+        "official",
+        "partner",
+        "complete-project",
+        "default-complete-project"
+      ],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=10m",
+        "-test.run",
+        "^TestLinuxTerraformInitIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": false
+    },
+    "TestLinuxTerraformInitNegativeIntegration": {
+      "source": "/tmp/haa-r2-tf-native-36gzg19w/result.json",
+      "seconds": 7.766,
+      "cases": [
+        "lock-checksum-mismatch",
+        "remote-module",
+        "foreign-provider-cache",
+        "concurrent-init"
+      ],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=10m",
+        "-test.run",
+        "^TestLinuxTerraformInitNegativeIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": false
+    },
+    "TestLinuxGoPublicBuildCLIIntegration": {
+      "source": "/tmp/haa-r2-tf-resume-ijsy3ml4/result.json",
+      "seconds": 74.186,
+      "cases": [],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=15m",
+        "-test.run",
+        "^TestLinuxGoPublicBuildCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": false
+    },
+    "TestLinuxGoBuildSecurityCLIIntegration": {
+      "source": "/tmp/haa-r2-tf-resume-ijsy3ml4/result.json",
+      "seconds": 61.667,
+      "cases": [
+        "filesystem",
+        "missing-cache",
+        "unmanaged"
+      ],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=15m",
+        "-test.run",
+        "^TestLinuxGoBuildSecurityCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": false
+    },
+    "TestLinuxCargoLibraryBuildCLIIntegration": {
+      "source": "/tmp/haa-r2-tf-resume-ijsy3ml4/result.json",
+      "seconds": 23.545,
+      "cases": [],
+      "command": [
+        "/usr/libexec/heliopause/helox",
+        "-test.v",
+        "-test.failfast",
+        "-test.timeout=15m",
+        "-test.run",
+        "^TestLinuxCargoLibraryBuildCLIIntegration$"
+      ],
+      "FAIL": 0,
+      "SKIP": 0,
+      "current_candidate_scope_reuse": false
+    }
+  },
+  "additional_actual_commands": {
+    "packaging25_normal_observer_refusal_SIGINT": "/tmp/haa-r2-native-y54rudzu/result.json",
+    "Terraform_initial_and_upgrade": "/tmp/haa-r2-tf-resume-ijsy3ml4/result.json",
+    "Go6tidy": "/tmp/haa-r2-tf-resume-ijsy3ml4/u2-production-qualification.json"
+  },
+  "code_fix": "existing bounded Terraform preparation memory reuse, actual reserved acquisition and independent verification unchanged",
+  "targeted_Terraform_Race": {
+    "exit": 0,
+    "seconds": 35.795,
+    "private_peak_bytes": 453855198,
+    "maxrss_kib": 226372,
+    "scope": "actual affected Terraform package Race on applied new source; no overlay; new 12-case regression and existing 22 parents",
+    "status": "GREEN_AFFECTED_TERRAFORM_RACE_PASS",
+    "PASS_events": 90,
+    "parents": 23,
+    "FAIL": 0,
+    "SKIP": 0,
+    "new_regression_cases": 12,
+    "source_identity": "078da6764276e3d316cc70dfb6133c774f4f84be",
+    "annotation_note": "initial controller result inherited stale diagnosis/overlay label; exact command/stdout show normal non-overlay go test -race; original annotation retained"
+  },
+  "canonical_result": "/tmp/haa-r2-terraform-fix-1r2xcglr/full-short-result.json",
+  "exact_intents": "/tmp/haa-r2-terraform-fix-1r2xcglr/declaration-intent-audit.json",
+  "source_runtime_scope_reuse": "/tmp/haa-r2-terraform-fix-1r2xcglr/scoped-evidence-reuse.json",
+  "all_runtime_windows14_restored": true,
+  "not_full_R8_qualification": true,
+  "remaining": [
+    "current fullPyTorchCPU/cu126/cu130/cu132 in approved meaningful integration bundle and finalR8",
+    "largeGo/finalQ/hosted",
+    "C01fullTTL/GC/crash/D3",
+    "R3~R8 recovery and D1/D3 decisions"
+  ],
+  "operator_census_note": "M result status inherited old eight-parent label; actual records are3parents+2manualfixtures, exact aggregate13unique verified here; previous failure preserved"
+}

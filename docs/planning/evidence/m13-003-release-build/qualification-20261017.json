@@ -1,0 +1,343 @@
+{
+  "work_item": "M13-003",
+  "status": "COMPLETE",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "scope": "canonical protected-source build, manifest/exact candidate set, actual attestation, OS package asset/lifecycle; booted Host/public publication remain M13-005",
+  "source": "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+  "tree": "5b513f5d555e1cb25d132af2c567a0970f646392",
+  "tag": "v0.1.0",
+  "main_ci": {
+    "run_id": 39031676341,
+    "all_ten_jobs": "SUCCESS"
+  },
+  "build": {
+    "status": "TAGGED_WORKFLOW_BUILD_ATTEST_UPLOAD_SUCCESS",
+    "tag": "v0.1.0",
+    "head": "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "tree": "5b513f5d555e1cb25d132af2c567a0970f646392",
+    "checkout": "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "run_id": 39036210335,
+    "run_number": 1,
+    "run_attempt": 1,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/39036210335",
+    "artifact": {
+      "id": 12102301625,
+      "name": "helox-v0.1.0-ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+      "digest": "sha256:17610e5e793957771ae39b948e8042f231fe12313570d81f1efefde1a3704db2",
+      "bytes": 109179043,
+      "expires_at": "2026-10-24T13:29:00Z"
+    },
+    "actual_local_attestation_verification": "PASS — see attestation/offline_control in this result",
+    "raw_owner": "docs/github-logs/m13-003-20261017/v010-build-proof",
+    "utc": "2026-10-17T13:31:36.720668+00:00"
+  },
+  "attestation": {
+    "status": "PASS",
+    "tag": "v0.1.0",
+    "head": "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "run_id": 39036210335,
+    "run_attempt": 1,
+    "verified_assets": [
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "exit_code": 0,
+        "seconds": 3.75,
+        "sha256": "758e445560cb52eb874b7bd5f5a9a42a51d8a779f78902d8aec026bfc8ea3703",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "exit_code": 0,
+        "seconds": 3.3,
+        "sha256": "d9c502d857c37bfbaea7d4bffbe6d9c3c82e1edc2322556673f516ca01903ce9",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-darwin-amd64",
+        "exit_code": 0,
+        "seconds": 3.79,
+        "sha256": "eed4bb0e8033aa87a6b784aa79ec80dff35e64c9c75db6a28d56ad27b44dfe86",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-darwin-arm64",
+        "exit_code": 0,
+        "seconds": 3.76,
+        "sha256": "b4e9e1b764fe27c6e896211f0f73e8fee1f048c893debdcda99ddf1a876dcdef",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-linux-amd64",
+        "exit_code": 0,
+        "seconds": 3.54,
+        "sha256": "fcefdf7a32a4561798b3a3099d747d0d715ded4da43d83ae146857df686646fe",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-linux-amd64.deb",
+        "exit_code": 0,
+        "seconds": 4.17,
+        "sha256": "6174545aa7b62dcd4028cf5ff018751090c1fed2a75cc71fa6eedf3d440446c2",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-linux-amd64.rpm",
+        "exit_code": 0,
+        "seconds": 3.38,
+        "sha256": "9d84413eec2d712f5a8afbaf90f894ef9effda45040ead5617857930fc7f8941",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-linux-arm64",
+        "exit_code": 0,
+        "seconds": 3.78,
+        "sha256": "461140ee10dded1c380f10dbc27f4e3471340a86c06c5d8ed8b9aa53677e3c9f",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-release-checksums.txt",
+        "exit_code": 0,
+        "seconds": 3.91,
+        "sha256": "00322d39b9d7ad18d1cfbc72ff3d924b8470b57ed3b7a8c9dc35aace5ed8ea8f",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "exit_code": 0,
+        "seconds": 3.76,
+        "sha256": "ab9eb7d0c43291b6a89061ac6bfba3d463713289a1c1c983bfb8e2bb79a3fbde",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "exit_code": 0,
+        "seconds": 3.44,
+        "sha256": "f5cbf5603b94db92eacb42d81b288a3e6ced4072d807ebe8f54b42d4ad3245de",
+        "exact_source_ref_workflow_run_and_subject": true
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "exit_code": 0,
+        "seconds": 4.18,
+        "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054",
+        "exact_source_ref_workflow_run_and_subject": true
+      }
+    ],
+    "verified_count": 12,
+    "actual_bundle_reused": "same authenticated multi-subject Sigstore bundle verified separately against each actual file; original online response preserved",
+    "certificate_identity": "https://github.com/rahoney/heliopause/.github/workflows/heliopause-release-build.yml@refs/tags/v0.1.0",
+    "run_invocation": "https://github.com/rahoney/heliopause/actions/runs/39036210335/attempts/1",
+    "negative_cases": [
+      {
+        "case": "wrong-source",
+        "exit_code": 1,
+        "expected": "REJECTED"
+      },
+      {
+        "case": "wrong-source-ref-case",
+        "exit_code": 1,
+        "expected": "REJECTED"
+      },
+      {
+        "case": "tampered-manifest",
+        "exit_code": 1,
+        "expected": "REJECTED"
+      }
+    ],
+    "gh_version": "2.102.0",
+    "public_release_or_publish": false,
+    "utc": "2026-10-17T13:36:54.057591+00:00"
+  },
+  "offline_control": {
+    "status": "PASS",
+    "positive_control_and_three_negatives": [
+      {
+        "case": "original-positive",
+        "exit_code": 0,
+        "expected": "PASS",
+        "input": {
+          "sha256": "ab9eb7d0c43291b6a89061ac6bfba3d463713289a1c1c983bfb8e2bb79a3fbde",
+          "bytes": 2549
+        },
+        "network": "separate empty network namespace; same original bundle and fixed trusted roots"
+      },
+      {
+        "case": "wrong-source",
+        "exit_code": 1,
+        "expected": "REJECTED",
+        "input": {
+          "sha256": "ab9eb7d0c43291b6a89061ac6bfba3d463713289a1c1c983bfb8e2bb79a3fbde",
+          "bytes": 2549
+        },
+        "network": "separate empty network namespace; same original bundle and fixed trusted roots"
+      },
+      {
+        "case": "wrong-source-ref-case",
+        "exit_code": 1,
+        "expected": "REJECTED",
+        "input": {
+          "sha256": "ab9eb7d0c43291b6a89061ac6bfba3d463713289a1c1c983bfb8e2bb79a3fbde",
+          "bytes": 2549
+        },
+        "network": "separate empty network namespace; same original bundle and fixed trusted roots"
+      },
+      {
+        "case": "tampered-manifest",
+        "exit_code": 1,
+        "expected": "REJECTED",
+        "input": {
+          "sha256": "198e881d35e8dbdd5a51ccc277580867619fa69d31a70091684a42652141ae87",
+          "bytes": 2550
+        },
+        "network": "separate empty network namespace; same original bundle and fixed trusted roots"
+      }
+    ],
+    "trusted_root_sha256": "65ca537f6ed8a47fd0e560c421baa1f6c1efb8b25fc200d8c5c02c0e92eb2b9c",
+    "offline": true,
+    "user_id": 1000,
+    "root_privilege": "only namespace creation, verifier executed after UID/GID drop",
+    "tamper_underlying_cli_error": "generic issuer wrapper; offline positive control and changed subject digest retained, no network explanation inferred",
+    "utc": "2026-10-17T13:40:41.434998+00:00"
+  },
+  "package_platforms": [
+    {
+      "format": "deb",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 1.5,
+      "container_id": "aa3d1d105a0a366ff65c229fd2e0493306358f6643f26300961957eeb8a439ab",
+      "image": "docker.io/library/ubuntu@sha256:a2d43bffc46670d7108bb3c0468c67c5557c4c92e83e1e34cbff1322ad1b94dc",
+      "image_id": "sha256:6277ab668b2ad3c3ab851d370faa1690d324b30db29d342527f61fed28f20f36",
+      "network": "none",
+      "privileged": false,
+      "checks": "actual native package-manager install/reinstall/remove; attested payload hashes; root/modes/symlink; existing caller config preserved; doctor correctly unavailable; owned package files removed",
+      "full_Host_runtime_or_systemd_boot_qualified": false,
+      "primary_failure": null,
+      "owned_container_deleted": true
+    },
+    {
+      "format": "rpm",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 1.95,
+      "container_id": "943cf3c25cd1eeb393d767db304db5bfd53bdf2ae20c3d938e331476eb4a8ed6",
+      "image": "docker.io/rockylinux/rockylinux@sha256:ed654c694190a670bb5c33f68995b862214fc96ffbdca95e07a8935ba0a3717d",
+      "image_id": "sha256:686e4558d0a5332a32cf8a4722fc4e3143bab0b6156e14792191161ae0bb78f4",
+      "network": "none",
+      "privileged": false,
+      "checks": "actual native package-manager install/reinstall/remove; attested payload hashes; root/modes/symlink; existing caller config preserved; doctor correctly unavailable; owned package files removed",
+      "full_Host_runtime_or_systemd_boot_qualified": false,
+      "primary_failure": null,
+      "owned_container_deleted": true
+    }
+  ],
+  "not_run": {
+    "systemd_booted_host": "M13-005",
+    "public_GitHub_release": "M13-005; no draft or public release created",
+    "npm_PyPI_Homebrew_publication": "M13-004/005; accounts not yet created",
+    "full_hostile_missing_CLA": "M13-002 NOT_TESTED / DEFERRED under approved C3"
+  },
+  "cleanup": {
+    "containers_and_new_images": "removed; all preexisting image IDs preserved",
+    "downloaded_payload_and_verifiers": "removed; necessary metadata preserved",
+    "private_go_cache": "last use for documentation checks; cleanup receipt recorded separately before handoff"
+  },
+  "evidence_files": [
+    {
+      "path": "v0.1.0/helox-release-manifest.json",
+      "sha256": "ab9eb7d0c43291b6a89061ac6bfba3d463713289a1c1c983bfb8e2bb79a3fbde"
+    },
+    {
+      "path": "v0.1.0/helox-release-checksums.txt",
+      "sha256": "00322d39b9d7ad18d1cfbc72ff3d924b8470b57ed3b7a8c9dc35aace5ed8ea8f"
+    },
+    {
+      "path": "v0.1.0/helox-release-sbom.cdx.json",
+      "sha256": "f5cbf5603b94db92eacb42d81b288a3e6ced4072d807ebe8f54b42d4ad3245de"
+    },
+    {
+      "path": "v0.1.0/helox-runtime-images.json",
+      "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054"
+    },
+    {
+      "path": "v0.1.0/actual-signed-bundle.json",
+      "sha256": "3060113094f3e7ada3a11668631f1f565ad2e3af17c1ab3df0dbf58831495e0d"
+    },
+    {
+      "path": "v0.1.0/trusted-root.jsonl",
+      "sha256": "65ca537f6ed8a47fd0e560c421baa1f6c1efb8b25fc200d8c5c02c0e92eb2b9c"
+    }
+  ],
+  "local_raw_receipts": [
+    {
+      "path": "docs/github-logs/m13-003-20261017/ci326-final.json",
+      "sha256": "138c36d43a31e1bf35c0b7928b3d90ebaf182a23657591789396de747ac95c21"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/ci327-final.json",
+      "sha256": "9ab0197bc5d4d46d94fa9c4954aff6c831dc1749cea94b6ee2ac5f642524309b"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/pr37-main-delivery/summary.json",
+      "sha256": "54d93569b1fcf2ba805156e1ed9ecf4be23ea11960e227dff148ad08dbad1951"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-tag-create/summary.json",
+      "sha256": "895750daecddcb7833b666a7e95d0c3b885862ce755846c3d5c1d4c58e967dbc"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-build-final.json",
+      "sha256": "b27fb0b51a2c47e6283dbee3451e9a8167d60542857579baa94d7c4912fac9eb"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-build-proof/log-hashes.json",
+      "sha256": "a52345a5231b4bd82d758cb7c817aa536b7f1b846e1a21ad811d5d01fdf43033"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-candidate-download/summary.json",
+      "sha256": "4268b56e3cef9eb01c7e816148579ba483960f61d0765ab1a327b78cb3cef849"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-verifier-bootstrap/summary.json",
+      "sha256": "cbe94c35070b0e0bbea4bb29002001b663f8d682af07d650b845e68e577f5c19"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-manifest-attestation/summary.json",
+      "sha256": "cf7185f794bc7b797303edf56e384062a7d2eccb4904f55b463b817dfd136144"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-bundle-check/summary.json",
+      "sha256": "4cb4def195b9da0b91fb3ee936adc53e3c4e2c4abdbc1287fde0093c6b78a155"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-all-attestations/summary.json",
+      "sha256": "0bc1dd27df0013f6f97f4cc5d4da40d24cbac46252cae7b2c6e5af2d132b556d"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-offline-attestation/summary.json",
+      "sha256": "c9bab7d0d23b93150880aeb9b319d034a36b7d885972b8cb4760f5892fc3e3f0"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-os-package-deb-strict-docs-check/summary.json",
+      "sha256": "a2fb74aa4dd40a0d2fa901dca43249a60e93633974cd020fdd44007af7f0617e"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-os-package-checks/summary.json",
+      "sha256": "f8988db40ae612aeca9542ba46c353b459a8fb47629d20a7de02ce8801194470"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-package-platforms/cleanup.json",
+      "sha256": "7d29319e7ab61b452f7027da81d6a0a17a42a5b4d0d4b44a0894b91d44b1fc6b"
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/v010-payload-cleanup.json",
+      "sha256": "d6ad56f484516fb38217865cc92c513ab8d3e1400efc46ec84bfb6ba7d4f3366"
+    }
+  ]
+}

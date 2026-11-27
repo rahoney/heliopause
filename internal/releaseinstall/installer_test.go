@@ -10,7 +10,62 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
+
+func TestResponderIsCopiedAndDoctorRejectsMissingOrChangedBytes(t *testing.T) {
+	root := t.TempDir()
+	bundle := releaseBundle(t, root, "v1.2.3", "responder")
+	name := runtimeidentity.SandboxResponderAssetName
+	payload := []byte("synthetic-copy-mechanics-responder")
+	body, err := os.ReadFile(filepath.Join(bundle, manifestName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var value manifest
+	if err := json.Unmarshal(body, &value); err != nil {
+		t.Fatal(err)
+	}
+	value.Assets = append(value.Assets, asset{name, "linux/amd64", "sandbox-responder", digest(payload), int64(len(payload))})
+	body, err = json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, content := range map[string][]byte{name: payload, manifestName: body} {
+		if err := os.WriteFile(filepath.Join(bundle, name), content, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	installer, err := newInstaller(allowVerifier{}, "linux", "amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := installer.Install(context.Background(), Request{BundleDirectory: bundle, InstallRoot: filepath.Join(root, "installed")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(result.InstallRoot, "versions", result.Version, name)
+	info, err := os.Stat(path)
+	if err != nil || info.Mode().Perm() != 0700 || !checkInstallation(result.InstallRoot, "linux", "amd64").Healthy {
+		t.Fatal("responder copy or healthy check missing", err)
+	}
+	if err := os.Chmod(path, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("changed"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if checkInstallation(result.InstallRoot, "linux", "amd64").Healthy {
+		t.Fatal("changed responder accepted")
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if checkInstallation(result.InstallRoot, "linux", "amd64").Healthy {
+		t.Fatal("missing responder accepted")
+	}
+}
 
 func TestInstallVerifiesBundleAndAtomicallyActivates(t *testing.T) {
 	root := t.TempDir()

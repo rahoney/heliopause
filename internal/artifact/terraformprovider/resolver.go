@@ -82,17 +82,32 @@ func (s RegistrySnapshot) Parse(reference domain.ArtifactReference, platform Pla
 }
 
 func (r *Resolver) ResolveSnapshot(ctx context.Context, reference domain.ArtifactReference) (RegistrySnapshot, ProviderArtifact, error) {
+	return r.resolveSnapshot(ctx, reference, nil)
+}
+
+func (r *Resolver) resolveSnapshot(ctx context.Context, reference domain.ArtifactReference, upgrade *Requirement) (RegistrySnapshot, ProviderArtifact, error) {
 	if r == nil || r.client == nil || ctx == nil || runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 		return RegistrySnapshot{}, ProviderArtifact{}, errors.New("terraform public resolver request is invalid")
 	}
-	parsed, err := ParseReference(reference.Locator())
-	if err != nil || parsed != reference {
-		return RegistrySnapshot{}, ProviderArtifact{}, errors.New("terraform public reference is invalid")
+	var parts []string
+	if upgrade == nil {
+		parsed, err := ParseReference(reference.Locator())
+		if err != nil || parsed != reference {
+			return RegistrySnapshot{}, ProviderArtifact{}, errors.New("terraform public reference is invalid")
+		}
+		parts = strings.SplitN(reference.Locator(), "@", 2)
+	} else {
+		address, err := providerAddress(upgrade.Address)
+		if err != nil || address != upgrade.Address {
+			return RegistrySnapshot{}, ProviderArtifact{}, errors.New("terraform public upgrade address is invalid")
+		}
+		parts = []string{strings.TrimPrefix(address, "registry.terraform.io/"), ""}
 	}
 	if err := ctx.Err(); err != nil {
 		return RegistrySnapshot{}, ProviderArtifact{}, err
 	}
 	var snapshot RegistrySnapshot
+	var err error
 	snapshot.Discovery, err = r.readJSON(ctx, "/.well-known/terraform.json", 64<<10)
 	if err != nil {
 		return snapshot, ProviderArtifact{}, err
@@ -100,10 +115,19 @@ func (r *Resolver) ResolveSnapshot(ctx context.Context, reference domain.Artifac
 	if err := ValidateDiscovery(snapshot.Discovery); err != nil {
 		return snapshot, ProviderArtifact{}, err
 	}
-	parts := strings.SplitN(reference.Locator(), "@", 2)
 	snapshot.Versions, err = r.readJSON(ctx, "/v1/providers/"+parts[0]+"/versions", 2<<20)
 	if err != nil {
 		return snapshot, ProviderArtifact{}, err
+	}
+	if upgrade != nil {
+		parts[1], err = selectUpgradeVersion(ctx, snapshot.Versions, upgrade.Constraints, r.platform)
+		if err != nil {
+			return snapshot, ProviderArtifact{}, err
+		}
+		reference, err = ParseReference(parts[0] + "@" + parts[1])
+		if err != nil {
+			return snapshot, ProviderArtifact{}, err
+		}
 	}
 	if err := ParseVersionResponse(snapshot.Versions, parts[1], r.platform); err != nil {
 		return snapshot, ProviderArtifact{}, err

@@ -1,0 +1,131 @@
+{
+  "work_item": "M13-004",
+  "substep": "P6-B2-C",
+  "status": "NAMED_LOCAL_WIRING_QUALIFIED",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES (existing current CI step/closed profile)",
+  "QUALIFIED": "YES (local wiring only); hosted PENDING",
+  "ACCEPTANCE_CLOSED": "NO (new source hosted result required)",
+  "baseline": "4f4feddc7eed3b5766cdb955ba3c51724993075b; runtime source of3d8b59d/1361",
+  "runtime_inputs": 1361,
+  "existing1358_unchanged": true,
+  "modified_runtime_paths": [
+    "scripts/check/uv_tools_workflow.go",
+    "scripts/check/uv_tools_workflow_test.go",
+    "scripts/ci-uv-tools.sh"
+  ],
+  "workflow_source": {
+    "path": ".github/workflows/heliopause-ci.yml",
+    "sha256": "f00f1e6cc0088648902f6902b48eed1955730325684ccd7ad417040c32408d3f"
+  },
+  "canonical_checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.869
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 1.87
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./scripts/check",
+        "-run",
+        "^(TestUVTools|TestCurrentExecutionPreparation)"
+      ],
+      "exit_code": 0,
+      "seconds": 1.468
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 321.486
+    },
+    {
+      "step": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 60.2
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 18.266
+    }
+  ],
+  "Bash_DATA_cases": 43,
+  "Bash_syntax": "PASS",
+  "DATA_guard_scope": "inert only; previous32 plus runtime11, actual saved B2B normal0/nonzero2 parent; exact parent/uniqueIDs/noSkip/command-over-cat original-error precedence; no new native or hosted execution",
+  "existing_cohort_retained": [
+    "Node refusal2",
+    "Python preparation3",
+    "Python readonly inputs4"
+  ],
+  "new_parent": {
+    "name": "TestLinuxPythonExecutionIntegration",
+    "profile": "python-execution",
+    "cases": [
+      1,
+      2
+    ],
+    "runtime_seconds_limit": 300,
+    "flag": "HELOX_PYTHON_EXECUTION_INTEGRATION=1",
+    "entry": "existing protected bootstrap client, same helper lifecycle and created-never-started image DATA exporter"
+  },
+  "new_job_permissions_timeouts": "NONE",
+  "actual_backend_receipt": "p6b2b-python-artifact-backend-local-20261029.json",
+  "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/p6-b2c-v1-original-inventory.json",
+  "MISSING": [
+    "one meaningful grouped normal FF push/actual run source binding and20min GET monitor",
+    "new shared capture/CPP132/Python parent hosted qualification",
+    "Python hostile actual/native UVx/golden/application runtime adapter/CLI/full final; Pipx CPU first cause remains UNCONFIRMED"
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c1",
+  "baseline": "343f03f1ded7596ee154ac942e270928f5328ee8",
+  "at": "2026-10-24T03:17:21.242805+00:00",
+  "status": "LOCAL_COMPONENT_VERIFIED",
+  "IMPLEMENTED": "YES",
+  "WIRED": "NO",
+  "QUALIFIED": "NO",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "actual pinned PNPM public native producer and typed network policy lifecycle",
+    "Domain graph/project snapshot and HostInstallAction/complete Policy wiring",
+    "guarded PNPM layout/install/update/rollback and CLI",
+    "whole-P2 platform/profile/Required qualification"
+  ],
+  "parser": {
+    "owner": "internal/artifact/npm/pnpm_lock.go",
+    "format": "reviewed v9 registry/resource subset, one importer and prod/dev roots, peer-qualified instances",
+    "bytes_per_control_limit": 4194304,
+    "yaml_depth_limit": 64,
+    "yaml_node_limit": 131072,
+    "graph_node_limit": 4096,
+    "graph_edge_limit": 16384,
+    "not_approval": true,
+    "synthetic_fixtures": "native observed shapes with loopback tarball URLs removed; real raw unchanged"
+  },
+  "binding": {
+    "owner": "internal/artifact/npm/pnpm_selection.go",
+    "method": "Resolver.BindPNPMLock",
+    "endpoint": "public HTTPS /<escaped package>/<exact version>, application/json",
+    "shared_legacy_mechanics": "same bounded HTTP body and resolved identity/URL helper; legacy packument selector and Accept unchanged",
+    "metadata_limit": 2097152,
+    "per_request_seconds": 10,
+    "whole_selection_seconds": 120,
+    "preserves": "full peer wiring, independent native/source SRI and explicit URL equality, cancellation and no partial results",
+    "authority": "source-bound proposal only; archives/Policy/Host lifecycle not qualified"
+  },
+  "dependency_review": {
+    "yaml": "go.yaml.in/yaml/v3@v3.0.4 already pinned; no module/pin change",
+    "consumer": "only internal/artifact/npm extra YAML edge; existing other consumer denials retained",
+    "internal_runtimeidentity_import": "not added; expectedClientVersion supplied by producer"
+  },
+  "checks": [
+    {
+      "profile": "quick",
+      "seconds": 116.395,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2c-pnpm-version-json-quick.json"
+    },
+    {
+      "profile": "security",
+      "seconds": 6.348,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2c-pnpm-version-json-security.json"
+    },
+    {
+      "profile": "docs",
+      "seconds": 0.224,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2c-pnpm-version-json-docs.json"
+    },
+    {
+      "profile": "vulnerability",
+      "seconds": 12.215,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2c-pnpm-version-json-vulnerability.json"
+    }
+  ],
+  "race": {
+    "npm_final_seconds": 5.088,
+    "exit": 0,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2c-pnpm-bound-fixture-full-race.json",
+    "architecture_checker_full_race_seconds": 23.145,
+    "architecture_scope": "same checker source as final; subsequent changes confined to NPM registry helpers/tests"
+  },
+  "actual_public_metadata": {
+    "exit": 0,
+    "seconds": 1.623,
+    "cases": [
+      {
+        "fixture": "single",
+        "artifacts": 1,
+        "instances": 1,
+        "roots": 1
+      },
+      {
+        "fixture": "peer",
+        "artifacts": 4,
+        "instances": 4,
+        "roots": 2
+      }
+    ],
+    "native_runtime_archives_policy_executed": false,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2c-pnpm-public-source-version-json.json"
+  },
+  "preserved_failures": [
+    {
+      "raw": "p2c-pnpm-lock-first",
+      "cause": "unreviewed YAML consumer and disallowed runtime owner import; corrected with exact reviewed external edge and producer version argument"
+    },
+    {
+      "raw": "p2c-pnpm-public-source-first",
+      "cause": "growing full packument exceeded unchanged metadata bound"
+    },
+    {
+      "raw": "p2c-pnpm-public-source-exact-version",
+      "cause": "packument Accept was unsuitable for version endpoint, actual HTTP406; exact JSON representation supplied"
+    }
+  ],
+  "native_boundary_CI": {
+    "run": 401,
+    "head": "343f03f1ded7596ee154ac942e270928f5328ee8",
+    "scope": "P2b2 only; does not include this local P2c1 source",
+    "first_check_kst": "2026-10-24 12:23:29 KST",
+    "status": "PENDING_TIMER"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/artifact/npm/pnpm_lock.go",
+      "sha256": "da695c52c48ef52ace9ba5d0a3b81b6fc8dbbbc9dc7b7bf010b3d7773a5cf974"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_lock_test.go",
+      "sha256": "7fc66ae2fadd4d236ca76b2f6761cdd9b84b7ad98e50dec4291176f2c9bb04ab"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_lock_wire.go",
+      "sha256": "45d6a0e571adad86128e8c294f716de184a73493550ffecb0e2b38a981ef31c3"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_selection.go",
+      "sha256": "014edaf1bb7f985e40d3cb0b769d2b4c73691a5bc3d3dc684c87b944559afb31"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_selection_real_test.go",
+      "sha256": "2634b4e9145533dfa3f6b05ab58e5bb2620db3834b814c88c01f2f7a89748119"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_selection_test.go",
+      "sha256": "b70638f84d14e755d0f550922e36b0482acd81d8e14ddc3e0d9a159b82ffc9ef"
+    },
+    {
+      "path": "internal/artifact/npm/resolver.go",
+      "sha256": "9d2adc36e5a41a1a4eecf33d2bc88e732677ec6f30d07fcc3438da2f727f6c11"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/pnpm-v9-peer.synthetic.yaml",
+      "sha256": "51cbbbed33034beee7e7ae510e24ff2f8078f61567d371c0874069ef6e2f2ab1"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/pnpm-v9-single.synthetic.yaml",
+      "sha256": "6a64856afd78f1ef489ca39fb20fa727e655d1d286332190a9cb1409adc9db08"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "799f47ab3fcaad70c06740d4d99e214b9fc46740746558980c2add6626651ece"
+    },
+    {
+      "path": "scripts/check/workflow_structure_test.go",
+      "sha256": "4d363c470f6203c4957e2558a3cc88c7e1b91075a25a499809349d9d0afaafff"
+    }
+  ]
+}

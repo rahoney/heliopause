@@ -1,0 +1,285 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2b2",
+  "status": "LOCAL_VERIFIED_REMOTE_PENDING",
+  "baseline": "01a6e1977415c40b7976f9b4266ab77ad7d655f9",
+  "at": "2026-10-24T02:30:30.540895+00:00",
+  "native_admission": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "same-candidate hosted Required/native macOS and existing full integration consumers",
+      "new native5 signed whole-set self-update qualification remains separate"
+    ]
+  },
+  "p2_remaining": [
+    "public pnpm graph/lock and independent npm SRI binding",
+    "guarded pnpm layout/install/update/rollback and CLI",
+    "final whole-P2 required platform/profile qualification"
+  ],
+  "approval": {
+    "decision": "owner approved exact-self maps and exact VM read on2026-10-24",
+    "contract": "docs/domain-model/15-m6-github-releases-contract.md",
+    "maps_actual": "p2b2-pnpm-startup-native-marker-abi",
+    "vm_actual": "p2b2-pnpm-startup-artifact-fixed-probe",
+    "authority": "same completed github-elf ARTIFACT/direct-exec generation, fixed system /proc and flags557056; no Host/other PID/write/network/control grant"
+  },
+  "probe": {
+    "implementation": "internal/sandbox/heliopause_native.go",
+    "selection": "exact github-release / rahoney-heliopause / generated PNPM native asset, hash and size",
+    "command": "fixed /work/artifact --version through existing ELF handoff and bounded discard callback",
+    "default_gitHub_and_other_native_members": "unchanged no-argument backend",
+    "terminal_rule": "exit0 and complete observations/cleanup required; help exit2 remains failure; stdout supplies no authority"
+  },
+  "checks": [
+    {
+      "profile": "quick",
+      "seconds": 34.137,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-ci-reviewed-quick.json"
+    },
+    {
+      "profile": "security",
+      "seconds": 4.723,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-ci-reviewed-security.json"
+    },
+    {
+      "profile": "docs",
+      "seconds": 0.212,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-ci-reviewed-docs.json"
+    },
+    {
+      "profile": "workflow",
+      "seconds": 0.725,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-ci-reviewed-workflow.json"
+    },
+    {
+      "profile": "release-gate",
+      "seconds": 0.277,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-ci-reviewed-release-gate.json"
+    },
+    {
+      "profile": "qualification-freshness",
+      "seconds": 0.117,
+      "exit": 0,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-ci-reviewed-qualification-freshness.json"
+    }
+  ],
+  "race": {
+    "packages": [
+      "internal/sandbox",
+      "internal/releaseinstall",
+      "internal/runtimeidentity"
+    ],
+    "seconds": 22.297,
+    "exit": 0,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-probe-admission-full.json",
+    "scope": "production Go same except subsequent lowercase error wording in new native wrapper; no concurrency behavior changed"
+  },
+  "observer": {
+    "latches_pass": 110,
+    "latches_fail": 0,
+    "seconds": 40.735,
+    "binary": {
+      "path": "/tmp/haa-go1273-yzyvqne9/haa-gvisor-observer-pnpm-startup-17",
+      "bytes": 3108960,
+      "sha256": "279e4a3ed36a5ae274a8ec1d57d263392ba5d2ea4c63266f4916d8485e2664ca"
+    },
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-startup-observer-17.json"
+  },
+  "actual": {
+    "cases": [
+      {
+        "case": "GitHub ELF baseline",
+        "seconds": 1.38
+      },
+      {
+        "case": "PNPM startup",
+        "seconds": 4.26
+      },
+      {
+        "case": "PNPM offline empty lock",
+        "seconds": 4.36
+      },
+      {
+        "case": "PNPM exact Node query",
+        "seconds": 4.27
+      },
+      {
+        "case": "PNPM HAA native ARTIFACT probe",
+        "seconds": 5.39
+      },
+      {
+        "case": "UV startup",
+        "seconds": 4.37
+      },
+      {
+        "case": "UV exact Python query",
+        "seconds": 4.47
+      }
+    ],
+    "test_seconds": 28.532,
+    "complete": true,
+    "suspicious_observations": 0,
+    "host_unchanged": true,
+    "remaining_containers_volumes_endpoints": 0,
+    "daemon_waits": [
+      0
+    ],
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-startup-admission-final.json"
+  },
+  "ci_helper": {
+    "implementation": "scripts/ci-pnpm-runtime.sh",
+    "frozen_official_archive_replay": true,
+    "live_HTTPS_acquisition_tested": false,
+    "test_seconds": 25.68,
+    "actual_pnpm_cases": 4,
+    "existing_installation_refused": true,
+    "root_and_temp_supply_removed": true,
+    "host_unchanged": true,
+    "daemon_waits": [
+      0
+    ],
+    "remaining_containers_volumes_endpoints": 0,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-startup-ci-helper.json"
+  },
+  "cleanup": {
+    "logical_bytes": 944957519,
+    "retired_paths": 7,
+    "references": 0,
+    "query_errors": 0,
+    "all_absent": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-admission-completed-runtime-cleanup.json",
+    "retained": "active checker/C++ caches, official supply and operational rollback originals"
+  },
+  "source_inventory": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "de9220f21d53d2f04fa878812723e14bbdab2c2b3125ef223482d8351c415b0a"
+    },
+    {
+      "path": "internal/bootstrap/self_update_linux.go",
+      "sha256": "e9476946fae2283e62cba10c5fadd19e0bf5d59429af0b8c32c9f391366c899e"
+    },
+    {
+      "path": "internal/releaseinstall/installer.go",
+      "sha256": "77a3f61edfebe7b752a6c2490e4d56b1a177666efbdb7c48d7fc40a85c2e403d"
+    },
+    {
+      "path": "internal/runtimeidentity/native_paths.go",
+      "sha256": "f2d59b12b205c58e1a3a2fda1652a3ffc5b59e2a773254379034bfeb364e6897"
+    },
+    {
+      "path": "internal/sandbox/heliopause_native.go",
+      "sha256": "f7c9968fc1d3e75034de3a64ac11821666c03aadf76e82e973155b14f5fb4a7e"
+    },
+    {
+      "path": "internal/sandbox/heliopause_native_test.go",
+      "sha256": "da6de4c339e6c8753b4673439e17b424f1e313fbf2fec203cf78429232f1dab7"
+    },
+    {
+      "path": "internal/sandbox/native_tool_transport.go",
+      "sha256": "f174c16c08fbf3be28a73e70f57a11af156361b93b63909287f5db5c141968e5"
+    },
+    {
+      "path": "internal/sandbox/npm_resolver.go",
+      "sha256": "4f0c44d86283179ba0f1b6fae934abc9261836d5501108361c336a4285d9aed2"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime.go",
+      "sha256": "7838db10c713ef1b001c12d2efaed4f861a0ba3c6d773a94eae5af5baa6c6204"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime_real_test.go",
+      "sha256": "18ecc0ae987c5e242656bbf5c8b430efd084e284e603607fb87c925a5d279a4b"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime_test.go",
+      "sha256": "c18fd29c850c5832f48f95ffdef26c11b12ae872db2b7aa6d5cb2457c31d862a"
+    },
+    {
+      "path": "internal/sandbox/pnpm_tool_supply.go",
+      "sha256": "a1103999a86bddf6f2b5cbcc36a400549c595dfe1f302b91e854de10d00cf7fb"
+    },
+    {
+      "path": "internal/sandbox/pnpm_tool_supply_namespace_linux_test.go",
+      "sha256": "93ff14d5b37c7c54771cbcb267e28a0bde81f7c947edf5f31e647b9be337c75a"
+    },
+    {
+      "path": "internal/sandbox/pnpm_tool_supply_test.go",
+      "sha256": "49fb74c9bbd22de13d3d284b210a25ab7684a5e6a70a1c18f57c84c9b81d8043"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "sha256": "756fffef4ffa763fbba42866606e995a8e7fda0dd255debdc4484a9652964801"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "6ee53b5c67e7314c03d617e7c30f1991501c4b509af3abb6c51297dcca54052a"
+    },
+    {
+      "path": "internal/sandbox/uv_output_volume_test.go",
+      "sha256": "d41185dfbd88ee25d1ff52f6f41269450f0d1425dcf2fed045b9085cbe47486a"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "f568c7eaae4bb2e198dc94fce80a08b5464cf2aa17a077fd5233cf1012c22c02"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_volume.go",
+      "sha256": "abd572e923aa5ed1bcab5ba46928b8f25dc66b03361e6c009e65d53d486d81fd"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_volume_test.go",
+      "sha256": "d73b15a9ae95c801f515d9798bcb85301bb09be9c3c5de568c5edeedac01e9c2"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_supply.go",
+      "sha256": "6e2cf72a924debdcb8652c219e26bc9efc3d846e0d4ca28d7262e919d77c084d"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "sha256": "c0c079c7f6a02dfbba8dcc26aad860bfb2e47f3f1a6bdef81338cb524da2aacc"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "sha256": "3d3799714be1c9f60bb1d74eb7a3b50f232229490755dfb1c846dc4f0aa0f004"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "eb0a7529631739618de90c5d7b32d2a27390f2ba5eb4ec632a1c9acab34b4ff2"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "a7d18ae9a734f3c4de99313c50b5518658ecb8e15f3680d1c6cce20495d1f595"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "e8bf97697762e5751a03956fee6978e588a5c4be67a098bde416c08f9fab9f41"
+    },
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "sha256": "cac710537306872847ce625808f413e30eefca2542073413df32e58fcf297bc0"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "93e1cefc4eb977edb9737e21e7ae999406e716d6c56a961a535e9e6283306f1d"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "926a348943264a2b8d1b91ddfe337800ef6cbb0d8c7ab55c5f91c0016297794f"
+    }
+  ],
+  "not_claimed": [
+    "PNPM public CLI support",
+    "whole-P2 acceptance",
+    "hosted new CI success",
+    "new release/tag/publication/activation"
+  ]
+}

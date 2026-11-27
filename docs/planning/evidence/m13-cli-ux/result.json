@@ -1,0 +1,515 @@
+{
+  "work_item": "CLI-UX-001",
+  "status": "QUALIFIED_LOCAL",
+  "base_commit": "c75b361acfbb1933bda641af70c4a762e9a2f53e",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "source_files": [
+    {
+      "path": "internal/application/inspect.go",
+      "sha256": "3fa48be1c3aa18ac7aaed98f5ca0df4129191737530e8d0dd935cdfeab852c0e"
+    },
+    {
+      "path": "internal/application/install_inspect.go",
+      "sha256": "0ae6775c7bc4e1f2faf9598a3c7c11bb925cb553f0bf1553bd86bf1202c4774e"
+    },
+    {
+      "path": "internal/application/install_promote.go",
+      "sha256": "4f9c0f1409a372d241b320dc8e392874061a7bbb7b48b5838eee3c73b262bf37"
+    },
+    {
+      "path": "internal/application/project_build.go",
+      "sha256": "c3ed3a77448a81489dc9f04dd19323785c9c75824ee6648ec3d1522c51a5e484"
+    },
+    {
+      "path": "internal/application/project_snapshot.go",
+      "sha256": "088db04810e44d692a64c654a71e19f99663cebebdeb1a95b7915f5649ab9cab"
+    },
+    {
+      "path": "internal/application/project_update.go",
+      "sha256": "fe3e1e1de973ab8970e9482abdb135e22c4a7c703b2d01f282949a394c52d658"
+    },
+    {
+      "path": "internal/artifact/githubrelease/client.go",
+      "sha256": "0a302c3d9a9bada3c426ba0515e450902a63b856684023e128bf59393b5ba20d"
+    },
+    {
+      "path": "internal/artifact/npm/resolver.go",
+      "sha256": "3c6b454c6bc65f08543e0329f6f900a5e5fcbe1d6f1695551bc685274109c948"
+    },
+    {
+      "path": "internal/artifact/pypi/intake.go",
+      "sha256": "97fc9e998322ac3addaf5483e704c82c912ab6281c1b594baf5ff26da4fa0437"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "64fd139cbd8fef890dbf7184fad6ed271c5bfb231bd83f0bae47cd01ee8ba76b"
+    },
+    {
+      "path": "internal/bootstrap/presentation_test.go",
+      "sha256": "9749248ef9686c14e400cc5660ed5623ddef9d2053bb3f445ead8284508fd1b6"
+    },
+    {
+      "path": "internal/cli/cargo_build.go",
+      "sha256": "251f65917b08678579c98d8ba42eb58338c8cfef3e2f736da7a4c30c1b26415d"
+    },
+    {
+      "path": "internal/cli/go_build.go",
+      "sha256": "b6f15f57b5842c8d8438e9b60669fd14b40bafae542f169178f4c5a54514bf17"
+    },
+    {
+      "path": "internal/cli/human_report.go",
+      "sha256": "79d8bc2f20bacef7d868d9f7f4f190722b5ab77eeb940a3de5c986f3e0cdf355"
+    },
+    {
+      "path": "internal/cli/install_result.go",
+      "sha256": "24b33a042670d7a2422e2cc0315f628ec65580c964c88c5687eaa19cab15e7ee"
+    },
+    {
+      "path": "internal/cli/language_settings.go",
+      "sha256": "cd19b22cff14e7ecbe039a10cb388cb7c9ccc9089023de65ed5df0b38947cca6"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "3199bb6d4656937446ed26b0c1d632d0184c99f3fafe938c2c61a85f4728558c"
+    },
+    {
+      "path": "internal/cli/presentation_catalog.go",
+      "sha256": "5db52275da35967f3adb549e547c248acb635cf6365ddaa450c2431c157d710e"
+    },
+    {
+      "path": "internal/cli/presentation_error.go",
+      "sha256": "fb54aace5a15cabfcb8d6f8294b882966c9a23bc3e899d8da092106bbc6d4c2f"
+    },
+    {
+      "path": "internal/cli/presentation_test.go",
+      "sha256": "859668e71eea9d40ba42f2206dec0403a892a942ddea8c4c23fddb76033369e9"
+    },
+    {
+      "path": "internal/cli/result.go",
+      "sha256": "0125ce7d5c91a64ac3eb9f8a5562ef14cea6d0c54dcf23b0ed15c35a5cfd47c4"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "2e466f6f274c657f1a1ea9c181ca502d7fc8192e073816fbd0ad82dd7a729a48"
+    },
+    {
+      "path": "internal/cli/terminal_other.go",
+      "sha256": "e1a9af722d98f7797d4b92e947baa08a988f3c15ea7e296767b000cf48b34267"
+    },
+    {
+      "path": "internal/cli/terminal_unix.go",
+      "sha256": "ac54cd063a4c532bd43d4d920b8f087ca8b83c50b4246c48b55836662f600fec"
+    },
+    {
+      "path": "internal/cli/translations.go",
+      "sha256": "d8f0296b3c1bd1ac988841ed7f1025877645351d07050fef0baf1b5bbfb585ed"
+    },
+    {
+      "path": "internal/core/ports/progress.go",
+      "sha256": "0be2082a26d6ad958fe1bb15fb197b3c1800b737224a22cd97f1cac18827aa64"
+    },
+    {
+      "path": "internal/core/ports/progress_test.go",
+      "sha256": "4cb12e94daadcf37b8653fb793b38f9b1c73baab387937a957f6cd59a152750f"
+    },
+    {
+      "path": "internal/sandbox/observer_supervisor.go",
+      "sha256": "03a8bf13a24cf76cbb37bd0acb8be66b034815d1a3c90153979c0a9fe5d399f4"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "2df34e62a1e1a15f224987fad95780a1a4b9fff981b4956412114d8ee9dcade9"
+    }
+  ],
+  "binary": {
+    "status": "BUILT",
+    "seconds": 1.49,
+    "sha256": "027970d56fa8dcea7266a9044614e5965128980c8526b433de47f92af19fe268",
+    "bytes": 26466716,
+    "actual_go": "1.26.9",
+    "CGO_ENABLED": "0",
+    "source_inventory_sha256": "426f36aca6b6317813954a7ec4d6f6dd532eb413856de6c6419f15e43f699b84",
+    "scope": "local development candidate, not the protected v0.1.0 release; source inventory binds uncommitted UI changes"
+  },
+  "built_production_source_unchanged": true,
+  "first_projection_omission": {
+    "path": "internal/bootstrap/presentation_test.go",
+    "production_change": false,
+    "final_canonical_quick": "PASS",
+    "format_profile": "closure-format PASS"
+  },
+  "checks": {
+    "quick": {
+      "profile": "quick",
+      "exit_code": 0,
+      "seconds": 15.43,
+      "source_inventory": "closure-final-source.json",
+      "sha256": "d413a33819806885c11e98fec36c208ce9188d2dacb962249d1fa080f41fbc5d",
+      "new_bootstrap_test_included": true
+    },
+    "security": {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 4.71,
+      "source_inventory": "closure-docs-source.json",
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 0.29,
+      "source_inventory": "closure-docs-source.json",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    "workflow": {
+      "profile": "workflow",
+      "exit_code": 0,
+      "seconds": 0.82,
+      "source_inventory": "closure-docs-source.json",
+      "sha256": "09f1722e8082e1146121c5992fcff370deed9f7679deb1d4d7b915d5ed10cb62"
+    },
+    "targeted_race": {
+      "profile": "race",
+      "exit_code": 0,
+      "seconds": 3.02,
+      "source_inventory": "quick-final-source.json",
+      "sha256": "efce3c7a91d08347f6e4c2a9df3e23e380b376e0892a030791b97b967b640d1b"
+    },
+    "darwin_cross_compilation": [
+      {
+        "os": "darwin",
+        "arch": "amd64",
+        "exit_code": 0,
+        "seconds": 15.17,
+        "native_execution": false
+      },
+      {
+        "os": "darwin",
+        "arch": "arm64",
+        "exit_code": 0,
+        "seconds": 14.16,
+        "native_execution": false
+      }
+    ]
+  },
+  "real_pty": {
+    "status": "PASS",
+    "actual_compiled_CLI": true,
+    "real_pty": true,
+    "cases": [
+      {
+        "case": "help-en",
+        "arguments": [
+          "--lang",
+          "en",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "pty_columns": 88
+      },
+      {
+        "case": "help-ko",
+        "arguments": [
+          "--lang",
+          "ko",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "pty_columns": 88
+      },
+      {
+        "case": "help-de",
+        "arguments": [
+          "--lang",
+          "de",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "pty_columns": 88
+      },
+      {
+        "case": "help-fr",
+        "arguments": [
+          "--lang",
+          "fr",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.05,
+        "pty_columns": 88
+      },
+      {
+        "case": "help-es",
+        "arguments": [
+          "--lang",
+          "es",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.03,
+        "pty_columns": 88
+      },
+      {
+        "case": "help-pt-BR",
+        "arguments": [
+          "--lang",
+          "pt-BR",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.03,
+        "pty_columns": 88
+      },
+      {
+        "case": "help-ja",
+        "arguments": [
+          "--lang",
+          "ja",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.04,
+        "pty_columns": 88
+      },
+      {
+        "case": "set-ko",
+        "arguments": [
+          "config",
+          "language",
+          "ko"
+        ],
+        "exit_code": 0,
+        "seconds": 0.07,
+        "pty_columns": 88
+      },
+      {
+        "case": "saved-ko-help",
+        "arguments": [
+          "npm",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.05,
+        "pty_columns": 88
+      },
+      {
+        "case": "english-override",
+        "arguments": [
+          "--lang",
+          "en",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.04,
+        "pty_columns": 88
+      },
+      {
+        "case": "saved-ko-preserved",
+        "arguments": [
+          "config",
+          "language"
+        ],
+        "exit_code": 0,
+        "seconds": 0.04,
+        "pty_columns": 88
+      },
+      {
+        "case": "doctor-ko",
+        "arguments": [
+          "--lang",
+          "ko",
+          "doctor"
+        ],
+        "exit_code": 1,
+        "seconds": 4.07,
+        "pty_columns": 88
+      },
+      {
+        "case": "doctor-narrow-no-color",
+        "arguments": [
+          "--lang",
+          "ko",
+          "--color",
+          "never",
+          "doctor"
+        ],
+        "exit_code": 1,
+        "seconds": 4.38,
+        "pty_columns": 28
+      },
+      {
+        "case": "reset-auto",
+        "arguments": [
+          "config",
+          "language",
+          "auto"
+        ],
+        "exit_code": 0,
+        "seconds": 0.05,
+        "pty_columns": 88
+      }
+    ],
+    "scope": "seven help languages, saved preference and one-shot override, truthful doctor/full unavailable, narrow terminal; no package operation or privileged installation yet"
+  },
+  "actual_operations": {
+    "status": "PASS",
+    "installed_cli_sha256": "027970d56fa8dcea7266a9044614e5965128980c8526b433de47f92af19fe268",
+    "cases": [
+      {
+        "case": "inspect-ko",
+        "arguments": [
+          "--lang",
+          "ko",
+          "npm",
+          "inspect",
+          "is-number@7.0.0"
+        ],
+        "exit_code": 0,
+        "seconds": 7.63,
+        "real_pty": true
+      },
+      {
+        "case": "install-en",
+        "arguments": [
+          "--lang",
+          "en",
+          "npm",
+          "install",
+          "is-number@7.0.0",
+          "--target",
+          "/tmp/haa-cli-ux-20261018/operations/project"
+        ],
+        "exit_code": 0,
+        "seconds": 12.43,
+        "real_pty": true
+      },
+      {
+        "case": "inspect-json",
+        "arguments": [
+          "--output",
+          "json",
+          "--lang",
+          "ko",
+          "npm",
+          "inspect",
+          "is-number@7.0.0"
+        ],
+        "exit_code": 0,
+        "seconds": 7.1,
+        "real_pty": false
+      },
+      {
+        "case": "doctor-live-ko",
+        "arguments": [
+          "--lang",
+          "ko",
+          "doctor"
+        ],
+        "exit_code": 1,
+        "seconds": 1.42,
+        "real_pty": true
+      },
+      {
+        "case": "missing-version-ko",
+        "arguments": [
+          "--lang",
+          "ko",
+          "npm",
+          "inspect",
+          "is-number@0.0.0-helox-does-not-exist"
+        ],
+        "exit_code": 1,
+        "seconds": 1.4,
+        "real_pty": true
+      }
+    ],
+    "installed_package": {
+      "name": "is-number",
+      "version": "7.0.0",
+      "files": [
+        "LICENSE",
+        "README.md",
+        "index.js",
+        "package.json"
+      ]
+    },
+    "scope": "actual user UID1000 installed CLI with canonical helper lifecycle; progress/ko inspection/en install/JSON compatibility/truthful doctor/404 failure; no public release"
+  },
+  "lifecycle": {
+    "canonical_script": "scripts/ci-integration-cleanup.sh",
+    "owned_helper_wait": 0,
+    "final_state": "CONFIRMED_STOPPED",
+    "original_status": 0,
+    "cleanup_status": 0,
+    "restoration": "NOT_REQUIRED"
+  },
+  "activation": {
+    "status": "ACTIVATED",
+    "only_file_replaced": "/usr/libexec/heliopause/helox",
+    "old_cli_sha256": "3a7fc8a359f73cadc147a225d897c89cec110a9508158e67d76e89738779052f",
+    "new_cli_sha256": "027970d56fa8dcea7266a9044614e5965128980c8526b433de47f92af19fe268",
+    "original_rollback_copy": "root0600 in durable local operator state",
+    "helper_observer_policy_unchanged": true
+  },
+  "postcheck": {
+    "status": "PASS",
+    "utc": "2026-10-18T08:04:21.273049+00:00",
+    "installed": [
+      {
+        "path": "/usr/libexec/heliopause/helox",
+        "sha256": "027970d56fa8dcea7266a9044614e5965128980c8526b433de47f92af19fe268",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755"
+      },
+      {
+        "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+        "sha256": "d196561d50b2e073b71414aa0e12d89339863c5d0a47751390f30e7cae00a70f",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755"
+      },
+      {
+        "path": "/usr/libexec/heliopause/haa_gvisor_observer",
+        "sha256": "d9c502d857c37bfbaea7d4bffbe6d9c3c82e1edc2322556673f516ca01903ce9",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755"
+      },
+      {
+        "path": "/etc/heliopause/network-policy.json",
+        "sha256": "2acf7e15a49b0c1b823d9011dd4aaf654e8eef433c1fdf1786e2971923897c64",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o644"
+      }
+    ],
+    "active_consumers": [],
+    "unknown_queries": [],
+    "runtime_endpoints": [],
+    "original_backup_verified": true,
+    "helper_config_unchanged": true,
+    "local_development_cli_only": true
+  },
+  "preserved_operation_evidence_files": 9,
+  "not_claimed": [
+    "native macOS execution",
+    "fresh remote CI",
+    "full ecosystem/CUDA qualification for this UX source",
+    "historical full-Race fix",
+    "public v0.1.0 assets containing this source",
+    "registry name selection or public publication"
+  ],
+  "raw_owner": "docs/github-logs/m13-cli-ux-20261018/",
+  "qualified_source_inventory_sha256": "5e6f5c002db732b65e01109da00b4da01418610b819382bbe68d6036d3f91a62",
+  "closure_boundary": "Only result/cleanup evidence receipts changed after final read-only profiles; production and test hashes are unchanged. Source subset and exact installed binary are independently verified."
+}

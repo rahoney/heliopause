@@ -68,11 +68,11 @@ func TestTerraformHelpRequiresExactConsumedTerminalAndFixedArguments(t *testing.
 }
 
 func TestTerraformFaultRetainsOnlyAcceptedSuspiciousCounts(t *testing.T) {
-	facts := retainedELFProbeFacts(map[string]uint64{"process-exec-expected": 35, "process-exec-unexpected": 1, "network-attempt": 2, "unknown": 1})
+	facts := retainedSuspiciousTraceFacts(map[string]uint64{"process-exec-expected": 35, "process-exec-unexpected": 1, "network-attempt": 2, "unknown": 1})
 	if len(facts) != 2 || facts[0].Subject() != "network-attempt" || facts[0].Count() != 2 || facts[1].Subject() != "process-exec-unexpected" {
 		t.Fatalf("partial facts=%v", facts)
 	}
-	if len(retainedELFProbeFacts(map[string]uint64{"network-attempt": 10001})) != 0 {
+	if len(retainedSuspiciousTraceFacts(map[string]uint64{"network-attempt": 10001})) != 0 {
 		t.Fatal("out-of-bounds diagnostic became an observation")
 	}
 }

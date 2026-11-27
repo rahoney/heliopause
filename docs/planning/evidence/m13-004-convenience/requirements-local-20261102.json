@@ -1,0 +1,347 @@
+{
+  "schema": "goal-reinforcement-local-checkpoint/v1",
+  "unit": "B01+B05",
+  "base_commit": "d7688a59943e8bf8d401ea5f336c909982bf83d4",
+  "implemented": true,
+  "wired": true,
+  "qualified": false,
+  "acceptance_closed": false,
+  "checks": [
+    {
+      "label": "b01-bundle-quick-v2",
+      "receipt_sha256": "14979968f19fb32e9bbf7c9ab422daaf18ccaa9884b642c557c8e112f696ea96",
+      "exit_code": 1,
+      "elapsed": 366.807,
+      "source_unchanged": true
+    },
+    {
+      "label": "b01-cli-final-green",
+      "receipt_sha256": "f16c612480a607c3f05120c8a678f9786f1df8bcd8f22666d619fe0c34e5b228",
+      "exit_code": 0,
+      "elapsed": 4.868,
+      "source_unchanged": true
+    },
+    {
+      "label": "b01-bundle-race",
+      "receipt_sha256": "816ec7151dc726b59c6f5f72c593959901cbd9bdb2c4fcaf8703402305448063",
+      "exit_code": 1,
+      "elapsed": 256.368,
+      "source_unchanged": true
+    },
+    {
+      "label": "b01-checker-final-race",
+      "receipt_sha256": "bfb82fcd7bca4722792876aecd9ed94b678e7b85610da97fe45b7d56acc764a2",
+      "exit_code": 0,
+      "elapsed": 100.722,
+      "source_unchanged": true
+    },
+    {
+      "label": "b01-bundle-security",
+      "receipt_sha256": "e67814047e056240800c8af21928256ae6f62ad19e5cf1758ad21bfb6d09cc1f",
+      "exit_code": 0,
+      "elapsed": 23.117,
+      "source_unchanged": true
+    },
+    {
+      "label": "b01-docs-local",
+      "receipt_sha256": "518e08c7a80206a7cd610127bf27726ebfd9930fcafd92a17af14d1ca1e982f2",
+      "exit_code": 0,
+      "elapsed": 0.4,
+      "source_unchanged": true
+    },
+    {
+      "label": "b01-actual-v11",
+      "receipt_sha256": "5713e8eaa87c6b164a8f79d4124cd1e45b3d21d9dba7d1996fb11b8d2ba44cdd",
+      "exit_code": 1,
+      "seconds": 618.378,
+      "host_unchanged": true,
+      "no_skip": true,
+      "helper_wait_zero": true
+    },
+    {
+      "label": "b01-actual-v12-pip-tail",
+      "receipt_sha256": "8b8f73750f814f142455bf0bab112999dc5e73d4e022292a6728e8fdf3aaa67d",
+      "exit_code": 0,
+      "seconds": 293.768,
+      "host_unchanged": true,
+      "no_skip": true,
+      "helper_wait_zero": true
+    },
+    {
+      "label": "b01-actual-v13-uv",
+      "receipt_sha256": "e90bb5a6187d65dcd4c99a25c79b896c943847dd16343417f6e64f0732ef2dfb",
+      "exit_code": 0,
+      "seconds": 776.265,
+      "host_unchanged": true,
+      "no_skip": true,
+      "helper_wait_zero": true
+    }
+  ],
+  "source_files": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "9b4b26f425b80e8d5da36671516cf6f1ae5c7da3b9273591075f33fe943a0643"
+    },
+    {
+      "path": "internal/application/project_inspect.go",
+      "sha256": "3a50484a85160407f9bf48e89a4e27f370986a2a0d74c6b1775bb20c4f484c02"
+    },
+    {
+      "path": "internal/application/project_update.go",
+      "sha256": "c4402ea548be383e91b95222b9ceb976bae99716a65c1946626621dd4acb752d"
+    },
+    {
+      "path": "internal/application/python_requirements.go",
+      "sha256": "30dbe5b1f0e9878c6cb3670139cdd5580ee6de598bd72eeb65cd84992aac5a2d"
+    },
+    {
+      "path": "internal/application/python_requirements_test.go",
+      "sha256": "ec8dbf4943048ceafc415d974efdc6e2f5b57d6f59a094466338c4baaeb3f84d"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_file.go",
+      "sha256": "b7d9117783785796cb3589db79c3fb1148327016e5ba5a3b2a3eef852e4e6d73"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_file_test.go",
+      "sha256": "8fbe84e6bd470bb824b25e807bec55099f946cbdf669c0ab8e5b759f9deb8b4b"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_input.go",
+      "sha256": "994a884e91b3fbf8167ac3bf57a66ec2444df29c6d0160fd6ed8dccb69d4e6bf"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_input_test.go",
+      "sha256": "757b80a83118c5ee6cd11bd0ae08615e1c5190e54e113474eb19382b51ce03c0"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_native.go",
+      "sha256": "868776bb649d8666ebf5ed6413ce6c5c857f9e92ccd6ded8321bf605047cd147"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_native_test.go",
+      "sha256": "54e88bb83ff4fb987237e0d5dfe8c15cb208ed4bf284b3111a30a14b9af8434b"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_selection.go",
+      "sha256": "575aaf5ce51e7aa7c70645887cdf1f23ee3fe1b044bbd0c13a2d6f2319498b22"
+    },
+    {
+      "path": "internal/artifact/pypi/requirements_selection_test.go",
+      "sha256": "b8a2af757984193b15719c81ea32bdf4f29d1d9249c56b94ad55d50f2ebdac92"
+    },
+    {
+      "path": "internal/artifact/pypi/simple.go",
+      "sha256": "7ec53ea387ded22433824cc6cbc5590f451580ee83b2aaf80e2bab636d179541"
+    },
+    {
+      "path": "internal/artifact/pypi/upgrade_input.go",
+      "sha256": "0a7fa372331b192a29b5b026d2d198d2a7445cdfe0607794408d0607d326b36b"
+    },
+    {
+      "path": "internal/artifact/pypi/upgrade_selection.go",
+      "sha256": "cc9defd0ab36060a5de806db113b7d4fbd0a0df75a30920624e3e6bcdb3af5a7"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "sha256": "0580c4f57e7342a69a50477f14e2e506820e0256c6356ed2662edfd8ed600181"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_lock.go",
+      "sha256": "2982e1584791e8f7000aefeefaed20b19aceb5a6ece3071a69dbcf14ef925ef9"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_records.go",
+      "sha256": "7f3342ec40deebde2be0982aa00dc01e45aef8281e54cbe29a628bdcf2349786"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_selection.go",
+      "sha256": "9581c1c97e9e715b5491a2af664603d889851829ce9366ae5248669b0c7ab6cb"
+    },
+    {
+      "path": "internal/artifact/pypi/wheel.go",
+      "sha256": "5af271cda02c156117f353b7b5f94c6aa7eb3469c29637c1a65542d6c0067bc9"
+    },
+    {
+      "path": "internal/bootstrap/python_client.go",
+      "sha256": "8684be18ddb25927eeb511a40053a5886e3bb34c1002c436403cb2771f7529e8"
+    },
+    {
+      "path": "internal/bootstrap/python_requirements.go",
+      "sha256": "d3cbc672f97a517b7343221e50cba71eff05c0b85ca488195f957d8064d979f0"
+    },
+    {
+      "path": "internal/bootstrap/python_requirements_integration_test.go",
+      "sha256": "f3fb3f5fc878922bf909a8fd967d86bed5bd2f180429fdb1673da22a83fa8c24"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "sha256": "571b872a6434996748c49db2158265b76713f8f723c7a00794a55d8be5bc853c"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "c594b7765d588550a9bb22f22fec3c22c5f680568cf048829ea73d57e5a8bdf5"
+    },
+    {
+      "path": "internal/cli/package_client_test.go",
+      "sha256": "79b7441939e9e1ed4660e98f68eb207c774098ce23c273f971772160292cf515"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "845fe76c0425c66e70c43bef0fcbf822e07d3d9442fb6c3f7476824bdbfe4ff9"
+    },
+    {
+      "path": "internal/cli/pypi_update.go",
+      "sha256": "67e1b395f80f9776a59992b85d7a240816a154d784d354262d1b4abaf1c5ca3c"
+    },
+    {
+      "path": "internal/cli/pypi_update_test.go",
+      "sha256": "e7ef9436966d107c43d851affea2f7db532ef9ae09af0c849b974c4cc34f5a51"
+    },
+    {
+      "path": "internal/cli/python_requirements.go",
+      "sha256": "bda565a0a235b50c811ab25774c227d0df74e31451f63d3c212cf88a37d3a784"
+    },
+    {
+      "path": "internal/cli/python_requirements_test.go",
+      "sha256": "35a112c58014744243232f54f188bc4ac1f8509e39e6afe78021c0e1e2e39889"
+    },
+    {
+      "path": "internal/inspection/pypi/project.go",
+      "sha256": "1f693009d79366f02ebc32c88f292e20c8b4a181ebe4faf1f6d71a9a202832e8"
+    },
+    {
+      "path": "internal/promotion/python_project_cache.go",
+      "sha256": "18238db9a5a4aa0f7293ee011462ba2d7df69a70cf9365e73bdba72aa5a5e9e6"
+    },
+    {
+      "path": "internal/promotion/python_requirements.go",
+      "sha256": "1bc0cb2cf2ac6de86a12eaf38ba59059d7f4eac2a40e35ad7ee8f59fa47243ba"
+    },
+    {
+      "path": "internal/promotion/python_requirements_source.go",
+      "sha256": "b561c67a292a35dbb8d0e7330776f95a10865bf5fe44a3a4ad78a4ed57897331"
+    },
+    {
+      "path": "internal/promotion/uv_complete_ownership.go",
+      "sha256": "5e60daa4a885eb45a6ec972d9219598601f3d612004213e40654f1f5d54f316c"
+    },
+    {
+      "path": "internal/promotion/uv_project_preparation.go",
+      "sha256": "80c7be62ee0fe82bc1564ce7952f94998c39e17e0422f7fc9ed649192a9013c2"
+    },
+    {
+      "path": "internal/promotion/uv_project_publication.go",
+      "sha256": "644b16d6345bbfa7c94af8c0e8709448409e593a475cca4eb7e83a5a45a4d056"
+    },
+    {
+      "path": "internal/promotion/uv_sync.go",
+      "sha256": "50a7b40386c8639145419cb63f0be096281e7900325e1a6137d14e17e0349744"
+    },
+    {
+      "path": "internal/promotion/uv_sync_source.go",
+      "sha256": "63f3f1b91f4a2e60cb2f64af373cbec8f88dfd68cd331c57990804bc534b5637"
+    },
+    {
+      "path": "internal/promotion/uv_sync_source_test.go",
+      "sha256": "2c7b7c2b6f0138d7bcfced6a94ff5a023546a68f12b05678bf1c355abacd518f"
+    },
+    {
+      "path": "internal/promotion/uv_tool_native_original.go",
+      "sha256": "d93dc2bd8d383fee5dce294572fdf319ab8fdf2ba52aec5cf35a4fa570908807"
+    },
+    {
+      "path": "internal/sandbox/pipx_resolver.go",
+      "sha256": "e24f0e55cf08a118581a1a4811a7ad0a31a6a536212daa680c6fe9d314616931"
+    },
+    {
+      "path": "internal/sandbox/pipx_resolver_integration_linux_test.go",
+      "sha256": "5c300fdd939eb5af4f2c82a5f6955770ba40aeab7ca03cad36209e1b150633e7"
+    },
+    {
+      "path": "internal/sandbox/pypi_update_resolver.go",
+      "sha256": "07cf15636714c467ad7848292e7359a6bf87bc2508222bf9a9940e45fa92a1ac"
+    },
+    {
+      "path": "internal/sandbox/pypi_update_resolver_test.go",
+      "sha256": "a304e7537f4cad6261b243dcc4da8eae901ec894d776cda7aadc67966956f0b7"
+    },
+    {
+      "path": "internal/sandbox/python_requirements.go",
+      "sha256": "498bb11a0f426dad072ebbe3be9f20ab65ca237673c4ba3312e0821325e73c56"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver.go",
+      "sha256": "f7c164611837e3e3e4be25902e20cbb37ed7026b883de5a69d7bfc473407488c"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_reader.go",
+      "sha256": "1f9c918e82a3507ac5fa9e49bbd709594e4e4172cacdbe9f25d57b80b07fb085"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver.go",
+      "sha256": "61a6c8cfe339ebe8a71754a7b96de0b82d388344386ffa9a44b65695b24f87ca"
+    },
+    {
+      "path": "internal/sandbox/uv_run_selection_resolver.go",
+      "sha256": "3f19fe30d5c859e1cd0df6e766e72b7262a85502e5e86578e97be104c677ad2b"
+    },
+    {
+      "path": "internal/sandbox/uv_selection_input.go",
+      "sha256": "1f63d76d608e069480ab690c454f931ce0ab14b482f5fc2828f19a82036ec944"
+    },
+    {
+      "path": "internal/sandbox/uv_sync_resolver.go",
+      "sha256": "fe37cf1bfce1f8d727fde392d903ca2908bf23ab35181c17486b10f474d3dd8d"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_resolver.go",
+      "sha256": "4273c5fcf41102575209abedb54fc5bc506270f1e31e003c9811d086b0613d82"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_run_public_real_test.go",
+      "sha256": "0770f31718ae71436784193339da122f173e12e26b13f13c55405e365c5bb89f"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "f1d030d87875688e47863167f8f64d0d659fbd926ccc29b495e0e76e8448aef8"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow_test.go",
+      "sha256": "6160980d2b613f4ff1b4104cf6509618d8c2aad5edb86dab8def3cca756144f4"
+    },
+    {
+      "path": "scripts/ci-uv-tools.sh",
+      "sha256": "a0e496a41e02565d781c1eaa9b42bbebbafa54f6882cb58134a5ac5752b07c21"
+    }
+  ],
+  "actual_cases": {
+    "pip": {
+      "count": 16,
+      "prefix_receipt": "b01-actual-v11",
+      "prefix_count": 12,
+      "tail_receipt": "b01-actual-v12-pip-tail",
+      "tail_count": 4,
+      "single_parent_pass": false
+    },
+    "uv": {
+      "count": 16,
+      "receipt": "b01-actual-v13-uv",
+      "single_parent_pass": true
+    }
+  },
+  "cleanup": {
+    "completed_test_clients": 13,
+    "bytes": 693869279,
+    "processes_checked": 88,
+    "references": 0,
+    "query_errors": 0
+  },
+  "missing": [
+    "grouped hosted single-parent complete pip/uv coverage",
+    "four-profile impact and required final actual regression",
+    "final unit16 Anyio required plugin compatibility/incomplete review"
+  ],
+  "ci_started": false,
+  "host_installation_changed": false
+}

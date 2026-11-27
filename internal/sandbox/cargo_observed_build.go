@@ -15,18 +15,20 @@ import (
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	projectoutput "github.com/rahoney/heliopause/internal/artifact/projectbuild"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type cargoBuildObserver interface {
+	projectBuildEnvironmentObserver
 	StartCargoBuildProfile(context.Context, string, bool, *observationTraceLedger) (TraceReader, error)
-	AwaitMountAnchors(context.Context, string) error
 }
 
 type ObservedCargoBuilder struct {
-	intake   string
-	runner   CommandRunner
-	observer cargoBuildObserver
-	probe    func(context.Context) (CargoCapability, error)
+	intake           string
+	runner           CommandRunner
+	observer         cargoBuildObserver
+	probe            func(context.Context) (CargoCapability, error)
+	prepareResponder func(context.Context, CommandRunner, string) (*responderSupply, error)
 }
 
 func NewLinuxObservedCargoBuilder(intake string, executor TrustedExecutor, observer TraceObserver) (*ObservedCargoBuilder, error) {
@@ -40,7 +42,7 @@ func NewLinuxObservedCargoBuilder(intake string, executor TrustedExecutor, obser
 	if _, ok := executor.(streamingDockerOutput); !ok {
 		return nil, errors.New("cargo build output transport is unavailable")
 	}
-	return &ObservedCargoBuilder{intake, admissionAwareRunner(executor), trusted, func(ctx context.Context) (CargoCapability, error) { return ProbeCargo(ctx, executor) }}, nil
+	return &ObservedCargoBuilder{intake: intake, runner: admissionAwareRunner(executor), observer: trusted, probe: func(ctx context.Context) (CargoCapability, error) { return ProbeCargo(ctx, executor) }}, nil
 }
 
 type isolatedCargoBuildFailure struct {
@@ -58,6 +60,7 @@ func (e *isolatedCargoBuildFailure) Unwrap() error { return e.cause }
 
 type cargoBuildOperation struct {
 	builder       *ObservedCargoBuilder
+	owner         domain.SandboxSessionID
 	input, target closureVolume
 	inputs        *goBuildPreparedInputs
 	budget        *observationTraceLedger
@@ -68,6 +71,9 @@ type cargoBuildOperation struct {
 	commandReason string
 	outputReason  string
 	output        *projectoutput.CapturedBuildOutput
+	environment   *projectBuildEnvironment
+	states        []domain.SandboxEnvironmentState
+	responder     *responderSupply
 }
 
 func (b *ObservedCargoBuilder) Build(ctx context.Context, inputs domain.ProjectBuildInputs) (observation domain.ProjectBuildObservation, resultErr error) {
@@ -83,7 +89,7 @@ func (b *ObservedCargoBuilder) Build(ctx context.Context, inputs domain.ProjectB
 	if err != nil {
 		return observation, err
 	}
-	op := &cargoBuildOperation{builder: b, phase: "INPUT"}
+	op := &cargoBuildOperation{builder: b, owner: session, phase: "INPUT"}
 	var output domain.AcquiredArtifact
 	var binding domain.DerivationBinding
 	defer func() {
@@ -107,7 +113,7 @@ func (b *ObservedCargoBuilder) Build(ctx context.Context, inputs domain.ProjectB
 			completed, _ := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
 			op.observations = append(op.observations, completed)
 		}
-		result, resultError := domain.NewSandboxResult(session, status, limitation, op.observations)
+		result, resultError := domain.NewSandboxResult(session, status, limitation, op.observations, op.states...)
 		observation, err = domain.NewProjectBuildObservation(inputs, result, output, binding)
 		resultErr = errors.Join(resultErr, resultError, err)
 	}()
@@ -124,65 +130,18 @@ func (b *ObservedCargoBuilder) Build(ctx context.Context, inputs domain.ProjectB
 	if err != nil {
 		return observation, err
 	}
-	op.phase = "VOLUME"
-	op.input, err = createInputVolume(ctx, b.runner, session.String(), op.inputs.manifest.identity, goBuildInputCapacity, false, projectBuildVolumeConfig{cargoBuildGuestInput, false})
-	if err != nil {
-		return observation, err
+	prepare := b.prepareResponder
+	if prepare == nil {
+		prepare = prepareResponderSupply
 	}
-	op.target, err = createInputVolume(ctx, b.runner, session.String()+"-target", op.inputs.manifest.identity, projectoutput.MaxBuildOutputBytes, false, projectBuildVolumeConfig{cargoBuildGuestTarget, true})
-	if err != nil {
-		return observation, err
+	op.responder, err = prepare(ctx, b.runner, runtimeidentity.NativeInstallRoot)
+	if err != nil || op.responder == nil {
+		return observation, errors.Join(errResponderSupply, err)
 	}
-	op.phase = "PREPARATION"
-	preparation, err := op.start(ctx, false)
-	if err != nil {
-		return observation, err
-	}
-	if err := op.inputs.introduceAt(ctx, b.runner, preparation.id, cargoBuildGuestInput); err != nil {
-		return observation, err
-	}
-	if err := verifyProjectBuildMaterialization(ctx, b.runner, preparation.id, cargoBuildGuestInput, op.inputs.manifest); err != nil {
-		return observation, err
-	}
-	op.phase = "READ_ONLY"
-	build, err := op.start(ctx, true)
-	if err != nil {
-		return observation, err
-	}
-	if err := op.input.verifyAttachments(ctx, b.runner, map[string]bool{preparation.id: false, build.id: true}); err != nil {
-		return observation, err
-	}
-	if err := op.target.verifyAttachments(ctx, b.runner, map[string]bool{preparation.id: false, build.id: false}); err != nil {
-		return observation, err
-	}
-	if err := op.remove(preparation); err != nil {
-		return observation, err
-	}
-	if err := op.verify(ctx, build); err != nil {
-		return observation, err
-	}
-	op.phase = "OFFLINE_GRAPH"
-	if err := op.checkGraph(ctx, build, inputs.Snapshot()); err != nil {
-		return observation, err
-	}
-	op.phase = "BUILD"
-	if _, err := op.artifactOutput(ctx, build, cargoBuildCompilerArguments()...); err != nil {
-		return observation, err
-	}
-	op.phase = "POST_BUILD"
-	if err := op.verify(ctx, build); err != nil {
-		return observation, err
-	}
-	if err := op.checkGraph(ctx, build, inputs.Snapshot()); err != nil {
-		return observation, err
-	}
-	op.phase = "OUTPUT_CAPTURE"
-	op.output, err = op.captureOutput(ctx, build, inputs)
-	if err != nil {
-		return observation, err
-	}
-	if err := op.verify(ctx, build); err != nil {
-		return observation, err
+	for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
+		if err := op.experiment(ctx, inputs, kind); err != nil {
+			return observation, err
+		}
 	}
 	digest, err := cargoBuildRecipeDigest()
 	if err != nil {
@@ -192,6 +151,107 @@ func (b *ObservedCargoBuilder) Build(ctx context.Context, inputs domain.ProjectB
 	return observation, err
 }
 
+func (op *cargoBuildOperation) experiment(ctx context.Context, inputs domain.ProjectBuildInputs, kind inspectionEnvironment) error {
+	session, err := domain.NewSandboxSessionID()
+	if err != nil {
+		return err
+	}
+	profile, err := newInspectionEnvironmentProfile(kind, session, op.responder)
+	if err != nil {
+		return err
+	}
+	op.phase = "VOLUME"
+	op.input, err = createInputVolume(ctx, op.builder.runner, session.String(), op.inputs.manifest.identity, goBuildInputCapacity, false, projectBuildVolumeConfig{cargoBuildGuestInput, false})
+	if err != nil {
+		return err
+	}
+	op.target, err = createInputVolume(ctx, op.builder.runner, session.String()+"-target", op.inputs.manifest.identity, projectoutput.MaxBuildOutputBytes, false, projectBuildVolumeConfig{cargoBuildGuestTarget, true})
+	if err != nil {
+		return err
+	}
+	op.phase = "PREPARATION"
+	preparation, err := op.start(ctx, false)
+	if err != nil {
+		return err
+	}
+	if err := op.inputs.introduceAt(ctx, op.builder.runner, preparation.id, cargoBuildGuestInput); err != nil {
+		return err
+	}
+	if err := verifyProjectBuildMaterialization(ctx, op.builder.runner, preparation.id, cargoBuildGuestInput, op.inputs.manifest); err != nil {
+		return err
+	}
+	op.environment = &projectBuildEnvironment{session: session, profile: profile}
+	op.environment.workspace, err = createEnvironmentWorkspace(ctx, op.builder.runner, op.owner, profile, projectBuildWorkspaceCapacity-responderSupplyCapacity)
+	if err != nil {
+		return err
+	}
+	op.phase = "READ_ONLY"
+	build, err := op.start(ctx, true)
+	if err != nil {
+		return err
+	}
+	if err := op.input.verifyAttachments(ctx, op.builder.runner, map[string]bool{preparation.id: false, build.id: true}); err != nil {
+		return err
+	}
+	if err := op.target.verifyAttachments(ctx, op.builder.runner, map[string]bool{preparation.id: false, build.id: false}); err != nil {
+		return err
+	}
+	if err := op.remove(preparation); err != nil {
+		return err
+	}
+	op.phase = "ENVIRONMENT_BASELINE"
+	err = op.environment.begin(ctx, op.builder.runner, op.builder.observer, "cargo", build.id, &op.target, op.budget)
+	if op.environment.reader != nil {
+		op.runtimes = append(op.runtimes, op.environment.reader)
+	}
+	if err != nil {
+		return err
+	}
+	if err := op.verify(ctx, build); err != nil {
+		return err
+	}
+	op.phase = "OFFLINE_GRAPH"
+	if err := op.checkGraph(ctx, build, inputs.Snapshot()); err != nil {
+		return err
+	}
+	op.phase = "BUILD"
+	if _, err := op.artifactOutput(ctx, build, cargoBuildCompilerArguments()...); err != nil {
+		return err
+	}
+	op.phase = "POST_BUILD"
+	if err := op.verify(ctx, build); err != nil {
+		return err
+	}
+	if err := op.checkGraph(ctx, build, inputs.Snapshot()); err != nil {
+		return err
+	}
+	op.phase = "ENVIRONMENT_FINAL"
+	if err := op.remove(build); err != nil {
+		return err
+	}
+	state, err := op.environment.final(ctx, op.builder.runner, &op.target)
+	if err != nil {
+		return err
+	}
+	op.phase = "OUTPUT_CAPTURE"
+	candidate, err := op.captureOutput(ctx, op.environment.reader, inputs, op.output == nil)
+	if err != nil {
+		return err
+	}
+	if candidate != nil {
+		op.output = candidate
+	}
+	if err := op.remove(op.environment.reader); err != nil {
+		return err
+	}
+	op.states = append(op.states, state)
+	if err := op.closeVolumes(); err != nil {
+		return err
+	}
+	op.environment = nil
+	return nil
+}
+
 // Per-operation volume IDs are opaque transport references. The recipe binds
 // their two exact roles; actual IDs/attachment identities are independently
 // checked before commands, after the build and during cleanup.
@@ -199,7 +259,7 @@ func cargoBuildRecipeDigest() (domain.ContentDigest, error) {
 	inputMount := "type=volume,source=verified-cargo-input,target=" + cargoBuildGuestInput + ",volume-nocopy"
 	targetMount := "type=volume,source=private-cargo-target,target=" + cargoBuildGuestTarget + ",volume-nocopy"
 	preparation, _ := cargoBuildExpectedTopology(false)
-	build, _ := cargoBuildExpectedTopology(true)
+	build, _ := projectBuildEnvironmentExpectedTopology("cargo", true, false)
 	runtime := PinnedCargoRuntime()
 	recipe, err := json.Marshal(struct {
 		Schema                                                                       string
@@ -212,12 +272,13 @@ func cargoBuildRecipeDigest() (domain.ContentDigest, error) {
 		ArchiveFiles, ArchiveEntries, OutputFiles                                    int
 		OutputSelection, AliasHandling, Profile                                      string
 		TimeoutNanoseconds                                                           int64
-	}{"cargo-build-v3", runtime, cargoBuildSourceConfiguration,
+		Environment                                                                  string
+	}{"cargo-build-environments-v5", runtime, cargoBuildSourceConfiguration,
 		append([]string{runtime.CargoBinary()}, cargoBuildMetadataArguments()...), append([]string{runtime.CargoBinary()}, cargoBuildCompilerArguments()...),
 		cargoBuildCreateArgumentsForMounts(inputMount, targetMount), cargoBuildCreateArgumentsForMounts(inputMount+",readonly", targetMount), preparation, build,
 		goBuildInputCapacity, projectoutput.MaxBuildOutputBytes, artifactcargo.MaxCrateExpandedBytes, artifactcargo.MaxCrateFileBytes, projectoutput.MaxBuildOutputArchiveBytes,
 		artifactcargo.MaxCrateFiles, 2 * artifactcargo.MaxCrateFiles, projectoutput.MaxBuildOutputFiles,
-		"top-level nonhidden default products excluding .d", "same-archive regular backing data only", cargoBuildProfile, int64(cargoBuildTimeout)})
+		"top-level nonhidden default products excluding .d", "same-archive regular backing data only", cargoBuildProfile, int64(cargoBuildTimeout), projectBuildEnvironmentDescriptor})
 	if err != nil {
 		return domain.ContentDigest{}, err
 	}
@@ -230,6 +291,24 @@ func (o *cargoBuildOperation) start(ctx context.Context, readOnly bool) (*goBuil
 	if err != nil {
 		return nil, err
 	}
+	if o.environment != nil {
+		if !readOnly {
+			return nil, errEnvironmentState
+		}
+		args, err = applyEnvironmentWorkspace(args, PinnedCargoRuntime().ImageReference, o.environment.profile, o.environment.workspace, false, "")
+		if err != nil {
+			return nil, err
+		}
+	}
+	activeResponder := o.environment != nil && o.environment.profile.kind == developmentEnvironment
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = o.responder.containerArguments(args, PinnedCargoRuntime().ImageReference)
+		if err != nil {
+			return nil, err
+		}
+		supplies = []*responderSupply{o.responder}
+	}
 	created, err := o.builder.runner.Output(ctx, "docker", args...)
 	id := strings.TrimSpace(string(created))
 	if err != nil || !exactObservationContainerID(id) {
@@ -237,21 +316,43 @@ func (o *cargoBuildOperation) start(ctx context.Context, readOnly bool) (*goBuil
 	}
 	runtime := &goBuildRuntime{id: id}
 	o.runtimes = append(o.runtimes, runtime)
+	if activeResponder {
+		if err := o.responder.verifyReader(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
+	}
 	if err := o.input.verifyContainerMount(ctx, o.builder.runner, id, readOnly); err != nil {
 		return nil, err
 	}
 	if err := o.target.verifyContainerMount(ctx, o.builder.runner, id, false); err != nil {
 		return nil, err
 	}
-	runtime.trace, err = o.builder.observer.StartCargoBuildProfile(ctx, id, readOnly, o.budget)
+	if o.environment != nil {
+		if err := o.environment.workspace.verifyContainerMount(ctx, o.builder.runner, id, false); err != nil {
+			return nil, err
+		}
+		runtime.trace, err = o.builder.observer.startProjectBuildEnvironmentProfile(ctx, id, "cargo", true, false, o.budget, supplies...)
+	} else {
+		runtime.trace, err = o.builder.observer.StartCargoBuildProfile(ctx, id, readOnly, o.budget)
+	}
 	if err != nil {
 		return nil, err
 	}
-	if _, err := o.builder.runner.Output(ctx, "docker", "start", id); err != nil {
-		return nil, errors.New("cargo build runtime start failed")
+	if activeResponder {
+		runtime.responder, err = startResponderInit(ctx, o.builder.runner, id)
+	} else {
+		_, err = o.builder.runner.Output(ctx, "docker", "start", id)
 	}
-	if awaitBoundaryHelper(ctx, o.builder.runner, id) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
+	if err != nil {
+		return nil, errors.Join(errors.New("cargo build runtime start failed"), err)
+	}
+	if awaitBoundaryHelper(ctx, o.builder.runner, id, activeResponder) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
 		return nil, errors.New("cargo build runtime boundary is incomplete")
+	}
+	if o.environment != nil {
+		if err := verifyEnvironmentResolver(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	return runtime, nil
 }
@@ -263,7 +364,14 @@ func (o *cargoBuildOperation) verify(ctx context.Context, runtime *goBuildRuntim
 	if err := o.input.verifyAttachments(ctx, o.builder.runner, map[string]bool{runtime.id: true}); err != nil {
 		return err
 	}
-	if err := o.target.verifyAttachments(ctx, o.builder.runner, map[string]bool{runtime.id: false}); err != nil {
+	attachments := map[string]bool{runtime.id: false}
+	if o.environment != nil && o.environment.reader != nil {
+		attachments[o.environment.reader.id] = true
+		if err := o.environment.workspace.verifyAttachments(ctx, o.builder.runner, attachments); err != nil {
+			return err
+		}
+	}
+	if err := o.target.verifyAttachments(ctx, o.builder.runner, attachments); err != nil {
 		return err
 	}
 	return verifyProjectBuildMaterialization(ctx, o.builder.runner, runtime.id, cargoBuildGuestInput, o.inputs.manifest)
@@ -274,16 +382,22 @@ func (o *cargoBuildOperation) remove(runtime *goBuildRuntime) error {
 		return nil
 	}
 	ctx, cancel := resolverCleanupContext()
-	_, removeErr := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
-	cancel()
+	defer cancel()
 	var failure error
+	if runtime.responder != nil {
+		failure = runtime.responder.stop(ctx)
+	}
+	_, removeErr := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
 	if removeErr != nil {
-		failure = errors.New("cargo build runtime cleanup failed")
+		failure = errors.Join(failure, errors.New("cargo build runtime cleanup failed"))
+	}
+	if runtime.responder != nil {
+		failure = errors.Join(failure, runtime.responder.waitAfterTermination(ctx, removeErr == nil))
 	}
 	if runtime.trace != nil {
-		ctx, cancel := resolverCleanupContext()
-		facts, limitation, diagnostic := collectTraceDiagnostic(ctx, runtime.trace)
-		cancel()
+		traceCtx, traceCancel := resolverCleanupContext()
+		facts, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
+		traceCancel()
 		o.observations = append(o.observations, facts...)
 		if o.diagnostic.Reason == "" {
 			o.diagnostic = diagnostic
@@ -303,19 +417,34 @@ func (o *cargoBuildOperation) dispose() error {
 	for i := len(o.runtimes) - 1; i >= 0; i-- {
 		failure = errors.Join(failure, o.remove(o.runtimes[i]))
 	}
-	for _, volume := range []*closureVolume{&o.target, &o.input} {
-		if volume.name != "" {
-			ctx, cancel := resolverCleanupContext()
-			if volume.verify(ctx, o.builder.runner) != nil {
-				failure = errors.Join(failure, errors.New("cargo build volume cleanup identity unavailable"))
-			} else if _, err := o.builder.runner.Output(ctx, "docker", "volume", "rm", volume.name); err != nil {
-				failure = errors.Join(failure, errors.New("cargo build volume cleanup failed"))
-			}
-			cancel()
-		}
+	failure = errors.Join(failure, o.closeVolumes())
+	if o.responder != nil {
+		ctx, cancel := resolverCleanupContext()
+		failure = errors.Join(failure, o.responder.close(ctx, o.builder.runner))
+		cancel()
 	}
 	if o.inputs != nil {
 		failure = errors.Join(failure, o.inputs.close())
+	}
+	return failure
+}
+
+func (o *cargoBuildOperation) closeVolumes() error {
+	var failure error
+	volumes := []*closureVolume{&o.target, &o.input}
+	if o.environment != nil {
+		volumes = append(volumes, &o.environment.workspace)
+	}
+	for _, volume := range volumes {
+		if volume.name != "" {
+			ctx, cancel := resolverCleanupContext()
+			err := closeWritableOutputVolume(ctx, o.builder.runner, volume, volume.destination())
+			cancel()
+			failure = errors.Join(failure, err)
+			if err == nil {
+				*volume = closureVolume{}
+			}
+		}
 	}
 	return failure
 }
@@ -354,7 +483,7 @@ func (o *cargoBuildOperation) checkGraph(ctx context.Context, runtime *goBuildRu
 	return nil
 }
 
-func (o *cargoBuildOperation) captureOutput(ctx context.Context, runtime *goBuildRuntime, inputs domain.ProjectBuildInputs) (*projectoutput.CapturedBuildOutput, error) {
+func (o *cargoBuildOperation) captureOutput(ctx context.Context, runtime *goBuildRuntime, inputs domain.ProjectBuildInputs, retain bool) (*projectoutput.CapturedBuildOutput, error) {
 	reader, writer := io.Pipe()
 	command := make(chan error, 1)
 	go func() {
@@ -370,7 +499,13 @@ func (o *cargoBuildOperation) captureOutput(ctx context.Context, runtime *goBuil
 		_ = reader.CloseWithError(err)
 		filter <- err
 	}()
-	output, err := projectoutput.CaptureBuildOutput(ctx, o.builder.intake, inputs, filtered)
+	var output *projectoutput.CapturedBuildOutput
+	var err error
+	if retain {
+		output, err = projectoutput.CaptureBuildOutput(ctx, o.builder.intake, inputs, filtered)
+	} else {
+		err = projectoutput.ValidateBuildOutput(ctx, filtered)
+	}
 	_ = filtered.CloseWithError(err)
 	filterErr, commandErr := <-filter, <-command
 	if errors.Join(err, filterErr, commandErr, ctx.Err()) != nil {

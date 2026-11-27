@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "baseline": "d89c93433fcb8b73d83cb3d6a3b01157a15e7e1b",
+  "scope": "C3b typed Python client/source composition and empty-existing-venv UV INSTALL; native integration pending",
+  "sources": [
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "f3616bd7698a3a30036eae5791016f81d169703466512adfdb0098dd8321aedd"
+    },
+    {
+      "path": "internal/bootstrap/python_client.go",
+      "sha256": "ceef19158fcf3d5e9a816e16aa03b83db95b64fea0b8093dab44eadc3d49bee2"
+    },
+    {
+      "path": "internal/bootstrap/python_client_test.go",
+      "sha256": "fa6136409eb1e44fca3f13cebf7a2c97c2cd45a953adea751492f4f16c7c1443"
+    },
+    {
+      "path": "internal/bootstrap/uv_install_integration_test.go",
+      "sha256": "e5faec5c5ee022960bda3f6b563149a9bbc1b03724113dc6940bfa597e1d656d"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "c2132d494d96d283f5d1bcce38f4bf7e8a80d6240b15d4f497fee3c536d9b778"
+    },
+    {
+      "path": "internal/cli/package_client_test.go",
+      "sha256": "a05fceaf27fbc83f13e833cb92921d89134687ff6942cbd40e0176b01b5bac74"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "3389bddaa1631610b6f622cddcfaa832d0207fe44a90d798594ab131df1630e2"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "c2bc1c49ff67bc0e35654084d8d4db3bafcd5e4ee431ed406aed48f43b418520"
+    },
+    {
+      "path": "internal/cli/presentation_catalog.go",
+      "sha256": "a84f5c80a35629aa6c9b68e2a8bef01c0cbe176251c096880d55bc6e1972880f"
+    },
+    {
+      "path": "internal/cli/human_report.go",
+      "sha256": "10e336a58760ba0d84cc0d51250fd42656e688972657f1e9bdd7cec8d713fa10"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "7c465c1a95782935d118047a58454157930a074cba1f1d1badca882da4b644d0"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "24173f665e75aee372d05ae492824653c7e588b735aac0e5e9b580cf4d626e9b"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "d95fce005dfaa67c9f2ab9daefc8e8488b94c43afaaeb3c02db6a91044c84a20"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 1.79,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 60.14,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.717,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.229,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.715,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "race": {
+    "command": [
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout=5m",
+      "./internal/cli",
+      "./internal/bootstrap",
+      "./internal/application",
+      "./internal/promotion",
+      "./scripts/check"
+    ],
+    "exit": 0,
+    "seconds": 134.093
+  },
+  "race_package_seconds": [
+    {
+      "package": "cli",
+      "seconds": 21.804
+    },
+    {
+      "package": "bootstrap",
+      "seconds": 2.045
+    },
+    {
+      "package": "application",
+      "seconds": 1.484
+    },
+    {
+      "package": "promotion",
+      "seconds": 119.425
+    },
+    {
+      "package": "scripts/check",
+      "seconds": 18.767
+    }
+  ],
+  "native_test": {
+    "symbol": "TestLinuxUVInstallCLIIntegration",
+    "status": "NOT_RUN; connected to actual installed authenticated CI test client",
+    "assertions": [
+      "native UV solver manifest identity",
+      "complete inspection and ALLOW before staging and promotion",
+      "idna wheel files and ownership record",
+      "nonempty repeat refused before selection; target and Evidence unchanged"
+    ]
+  },
+  "implemented": true,
+  "wired": true,
+  "qualified": false,
+  "acceptance_closed": false,
+  "missing": [
+    "same candidate actual native UV CLI and Required CI",
+    "installed-aware install/upgrade and native ownership",
+    "complete/multi-root/empty sync; full P1 qualification"
+  ],
+  "cleanup": {
+    "temporary_entries": 0,
+    "native_assets_created": false,
+    "retained": "active source/SDK/quality/runtime for remaining C3 work"
+  }
+}

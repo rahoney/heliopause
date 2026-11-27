@@ -27,9 +27,11 @@ const (
 // already-typed policy into fixed firewall invocations; no arbitrary command
 // data is accepted at this layer.
 type PolicyEngine struct {
-	runner   policyRunner
-	mu       sync.Mutex
-	sessions map[string]policyRecord
+	runner        policyRunner
+	mu            sync.Mutex
+	sessions      map[string]policyRecord
+	beginMutation func(policyRecord, bool) error
+	endMutation   func(policyRecord, bool) error
 }
 
 type policyRecord struct {
@@ -64,6 +66,11 @@ func (e *PolicyEngine) CreateForPeer(ctx context.Context, uid uint32, policy net
 		return err
 	}
 	record := policyRecord{uid: uid, policy: policy, backend: backend, chain: policyChain(policy)}
+	if e.beginMutation != nil {
+		if err := e.beginMutation(record, true); err != nil {
+			return err
+		}
+	}
 	if err := e.apply(ctx, record); err != nil {
 		_ = e.remove(ctx, record)
 		return err
@@ -73,6 +80,9 @@ func (e *PolicyEngine) CreateForPeer(ctx context.Context, uid uint32, policy net
 		return err
 	}
 	e.sessions[key] = record
+	if e.endMutation != nil {
+		return e.endMutation(record, true)
+	}
 	return nil
 }
 
@@ -103,10 +113,18 @@ func (e *PolicyEngine) RemoveForPeer(ctx context.Context, uid uint32, policy net
 	if !ok || record.uid != uid || !samePolicy(record.policy, policy) {
 		return errors.New("network policy session is unconfirmed")
 	}
+	if e.beginMutation != nil {
+		if err := e.beginMutation(record, false); err != nil {
+			return err
+		}
+	}
 	if err := e.remove(ctx, record); err != nil {
 		return err
 	}
 	delete(e.sessions, key)
+	if e.endMutation != nil {
+		return e.endMutation(record, false)
+	}
 	return nil
 }
 

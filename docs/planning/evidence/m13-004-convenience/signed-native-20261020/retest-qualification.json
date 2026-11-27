@@ -1,0 +1,142 @@
+{
+  "schema": "helox.m13.signed-retest/v1",
+  "signed_source": "4ff6c89234698d6fe0b6b5366f7605538e47b967",
+  "versions": [
+    {
+      "tag": "v0.1.1-rc.3",
+      "run": 39439522714,
+      "independent_offline_subjects": 13,
+      "canonical_exact_bundle_exit": 0,
+      "public_manifest": "rc3-manifest.json",
+      "public_proof": "rc3-proof.sigstore.json"
+    },
+    {
+      "tag": "v0.1.1-rc.4",
+      "run": 39442575693,
+      "independent_offline_subjects": 13,
+      "canonical_exact_bundle_exit": 0,
+      "public_manifest": "rc4-manifest.json",
+      "public_proof": "rc4-proof.sigstore.json"
+    }
+  ],
+  "base": {
+    "version": "v0.1.1-rc.3",
+    "first_files_exit": 0,
+    "register_exit": 0,
+    "doctor_exit": 0,
+    "required_npm_completed": 3,
+    "policy": "ALLOW",
+    "runtime_members": 6,
+    "image_digest_rootfs_config_matches": 4
+  },
+  "actual_update": {
+    "exit": 1,
+    "operation_status": "FAILED",
+    "required_completed": 18,
+    "entries": 7,
+    "policy": {
+      "decision": "ALLOW",
+      "id": "m4-npm-install-promotion",
+      "version": 1,
+      "reasons": [
+        "M4_VERIFIED_SET_COMPLETED"
+      ]
+    },
+    "promotion_status": "FAILED",
+    "error": {
+      "code": "SELF_UPDATE_TRANSITION_OR_RECOVERY_REQUIRED",
+      "message": "Update operation failed."
+    },
+    "durable_history_state": "ROLLED_BACK",
+    "current": "v0.1.1-rc.3",
+    "post_doctor_exit": 0,
+    "post_npm_policy": {
+      "decision": "ALLOW",
+      "id": "m3-npm-dynamic-inspect",
+      "version": 1,
+      "reasons": [
+        "M3_REQUIRED_CHECKS_COMPLETED"
+      ]
+    }
+  },
+  "os_auth_negative": {
+    "direct_sudo_denial_exit": 1,
+    "required_completed": 18,
+    "set_policy": "ALLOW",
+    "new_root_transaction": false,
+    "current_history_unchanged": true,
+    "fixture_grant_restored": true
+  },
+  "preserved_evidence": {
+    "count": 42,
+    "bytes": 24176
+  },
+  "completed_download_cleanup": [
+    {
+      "removed_files": 13,
+      "removed_bytes": 231994106,
+      "directory_absent": true,
+      "public_manifest_proof_retained": true,
+      "registered_guest_and_baseline_preserved": true
+    },
+    {
+      "removed_files": 13,
+      "removed_bytes": 231994115,
+      "directory_absent": true,
+      "public_manifest_proof_retained": true
+    }
+  ],
+  "baseline_restore": {
+    "completed_rc4_guest_removed": true,
+    "source_image": "sha256:952e4277be3b45f4adef4477de9efe9b51a5366bd09e7a57c44f372660ed3d22",
+    "sequential_volume_use": true,
+    "doctor_exit": 0,
+    "nominal_policy": "ALLOW",
+    "host_kernel_reboot_qualified": false
+  },
+  "local_health_correction": {
+    "actual_old_argv_exit": 1,
+    "red_public_cli_dispatch_cases": 4,
+    "green_semantic_cases": 7,
+    "checks": [
+      {
+        "check": "quick",
+        "exit": 0,
+        "seconds": 88.63
+      },
+      {
+        "check": "security",
+        "exit": 0,
+        "seconds": 4.92
+      },
+      {
+        "check": "vulnerability",
+        "exit": 0,
+        "seconds": 11.91
+      },
+      {
+        "check": "docs",
+        "exit": 0,
+        "seconds": 0.23
+      },
+      {
+        "check": "race",
+        "exit": 0,
+        "seconds": 39.72
+      }
+    ],
+    "source": [
+      {
+        "path": "internal/bootstrap/runtime_guard_linux.go",
+        "sha256": "47be2268b5a8f83fe27e5b41208db26b4982c90d12f6b9ae743debb750b33b15"
+      },
+      {
+        "path": "internal/bootstrap/runtime_guard_linux_test.go",
+        "sha256": "e5776c4a5ea5e68a54fd3d5e971081e7670d0c28b4976bf544999feb8b6f87f6"
+      }
+    ]
+  },
+  "status": "PARTIAL; whole successful signed activation/auth-positive/fault/recovery remains open",
+  "public_release_transport": false,
+  "raw_owner": "docs/github-logs/self-update-signed-20261020"
+}

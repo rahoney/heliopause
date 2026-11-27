@@ -1,0 +1,38 @@
+{
+  "url": "https://registry.npmjs.org/typescript/5.9.3",
+  "observed_at": "2026-10-28T16:29:12.423801+00:00",
+  "decoded_bytes": 3904,
+  "sha256": "80f0d5d237c08c433b4cee823d75c4f54469beee86cc2fad5e1800f86b6243d8",
+  "name": "typescript",
+  "version": "5.9.3",
+  "bin": {
+    "tsc": "bin/tsc",
+    "tsserver": "bin/tsserver"
+  },
+  "engines": {
+    "node": ">=14.17"
+  },
+  "scripts": {
+    "gulp": "hereby",
+    "knip": "hereby knip",
+    "lint": "hereby lint",
+    "test": "hereby runtests-parallel --light=false",
+    "build": "npm run build:compiler && npm run build:tests",
+    "clean": "hereby clean",
+    "format": "dprint fmt",
+    "build:tests": "hereby tests",
+    "setup-hooks": "node scripts/link-hooks.mjs",
+    "build:compiler": "hereby local",
+    "test:eslint-rules": "hereby run-eslint-rules-tests",
+    "build:tests:notypecheck": "hereby tests --no-typecheck"
+  },
+  "dependencies": null,
+  "dist": {
+    "tarball": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+    "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+    "shasum": "5b4f59e15310ab17a216f5d6cf53ee476ede670f"
+  },
+  "metadata_DATA_only": true,
+  "artifact_not_downloaded_or_executed": true,
+  "runtime_pins_unchanged": true
+}

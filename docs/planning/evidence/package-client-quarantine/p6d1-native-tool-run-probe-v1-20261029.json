@@ -1,0 +1,43 @@
+{
+  "work_item": "M13-004/P6-D1",
+  "state": "FAIL / cause UNCONFIRMED; not qualified",
+  "baseline": "2bab27c5688f9b1bded432e77aac9c54031668c0",
+  "runtime": 1369,
+  "existing1368_unchanged": true,
+  "source_change": "one linux&&realcorpus test only; production/CPP132/permissions unchanged",
+  "checks": "canonical6 PASS and exact unchanged default membership/bytes reusing C2 Quick/Race",
+  "actual": {
+    "parent": "TestUVActualToolRunSelectionOnly",
+    "parent_seconds": 5.32,
+    "operator_seconds": 9.242,
+    "exit": 1,
+    "error": "observer stream is incomplete; observer direct-exec authority is ambiguous",
+    "first_external_fault": "OPEN_RESULT_CLASSIFICATION_IMAGE; OTHER/CONTROL/CLONE_CHILD; OCI_IMAGE/oci-root/flags557056; events15/bytes1710/session_complete=false",
+    "open_image_locator": "32581434d67478c1",
+    "open_executable_locator": "b982a2d37572906d",
+    "pinned": true,
+    "bounded_literal_candidates": {
+      "open": "/usr/local/lib/libpython3.14.so.1.0",
+      "executable": "/usr/local/bin/python3.14"
+    },
+    "locator_limit": "FNV literal matches are noncryptographic corroboration only; actual execfn/argv/creator rejection cause still unknown",
+    "expected_non_executable_terminal": "NOT_REACHED / unproven",
+    "source_host5_fixed42_ZIP_Docker_unchanged": true,
+    "helper_wait": 0,
+    "all_owned_resources_and_observer_endpoints_absent": true,
+    "native_public_authentication_Evidence_Policy": "NOT_RUN; local raw fixture only"
+  },
+  "originals": {
+    "build": "docs/github-logs/package-client-quarantine-20261021/p6-d1-preactual-original-inventory.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p6-d1-actual-v1-original-inventory.json"
+  },
+  "next": "test-only capture underlying validated Host command stderr before admission finalization plus two UV verbose flags; preserve original rejection/teardown and no permission change",
+  "CI433": {
+    "source": "87c817d58d2fa18a41f27291213b78e85a6e1aec",
+    "first_actual_20min_query": "2026-10-29T12:22:09.000230Z",
+    "completed_success": 8,
+    "Linux": "in_progress",
+    "next_due": "2026-10-29T12:42:09.907868Z",
+    "frozen": true
+  }
+}

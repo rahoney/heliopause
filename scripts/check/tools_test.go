@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -30,6 +31,7 @@ func TestGoVersionConsistencyRejectsMixedSDKs(t *testing.T) {
 			t.Parallel()
 			root := t.TempDir()
 			writeTestFile(t, filepath.Join(root, "go.mod"), "module example.test/app\n\ngo "+test.module+"\n")
+			writeTestFile(t, filepath.Join(root, "README.md"), fmt.Sprintf("# Fixture\n\n## Build\n\nHeliopause는 Go `%s` 이상이 필요하며, 개발·CI toolchain은 Go `%s`으로 고정한다.\n", test.module, test.module))
 			writeTestFile(t, filepath.Join(root, "scripts", "runtimes.lock.json"), `{"go_image":{"go_version":"`+test.guest+`"}}`)
 			c := checker{root: root, toolLock: toolLock{Tools: []toolSpec{{SetupGo: test.module}, {SetupGo: test.tool}}}}
 			if err := c.checkGoVersionConsistency(); (err != nil) != test.wantError {

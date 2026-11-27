@@ -1,0 +1,217 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004/P6-B2-D1",
+  "baseline_commit": "b3ad1e5847978568531ac5e57dbab25cc1719152",
+  "baseline_tree": "1b18f9248266ad187bd890d2c1e94c40f59d9a91",
+  "runtime_inputs": 1363,
+  "existing1361_unchanged": true,
+  "new_paths": [
+    "internal/bootstrap/python_execution_boundary_fixture_test.go",
+    "internal/bootstrap/python_execution_boundary_integration_test.go"
+  ],
+  "scope": "named local controlled raw-wheel/current actual inspection and selected Python boundary8; unchanged production/backend/CPP132/permissions/resource limits",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (named local actual8)",
+    "ACCEPTANCE_CLOSED": "YES (D1 named scope only)",
+    "MISSING": [
+      "D2 filesystem/network/clone/comm-spoof/readonly hostile actual",
+      "new-source hosted boundary",
+      "native UVx equivalence/golden/aliases/application runtime adapter/CLI/final profiles",
+      "unconfirmed prior Pipx CPU envelope cause"
+    ]
+  },
+  "checks": [
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 419.151
+    },
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.817
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.078
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 5.845
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-b2d1-v2-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 6.887
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.366
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 24.064
+    }
+  ],
+  "check_composition": {
+    "original": "/tmp/haa-p6-b2d1-v1-quick.log",
+    "default_input1361_unchanged": true,
+    "new2_linux_realcorpus_not_selected_by_default_Go": true,
+    "v2_format_and_tagged_checks_rerun": true
+  },
+  "test_binary": {
+    "role": "bootstrap",
+    "path": "/tmp/haa-p6-b2d1-v2-bootstrap.test",
+    "sha256": "2b6a2ba27d29e126e99879ca5f11ae783586b0316f1fa1b41fd83286237b382e",
+    "bytes": 51627717
+  },
+  "observer": {
+    "sha256": "f69b315ea353f7e1840c6e176e5837cbb89a0839012bd1af118cc5f84a2551db",
+    "anchored_latches": 132,
+    "source": "p6b2b-python-artifact-backend-local-20261029.json",
+    "unchanged": true
+  },
+  "actual": {
+    "test": "TestLinuxPythonExecutionBoundaryIntegration",
+    "parent_seconds": 191.36,
+    "operator_seconds": 198.221,
+    "cases": [
+      [
+        "argv",
+        "true",
+        "79",
+        "0"
+      ],
+      [
+        "exit37",
+        "true",
+        "0",
+        "0"
+      ],
+      [
+        "term",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "kill",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "cancel",
+        "false",
+        "6",
+        "0"
+      ],
+      [
+        "stdout-overflow",
+        "false",
+        "1048576",
+        "0"
+      ],
+      [
+        "stderr-overflow",
+        "false",
+        "0",
+        "1048576"
+      ],
+      [
+        "deadline",
+        "false",
+        "6",
+        "0"
+      ]
+    ],
+    "independent_kernel_signals": [
+      15,
+      9
+    ],
+    "exit37_typed_completed_guest_error": true,
+    "cancel_deadline_original_cause_and_incomplete": true,
+    "stream_independent_prefix_limit": 1048576,
+    "caller_deadline_seconds": 30,
+    "actual_current_integrity_static_dynamic_Evidence_Policy": true,
+    "fresh_operation_and_acquisition_per_case": true,
+    "original_wheel_rehashed_after_each_case": true,
+    "public_registry_authentication": "NOT_RUN controlled raw acquisition fixture",
+    "native_solver": "NOT_RUN",
+    "source_host5_fixed42_zip_Docker_unchanged": true,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "owned_workspaces_observer_endpoints_absent": true,
+    "original_log_sha256": "18be9cc5c40b01f3c20d5552985619314bc7c6fb53b714e885977b8361c30394"
+  },
+  "first_tagged_build_failure": {
+    "cause": "test adapter omitted existing ports.Artifact.Resolve required by constructor, despite using InspectResolved",
+    "correction": "test-only explicit refusal Resolve consistent with existing Intake; no production port/native resolver change",
+    "original_prefix": "docs/github-logs/package-client-quarantine-20261021/p6-b2d1-v1-tagged-build-failure-",
+    "actual_runtime_reached": false
+  },
+  "cleanup": {
+    "removed_copies": 2,
+    "removed_logical_bytes": 54849309,
+    "root_processes": 98,
+    "references": 0,
+    "query_errors": 0,
+    "original_baselines_CPP_source_raw_inputs_cache_SDK_Git_preserved": true
+  },
+  "originals": {
+    "preactual_inventory": "docs/github-logs/package-client-quarantine-20261021/p6-b2d1-preactual-original-inventory.json",
+    "actual_inventory": "docs/github-logs/package-client-quarantine-20261021/p6-b2d1-actual-v1-original-inventory.json",
+    "cleanup": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2d1-cleanup-result.json"
+  },
+  "limit": "controlled fixture is not public intake authentication/native solver or full hostile/CLI/final qualification; active CI432 source9198 does not contain these new tests"
+}

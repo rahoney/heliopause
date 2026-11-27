@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "baseline": "13f9fc4714d031b1309eda8d2c395409d397debe",
+  "scope": "C3d bounded native UV public wheel enrollment into existing held Python transaction",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "LOCAL ONLY; authenticated native actual CLI/public old-wheel lookup/macOS/shared consumers pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "same-source actual UV generated original/cache refusal/adopt3.10-to3.11/managed replay qualification",
+    "same-source Required CI/Linux/macOS/shared consumers",
+    "whole P1 actual dependency closure and complete/multi-root/explicit-empty sync"
+  ],
+  "source": [
+    {
+      "path": "internal/bootstrap/python_client.go",
+      "bytes": 5342,
+      "sha256": "3561628a312fffa9830e42356cef8f7081a3b7745c61a3373f63523c0d5acc3c"
+    },
+    {
+      "path": "internal/bootstrap/uv_install_integration_test.go",
+      "bytes": 13911,
+      "sha256": "d3898242e90d7ab611cf9bfc950d7d96dd8b064230b2f97f7d7ebc1714f51510"
+    },
+    {
+      "path": "internal/bootstrap/uv_native_fixture_test.go",
+      "bytes": 10604,
+      "sha256": "576d4fe98b714e0932a1035dda5b9abb81e242cc823dc5a8f9c7ce5c2c4fc604"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "bytes": 13970,
+      "sha256": "b7c3ac0328b87b936d2bc14cc75dc81cf2cc28f95a570730d118faf06749f6dd"
+    },
+    {
+      "path": "internal/cli/package_client_test.go",
+      "bytes": 7226,
+      "sha256": "70afceba349e6058ad0adc63fd31166149608b1a6ca6458b414a6e2bd4a20915"
+    },
+    {
+      "path": "internal/promotion/pypi_native_ownership.go",
+      "bytes": 15640,
+      "sha256": "3bc7f5b86c754569699711a2602b5d43eb82420584d08ca24b54d450dfcef4df"
+    },
+    {
+      "path": "internal/promotion/pypi_native_client.go",
+      "bytes": 2534,
+      "sha256": "7109e8b4610779f6e7b7b8bc9675a3ef958e0d78693b29fd92275599c8f71fd8"
+    },
+    {
+      "path": "internal/promotion/pypi_update.go",
+      "bytes": 20928,
+      "sha256": "c7cb10003acebaeaf2097163aadd1ae52c8b88cd9202363a537d866b357cadcd"
+    },
+    {
+      "path": "internal/promotion/uv_update.go",
+      "bytes": 5497,
+      "sha256": "ac80586259c3f1cb3cf5f68733890d6a1cd8e6e404522fdb0d5638268776afe3"
+    },
+    {
+      "path": "internal/promotion/uv_native_ownership_test.go",
+      "bytes": 10661,
+      "sha256": "3e1bdd576f10d67e3673bd852701f905ca3da597b357c442eb0eb40472260d98"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.311,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-format.json",
+        "bytes": 110,
+        "sha256": "502f18cfbfa0c2e7a2b852a4a8a786e03f84a141cd0277047f17ea26eddd0e98"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 114.574,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-quick.json",
+        "bytes": 111,
+        "sha256": "b5204b1ceff0bcec74a92ca647e42b6de033805dcf6a51117f9892623b1837f5"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-quick.log",
+        "bytes": 1354,
+        "sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.192,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-security.json",
+        "bytes": 112,
+        "sha256": "45c4b4f22500fc8c4baaabe9d260be8e81e75362d2d5638236df0316e4e935ce"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.22,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-docs.json",
+        "bytes": 107,
+        "sha256": "0a9231b01ee376ba7c168b95a4796aa11e5039de642de8370b368b46d1865722"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.716,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-workflow.json",
+        "bytes": 112,
+        "sha256": "60e4d7a99ac0effde7f50b1f63b4769853f0da3bdbf6f5d44c5c36787ccc8f90"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-workflow.log",
+        "bytes": 1071,
+        "sha256": "a9d0afe878b5cc017419a4754afde924a4196a69fa7415fdf4eb23bc2ea131f4"
+      }
+    },
+    {
+      "profile": "race",
+      "exit": 0,
+      "seconds": 130.026,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-race.json",
+        "bytes": 307,
+        "sha256": "5805648185c4efc7fedd0bed53a1001c85697d01643fd9293713b2b6d1893c72"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/native-uv-ownership-reviewed-race.log",
+        "bytes": 308,
+        "sha256": "8860a273dc844d85d7241151f8790dc360ab5ff41655df39fdb2656eb4398d64"
+      }
+    }
+  ],
+  "review": [
+    "Existing native pip proof/acquisition, original guard, complete-set inspection, transaction and rollback reused; zero private format remains pip",
+    "Native UV requires exact two-byte installer marker; optional REQUESTED must be empty if present; generated scripts/cross-scheme/local/direct/VCS/build and unexpected auxiliary files refused",
+    "All authentic site/dist-info .py cache namespaces frozen absent through publication, independent of import roles; user caches never deleted or adopted",
+    "Old lookup requires central exact UV runtime; original proof control added only after authentication; new wheel set requires fresh full inspection/Evidence/ALLOW before publication",
+    "Actual fixture creates only two exact owned containers with pinned tool/hash and Python image; network-none/read-only/UID1000/no-cap/NPP; no host interpreter/artifact execution; bounded tar data only; label/image verified removal and absence query",
+    "No workflow job/privilege/runtime role/timeout or package pin changed; no Host install, main merge or publication"
+  ],
+  "cleanup": {
+    "local_runtime_fixtures": "NOT_RUN; native container fixture awaits actual source CI",
+    "completed_go_tmp_entries": 0,
+    "retained": "active source, exact SDK/quality/runtime for remaining P1 consumers and small raw/reproduction evidence"
+  }
+}
