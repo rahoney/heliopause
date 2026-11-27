@@ -22,52 +22,41 @@ swap_table() {
   swapon --bytes --show=NAME,TYPE,SIZE,USED,PRIO --noheadings --raw
 }
 
+# Swap usage can change during the probe. Compare the identities instead.
+swap_identities() {
+  awk -v omit="${1-}" '
+    NF == 0 { next }
+    NF != 5 || $1 !~ /^\// || $3 !~ /^[0-9]+$/ ||
+      $4 !~ /^[0-9]+$/ || $5 !~ /^-?[0-9]+$/ || seen[$1]++ { exit 1 }
+    $1 != omit { print $1, $2, $3, $5 }
+  ' | LC_ALL=C sort
+}
+
 if initial=$(swap_table); then
   printf 'swap_preflight check=query exit=0\nbefore_swap=%s\n' "${initial:-none}"
 else
   preflight_failure query "$?"
 fi
-if ! awk '/^(MemAvailable|SwapTotal|SwapFree):/' /proc/meminfo; then
-  printf 'swap_preflight check=meminfo unavailable\n' >&2
-fi
-stock=''
-priority=''
-if [[ -n $initial ]]; then
-  [[ $initial != *$'\n'* ]] || preflight_failure multiple_swaps 1
-  read -r stock type size used priority extra <<< "$initial" || preflight_failure malformed_table 1
-  [[ $type == file ]] || preflight_failure stock_type 1
-  [[ $size =~ ^[0-9]+$ && $used =~ ^[0-9]+$ && -z $extra ]] || preflight_failure malformed_table 1
-  [[ $used == 0 ]] || preflight_failure stock_in_use 1
-  [[ $stock == /* ]] || preflight_failure stock_path 1
-  [[ ! -L $stock ]] || preflight_failure stock_symlink 1
-  [[ -f $stock ]] || preflight_failure stock_unavailable 1
-  [[ $priority =~ ^(-2|[0-9]+)$ ]] || preflight_failure stock_priority 1
-fi
+baseline=$(swap_identities <<< "$initial") || preflight_failure malformed_table "$?"
+awk '/^(MemAvailable|SwapTotal|SwapFree):/' /proc/meminfo ||
+  preflight_failure meminfo "$?"
 printf 'swap_preflight check=eligible exit=0\n'
 
-root=$(mktemp -d "$RUNNER_TEMP/haa-swap-proof.XXXXXXXX")
-stock_paused=0
+temp_dir=$(CDPATH= cd -- "$RUNNER_TEMP" && pwd -P)
+root=$(mktemp -d "$temp_dir/haa-swap-proof.XXXXXXXX")
 finish() {
-  local original=$1 cleanup=0
+  local original=$1 cleanup=0 after identities
   trap - EXIT
-  if (( stock_paused )); then
-    if [[ $priority == -2 ]]; then
-      sudo -n swapon -- "$stock" || cleanup=$?
-    else
-      sudo -n swapon --priority "$priority" -- "$stock" || cleanup=$?
+  if after=$(swap_table) && identities=$(swap_identities <<< "$after"); then
+    if [[ $identities != "$baseline" ]]; then
+      printf 'runner swap identities differ after diagnostic: %s\n' "$after" >&2
+      cleanup=1
     fi
+  else
+    cleanup=$?
+    printf 'final swap table could not be verified (exit=%s)\n' "$cleanup" >&2
   fi
-  local after leftovers
-  after=$(swap_table) || cleanup=$?
-  leftovers=$(find "$root" -mindepth 1 -maxdepth 1 -print) || cleanup=$?
-  if [[ -n $leftovers ]]; then
-    printf 'diagnostic temporary files remain: %s\n' "$leftovers" >&2
-    cleanup=1
-  fi
-  if [[ $after != "$initial" ]]; then
-    printf 'runner swap differs after diagnostic: %s\n' "$after" >&2
-    cleanup=1
-  fi
+  rm -f -- "$root/first-swap-read" || cleanup=$?
   rmdir -- "$root" || cleanup=$?
   if (( original != 0 )); then exit "$original"; fi
   (( cleanup == 0 )) || exit "$cleanup"
@@ -75,29 +64,60 @@ finish() {
 }
 trap 'finish "$?"' EXIT
 
-if [[ -n $stock ]]; then
-  sudo -n swapoff -- "$stock"
-  stock_paused=1
-fi
-current=$(swap_table)
-[[ -z $current ]]
-[[ $(awk '$1 == "SwapFree:" {print $2}' /proc/meminfo) == 0 ]]
-printf 'before_prepare_swap_free_kib=0\n'
+export -f swap_table swap_identities
+PROBE_BASELINE="$baseline" RUNNER_TEMP="$root" bash -euo pipefail <<'PROBE'
+minimum_kib=3145724
+read_free='$1 == "SwapFree:" && $2 ~ /^[0-9]+$/ && $3 == "kB" { print $2 }'
+first_read="$RUNNER_TEMP/first-swap-read"
 
-RUNNER_TEMP="$root" bash -euo pipefail <<'PROBE'
+# Keep the provider's swap enabled. Control only the helper's first read
+# when the host already has enough. The read after swapon always uses procfs.
+awk() {
+  if [[ $# == 2 && $1 == "$read_free" && $2 == /proc/meminfo && ! -e $first_read ]]; then
+    local actual input mode
+    actual=$(command awk "$@") || return "$?"
+    if [[ ! $actual =~ ^(0|[1-9][0-9]*)$ ]]; then
+      printf 'invalid initial SwapFree: %s\n' "$actual" >&2
+      return 1
+    fi
+    input=$actual
+    mode=native-shortage
+    if (( actual >= minimum_kib )); then
+      input=0
+      mode=controlled-shortage
+    fi
+    printf '%s\n' "$input" > "$first_read" || return "$?"
+    printf 'probe mode=%s actual_swap_free_kib=%s initial_input_kib=%s\n' "$mode" "$actual" "$input" >&2
+    printf '%s\n' "$input"
+    return
+  fi
+  command awk "$@"
+}
+
 source scripts/ci-integration-cleanup.sh
 haa_ci_initialize
 time haa_ci_prepare_cuda_swap
-[[ -n $haa_cuda_swap_file && $haa_cuda_swap_file == "$RUNNER_TEMP"/haa-cuda-swap.* ]]
-[[ $(stat -c '%a:%s' "$haa_cuda_swap_file") == 600:3221225472 ]]
-active=$(swapon --bytes --show=NAME,TYPE,SIZE,USED,PRIO --noheadings --raw)
-[[ $active != *$'\n'* ]]
-read -r name type size used priority extra <<< "$active"
-[[ $name == "$haa_cuda_swap_file" && $type == file && $size == 3221221376 && -z $extra ]]
-printf 'active_swap=%s\n' "$active"
-PROBE
+IFS= read -r initial_kib < "$first_read"
+allocated_bytes=$((((minimum_kib - initial_kib + 4 + 1023) / 1024) * 1024 * 1024))
+usable_bytes=$((allocated_bytes - 4096))
+if [[ $haa_cuda_swap_file != "$RUNNER_TEMP"/haa-cuda-swap.* ||
+      $(stat -c '%a:%s' "$haa_cuda_swap_file") != "600:$allocated_bytes" ]]; then
+  printf 'owned swapfile has the wrong path, permissions, or size\n' >&2
+  exit 1
+fi
 
-current=$(swap_table)
-[[ -z $current ]]
-[[ $(awk '$1 == "SwapFree:" {print $2}' /proc/meminfo) == 0 ]]
-printf 'after_ci_exit_swap_free_kib=0\n'
+active=$(swap_table)
+rest=$(swap_identities "$haa_cuda_swap_file" <<< "$active")
+if [[ $rest != "$PROBE_BASELINE" ]]; then
+  printf 'existing swap identities changed during diagnostic\n' >&2
+  exit 1
+fi
+owned=$(awk -v name="$haa_cuda_swap_file" -v size="$usable_bytes" '
+  $1 == name && $2 == "file" && $3 == size { print }
+' <<< "$active")
+if [[ -z $owned ]]; then
+  printf 'owned swapfile missing from kernel table or usable size differs\n' >&2
+  exit 1
+fi
+printf 'active_swap=%s\nprior_swap_identities_unchanged=yes\n' "$owned"
+PROBE
