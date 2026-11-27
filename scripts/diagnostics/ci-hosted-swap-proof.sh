@@ -6,22 +6,44 @@ set -euo pipefail
 [[ $(getconf PAGESIZE) == 4096 ]]
 [[ $(git hash-object scripts/ci-integration-cleanup.sh) == 564fb0fea0c6d81f31cb7480df90718b3aec8b7f ]]
 printf 'checkout=%s kernel=%s runner_image=%s\n' "$(git rev-parse HEAD)" "$(uname -r)" "${ImageVersion-}"
-sudo -n true
+
+preflight_failure() {
+  printf 'swap_preflight check=%s exit=%s\n' "$1" "$2" >&2
+  exit "$2"
+}
+
+if sudo -n true; then
+  printf 'swap_preflight check=sudo exit=0\n'
+else
+  preflight_failure sudo "$?"
+fi
 
 swap_table() {
   swapon --bytes --show=NAME,TYPE,SIZE,USED,PRIO --noheadings --raw
 }
 
-initial=$(swap_table)
+if initial=$(swap_table); then
+  printf 'swap_preflight check=query exit=0\nbefore_swap=%s\n' "${initial:-none}"
+else
+  preflight_failure query "$?"
+fi
+if ! awk '/^(MemAvailable|SwapTotal|SwapFree):/' /proc/meminfo; then
+  printf 'swap_preflight check=meminfo unavailable\n' >&2
+fi
 stock=''
 priority=''
 if [[ -n $initial ]]; then
-  [[ $initial != *$'\n'* ]]
-  read -r stock type size used priority extra <<< "$initial"
-  [[ $type == file && $size =~ ^[0-9]+$ && $used == 0 && -z $extra ]]
-  [[ $stock == /* && -f $stock && ! -L $stock && $priority =~ ^(-2|[0-9]+)$ ]]
+  [[ $initial != *$'\n'* ]] || preflight_failure multiple_swaps 1
+  read -r stock type size used priority extra <<< "$initial" || preflight_failure malformed_table 1
+  [[ $type == file ]] || preflight_failure stock_type 1
+  [[ $size =~ ^[0-9]+$ && $used =~ ^[0-9]+$ && -z $extra ]] || preflight_failure malformed_table 1
+  [[ $used == 0 ]] || preflight_failure stock_in_use 1
+  [[ $stock == /* ]] || preflight_failure stock_path 1
+  [[ ! -L $stock ]] || preflight_failure stock_symlink 1
+  [[ -f $stock ]] || preflight_failure stock_unavailable 1
+  [[ $priority =~ ^(-2|[0-9]+)$ ]] || preflight_failure stock_priority 1
 fi
-printf 'before_swap=%s\n' "${initial:-none}"
+printf 'swap_preflight check=eligible exit=0\n'
 
 root=$(mktemp -d "$RUNNER_TEMP/haa-swap-proof.XXXXXXXX")
 stock_paused=0
