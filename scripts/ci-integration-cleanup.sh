@@ -12,6 +12,7 @@ haa_ci_initialize() {
   haa_recorded_pid=''; policy_helper_pid=''
   haa_helper_error=0; haa_client_error=0
   haa_client_restore_required=0; haa_replacement_recorded=0
+  haa_cuda_swap_file=''
 }
 
 haa_helper_unknown() {
@@ -164,6 +165,51 @@ haa_stop_policy_helper() {
 # Exactly one matrix leg owns each guarded integration region.
 haa_ci_suite() { [[ ${HELOX_CI_SUITE-} == "$1" ]]; }
 
+# The successful Ubuntu CUDA runners provided a 3 GiB swap area with one
+# 4 KiB header page. Reuse available swap and allocate only the shortfall.
+haa_ci_prepare_cuda_swap() {
+  local minimum_kib=3145724 free_kib additional_mib temp_dir
+  local read_free='$1 == "SwapFree:" && $2 ~ /^[0-9]+$/ && $3 == "kB" { print $2 }'
+  free_kib=$(awk "$read_free" /proc/meminfo) || return "$?"
+  if [[ ! $free_kib =~ ^[0-9]+$ ]]; then
+    echo 'CUDA qualification: unable to read available swap' >&2
+    return 1
+  fi
+  if (( free_kib >= minimum_kib )); then
+    printf 'CUDA qualification: reusing swap, available_kib=%s\n' "$free_kib"
+    return 0
+  fi
+  if [[ ${RUNNER_ENVIRONMENT-} != github-hosted || ${haa_initialized-0} != 1 || ${haa_owner-} != "$$" || -n ${haa_cuda_swap_file-} || -z ${RUNNER_TEMP-} ]]; then
+    echo 'CUDA qualification: insufficient available swap in this runner' >&2
+    return 1
+  fi
+
+  temp_dir=$(CDPATH= cd -- "$RUNNER_TEMP" && pwd -P) || return "$?"
+  haa_cuda_swap_file=$(mktemp "$temp_dir/haa-cuda-swap.XXXXXXXX") || return "$?"
+  additional_mib=$(((minimum_kib - free_kib + 4 + 1023) / 1024))
+  dd if=/dev/zero of="$haa_cuda_swap_file" bs=1M count="$additional_mib" conv=fsync status=none || return "$?"
+  mkswap -- "$haa_cuda_swap_file" || return "$?"
+  sudo -n swapon -- "$haa_cuda_swap_file" || return "$?"
+  free_kib=$(awk "$read_free" /proc/meminfo) || return "$?"
+  if [[ ! $free_kib =~ ^[0-9]+$ ]] || (( free_kib < minimum_kib )); then
+    echo 'CUDA qualification: required swap was not available after setup' >&2
+    return 1
+  fi
+  printf 'CUDA qualification: prepared swap, allocated_mib=%s available_kib=%s\n' "$additional_mib" "$free_kib"
+}
+
+haa_ci_remove_cuda_swap() {
+  local active
+  if [[ ${haa_initialized-0} != 1 || ${haa_owner-} != "$$" || -z ${haa_cuda_swap_file-} ]]; then return 0; fi
+  active=$(swapon --show=NAME --noheadings --raw) || return "$?"
+  if [[ $'\n'$active$'\n' == *$'\n'"$haa_cuda_swap_file"$'\n'* ]]; then
+    sudo -n swapoff -- "$haa_cuda_swap_file" || return "$?"
+  fi
+  rm -f -- "$haa_cuda_swap_file" || return "$?"
+  haa_cuda_swap_file=''
+  echo 'cleanup: CUDA swapfile removed' >&2
+}
+
 haa_install_ci_client() {
   local status
   if haa_stop_policy_helper; then :; else return $?; fi
@@ -195,7 +241,7 @@ haa_ci_report_resource_timings() {
 }
 
 haa_ci_finish() {
-  local original=$1 stop_status=0 restore_status=0 restore_result=NOT_REQUIRED
+  local original=$1 stop_status=0 restore_status=0 restore_result=NOT_REQUIRED swap_status=0
   trap - EXIT
   if haa_stop_policy_helper; then :; else stop_status=$?; fi
   if [[ ${haa_client_restore_required-0} == 1 ]]; then
@@ -209,11 +255,16 @@ haa_ci_finish() {
     fi
   fi
   haa_ci_report_resource_timings
+  if haa_ci_remove_cuda_swap; then :; else
+    swap_status=$?
+    printf 'cleanup: CUDA swap removal failed (status=%s)\n' "$swap_status" >&2
+  fi
   printf 'cleanup: original=%s helper_state=%s helper_stop=%s client_error=%s client_restore=%s restore_result=%s pid=%s\n' "$original" "${haa_helper_state-UNKNOWN}" "$stop_status" "${haa_client_error-0}" "$restore_status" "$restore_result" "${policy_helper_pid-}" >&2
   if (( original != 0 )); then exit "$original"; fi
   if (( stop_status != 0 )); then exit "$stop_status"; fi
   if [[ ${haa_client_error-0} != 0 ]]; then exit "$haa_client_error"; fi
   if (( restore_status != 0 )); then exit "$restore_status"; fi
+  if (( swap_status != 0 )); then exit "$swap_status"; fi
   exit 0
 }
 trap 'haa_ci_finish "$?"' EXIT

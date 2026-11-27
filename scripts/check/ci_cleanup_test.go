@@ -20,6 +20,79 @@ func cleanupScript(t *testing.T) string {
 	return p
 }
 
+func TestCIQualificationSwapLifecycle(t *testing.T) {
+	const body = `
+source "$SCRIPT"
+haa_ci_initialize
+RUNNER_TEMP=$CASE_DIR
+free=$FREE
+stub_active=''
+awk() {
+  [[ $2 == /proc/meminfo ]] || return 2
+  printf '%s\n' "$free"
+}
+dd() {
+  [[ $2 == "of=$haa_cuda_swap_file" && $4 == count=* && -f $haa_cuda_swap_file ]] || return 2
+  printf 'allocate:%s\n' "${4#count=}" >> "$CASE_DIR/actions"
+}
+mkswap() {
+  [[ $* == "-- $haa_cuda_swap_file" ]] || return 2
+  printf 'mkswap\n' >> "$CASE_DIR/actions"
+}
+swapon() {
+  [[ $* == '--show=NAME --noheadings --raw' ]] || return 2
+  if [[ $QUERY_SWAP != 0 ]]; then return "$QUERY_SWAP"; fi
+  printf '/existing/swap\n%s\n' "$stub_active"
+}
+sudo() {
+  [[ $1 == -n && $3 == -- && $4 == "$haa_cuda_swap_file" ]] || return 2
+  printf '%s\n' "$2" >> "$CASE_DIR/actions"
+  case "$2" in
+    swapon)
+      if [[ $ENABLE != 0 ]]; then return "$ENABLE"; fi
+      stub_active=$4; free=$AFTER ;;
+    swapoff)
+      if [[ $REMOVE != 0 ]]; then return "$REMOVE"; fi
+      stub_active='' ;;
+    *) return 2 ;;
+  esac
+}
+rm() {
+  [[ $* == "-f -- $haa_cuda_swap_file" && -z $stub_active ]] || return 2
+  command rm "$@" || return
+  [[ ! -e $haa_cuda_swap_file ]] || return 2
+  printf 'removed\n' >> "$CASE_DIR/actions"
+}
+haa_ci_prepare_cuda_swap
+exit "$ORIGINAL"
+`
+	for _, tc := range []struct {
+		name, runner, initial, after          string
+		enable, remove, query, original, exit int
+		actions                               string
+	}{
+		{name: "reuse-existing", runner: "github-hosted", initial: "3145724"},
+		{name: "provision-three-gib", runner: "github-hosted", initial: "0", after: "3145724", actions: "allocate:3072\nmkswap\nswapon\nswapoff\nremoved\n"},
+		{name: "provision-only-shortfall", runner: "github-hosted", initial: "3144700", after: "3146744", actions: "allocate:2\nmkswap\nswapon\nswapoff\nremoved\n"},
+		{name: "preserve-test-failure", runner: "github-hosted", initial: "0", after: "3145724", remove: 9, original: 37, exit: 37, actions: "allocate:3072\nmkswap\nswapon\nswapoff\n"},
+		{name: "fail-on-cleanup", runner: "github-hosted", initial: "0", after: "3145724", remove: 9, exit: 9, actions: "allocate:3072\nmkswap\nswapon\nswapoff\n"},
+		{name: "preserve-owned-file-on-query-failure", runner: "github-hosted", initial: "0", after: "3145724", query: 11, exit: 11, actions: "allocate:3072\nmkswap\nswapon\n"},
+		{name: "remove-inactive-file-after-enable-failure", runner: "github-hosted", initial: "0", enable: 7, exit: 7, actions: "allocate:3072\nmkswap\nswapon\nremoved\n"},
+		{name: "reject-insufficient-readback", runner: "github-hosted", initial: "0", after: "100", exit: 1, actions: "allocate:3072\nmkswap\nswapon\nswapoff\nremoved\n"},
+		{name: "keep-self-hosted-swap-unchanged", runner: "self-hosted", initial: "0", exit: 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			code, out, actions := runCleanup(t, body,
+				"RUNNER_ENVIRONMENT="+tc.runner, "FREE="+tc.initial, "AFTER="+tc.after,
+				fmt.Sprintf("ENABLE=%d", tc.enable), fmt.Sprintf("REMOVE=%d", tc.remove),
+				fmt.Sprintf("QUERY_SWAP=%d", tc.query), fmt.Sprintf("ORIGINAL=%d", tc.original))
+			if code != tc.exit || actions != tc.actions {
+				t.Fatalf("exit=%d want=%d actions=%q want=%q\n%s", code, tc.exit, actions, tc.actions, out)
+			}
+		})
+	}
+}
+
 func TestCIResourceTimingTailIsBoundedAndPreservesOriginalFailure(t *testing.T) {
 	for _, failTail := range []bool{false, true} {
 		t.Run(fmt.Sprint(failTail), func(t *testing.T) {

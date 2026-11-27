@@ -594,6 +594,9 @@ jobs:
           fi
           # Explicit qualification inputs only; never infer dependencies from artifact output.
           HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='' HELOX_PYTORCH_NOT_ATTESTED_MODULE='' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxPyTorchFullIntegration$'
+          if [ "$selected_cuda_profiles" -eq 1 ]; then
+            haa_ci_prepare_cuda_swap
+          fi
           if [ "$HELOX_CI_CU126" = true ]; then
             HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi

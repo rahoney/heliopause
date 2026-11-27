@@ -803,6 +803,10 @@ func validateCUDAQualificationScope(contents string) []string {
 		return append(findings, "CUDA qualification requires the existing unconditional runtime lifecycle")
 	}
 	body := kernelQualificationLines(strings.Join(blocks[0], "\n"))
+	swapBoundary := "if [ \"$selected_cuda_profiles\" -eq 1 ]; then\nhaa_ci_prepare_cuda_swap\nfi"
+	if strings.Count(body, "haa_ci_prepare_cuda_swap") != 1 || !strings.Contains(body, swapBoundary) {
+		findings = append(findings, "CUDA qualification must prepare runner swap only for one selected profile")
+	}
 	for _, profile := range []string{"cu126", "cu130", "cu132"} {
 		flag := "HELOX_CI_" + strings.ToUpper(profile)
 		if strings.Count(body, `if [ "$`+flag+`" = true ]; then`) != 2 {

@@ -46,6 +46,7 @@ func qualificationInputs(contents string, selected ...string) ([]string, error) 
 	}
 	body = strings.ReplaceAll(body, "/usr/libexec/heliopause/helox", "record_client")
 	stub := `go() { test "$*" = 'run ./scripts/check qualification-freshness'; }
+haa_ci_prepare_cuda_swap() { printf '%s\n' cuda-swap; }
 record_client() {
  test "$HELOX_PYTORCH_FULL_INTEGRATION" = 1
  printf '%s\t%s\t%s\t%s\n' "$HELOX_PYTORCH_PROFILE" "${HELOX_PYTORCH_INSPECTION_PREREQUISITE-}" "${HELOX_PYTORCH_QUALIFICATION_PLAN-}" "${HELOX_PYTORCH_NOT_ATTESTED_MODULE-}"
@@ -72,7 +73,7 @@ func checkQualificationInputs(contents, selected string) error {
 	}
 	want := 1
 	if selected != "" {
-		want = 2
+		want = 3
 	}
 	if len(lines) != want {
 		return fmt.Errorf("invocations=%d", len(lines))
@@ -83,7 +84,10 @@ func checkQualificationInputs(contents, selected string) error {
 	if selected == "" {
 		return nil
 	}
-	fields := strings.Split(lines[1], "\t")
+	if lines[1] != "cuda-swap" {
+		return fmt.Errorf("runner swap was not prepared before CUDA: %q", lines)
+	}
+	fields := strings.Split(lines[2], "\t")
 	if len(fields) != 4 || fields[0] != selected || fields[1] != "" || fields[2] != "cuda-bindings-numpy" || fields[3] != "triton.profiler.viewer" {
 		return fmt.Errorf("CUDA scope missing: %q", lines[1])
 	}
@@ -128,6 +132,7 @@ func TestCUDAOnlyQualificationPreservesOrdinaryAndCommonScopes(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
+		"missing-cuda-swap":       strings.Replace(original, "haa_ci_prepare_cuda_swap", "true", 1),
 		"ordinary-routed-away":    strings.Replace(original, cudaOnlyCIExpression, "true", 1),
 		"non-manual-routing":      strings.Replace(original, "github.event_name == 'workflow_dispatch' && (inputs.", "(inputs.", 1),
 		"step-override":           strings.Replace(original, "      - name: Qualify production Node execution preparation\n", "      - name: Qualify production Node execution preparation\n        env:\n          HELOX_CI_CUDA_ONLY: 'true'\n", 1),
